@@ -117,14 +117,14 @@ export default function Home() {
 
   // Ensure the background color fills the whole page, even when scrolled
   useEffect(() => {
-    document.body.style.background = '#141414';
-    document.documentElement.style.background = '#141414';
+    document.body.style.background = '#191919';
+    document.documentElement.style.background = '#191919';
   }, []);
 
   return (
     <div style={{
       minHeight: "100vh",
-      background: "#141414",
+      background: "#191919",
       color: "#f3f3f3",
       display: "flex",
       flexDirection: "column",
@@ -225,7 +225,7 @@ export default function Home() {
           alignItems: 'center',
           position: 'fixed',
           bottom: 0,
-          background: 'linear-gradient(0deg,rgba(20, 20, 20, 1) 60%, rgba(20, 20, 20, 0) 100%)',
+          background: 'linear-gradient(0deg,rgba(25, 25, 25, 1) 30%, rgba(25, 25, 25, 0) 100%)',
           maxWidth: 750,
           width: '100%'
         }}>
@@ -255,7 +255,7 @@ export default function Home() {
                 fontSize: 17,
                 borderRadius: 12,
                 border: '1px solid #313131',
-                background: '#1b1b1b',
+                background: 'rgba(32, 32, 32, 0.9)',
                 color: '#f3f3f3',
                 outline: 'none',
                 resize: 'none',
@@ -264,6 +264,9 @@ export default function Home() {
                 lineHeight: 1.5,
                 boxSizing: 'border-box',
                 overflowY: 'auto',
+                fontFamily: 'Inter, sans-serif',
+                backdropFilter: 'blur(40px)',
+                boxShadow: 'rgba(0, 0, 0, 0.48) 0px 24px 48px -8px, rgba(0, 0, 0, 0.24) 0px 4px 12px -1px, rgba(255, 255, 255, 0.094) 0px 0px 0px 1px',
               }}
             />
             <button

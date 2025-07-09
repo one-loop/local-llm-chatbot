@@ -1,8 +1,8 @@
-# Backend - Local LLM Chatbot
+# Backend - NYU Abu Dhabi Dining Hall Chatbot
 
 ## Requirements
 - Python 3.8+
-- [Ollama](https://ollama.com/) running locally (with the Mistral Small 3.1 model pulled)
+- [Ollama](https://ollama.com/) running locally (with the 'mistral' model pulled)
 
 ## Setup
 
@@ -18,10 +18,10 @@
    pip install -r requirements.txt
    ```
 
-3. **Make sure Ollama is running and the Mistral model is available:**
+3. **Make sure Ollama is running and the 'mistral' model is available:**
    ```bash
-   ollama pull mistral:3.1
-   ollama run mistral:3.1
+   ollama pull mistral
+   ollama run mistral
    ```
 
 4. **Start the FastAPI server (on port 5000):**
@@ -31,29 +31,20 @@
    The backend will be available at: http://localhost:5000
 
 ## System Prompt
-- Edit `system_prompt.txt` to customize the AI assistant's persona and behavior.
+- The system prompt is tailored for NYU Abu Dhabi Dining Hall support.
+- Edit `system_prompt.txt` to further customize the assistant's persona or instructions.
 - Restart the backend server to apply changes.
 
+## Features
+- **Streaming responses:** The backend streams the AI's response to the frontend as it is generated.
+- **CORS enabled:** The backend is configured for local development with CORS support.
+
 ## Troubleshooting
-- **Error loading ASGI app:** Make sure you are in the `backend` directory when running `uvicorn main:app ...`.
-- **Ollama errors:** Ensure Ollama is running and the model is pulled.
-- **CORS errors:** See below.
+- **Ollama errors:** Ensure Ollama is running and the 'mistral' model is pulled.
+- **CORS errors:** CORS is enabled, but if you have issues, check your browser console and backend logs.
+- **Python package errors:** Make sure your virtual environment is activated and all dependencies are installed.
+- **Port conflicts:** Ensure no other service is running on port 5000.
 
-## (Optional) CORS for Local Development
-If you get CORS errors in the browser, you can add CORS support to FastAPI:
-1. Install CORS middleware:
-   ```bash
-   pip install fastapi[all]
-   ```
-2. Add this to `main.py`:
-   ```python
-   from fastapi.middleware.cors import CORSMiddleware
-
-   app.add_middleware(
-       CORSMiddleware,
-       allow_origins=["*"],
-       allow_credentials=True,
-       allow_methods=["*"],
-       allow_headers=["*"],
-   )
-   ``` 
+## Notes
+- The backend is designed to work with the Next.js frontend in the `frontend/` directory (which runs on port 3000).
+- For further customization, edit the system prompt in `system_prompt.txt`. 
