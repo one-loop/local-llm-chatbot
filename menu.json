@@ -1,0 +1,84 @@
+{
+    "Pizza": {
+        "Vegetarian": {
+            "Margherita": 31.0,
+            "Al Funghi": 35.0,
+            "Paneer Kathi": 39.0,
+            "Farm House": 41.0,
+            "Banana & Nutella": 35.0
+        },
+        "Poultry": {
+            "Chicken Alfredo": 35.0,
+            "Chicken Tikka": 35.0,
+            "Dynamite Chicken": 39.0
+        },
+        "Meat": {
+            "Pepperoni": 43.0,
+            "Beef Supreme": 47.0
+        },
+        "Seafood": {
+            "Seafood Marinara": 43.0,
+            "Smoked Salmon & Avocado": 49.0
+        },
+        "Add On": {
+            "Extra Topping": 6.0
+        }
+    },
+    "Crispy Fried": {
+        "Mozzarella Sticks": 23.0,
+        "Chicken Nuggets": 19.0,
+        "Chicken Tenders": 23.0,
+        "Chicken Wings": 23.0
+    },
+    "Acai Bowls": {
+        "Small": 39.0,
+        "Large": 49.0,
+        "OG Bowl": "Banana, Blueberry, Strawberry, Granola, Chia Seed",
+        "Tropical Bowl": "Passion Fruit, Mango, Kiwi, Granola, Chia Seed",
+        "Choco Bowl": "Strawberry, Banana, Hazelnut, Nutella",
+        "Berry Bowl": "Blueberry, Strawberry, Banana, Granola"
+    },
+    "House Grill": {
+        "Halloumi & Vegetable with Fig Jam": 31.0,
+        "Sesame Ginger & Soya Tofu": 29.0,
+        "Miso Glazed Aubergine": 25.0,
+        "Cajun Buttered Corn": 23.0,
+        "Chicken Breast": 25.0,
+        "Sous Vide Chicken": 27.0,
+        "Angry Chicken": 29.0,
+        "Roasted Half Chicken": 33.0,
+        "Beef Steak": 39.0,
+        "Salmon Steak": 45.0
+    },
+    "Sauces": [
+        "Lemon Garlic Butter",
+        "Lime Tahini",
+        "BBQ",
+        "Peri Peri",
+        "Sweet Chilli",
+        "Tartar",
+        "Herbed Beef Jus",
+        "Teriyaki"
+    ],
+    "Sides": {
+        "Steamed Vegetables": 9.0,
+        "Grilled Vegetables": 9.0,
+        "Breaded Onion Rings": 9.0,
+        "French Fries": 9.0,
+        "Potato Wedges": 9.0,
+        "Mashed Potatoes": 9.0,
+        "Sweet Potato Fries": 11.0
+    },
+    "Signature Sub": {
+        "Chicken Teriyaki": 27.0,
+        "Chicken Cordon Bleu": 28.0,
+        "California Chicken Cobb": 30.0,
+        "Cheese Steak Po'Boy": 31.0,
+        "BBQ Pulled Beef": 31.0
+    },
+    "Signature Wrap": {
+        "Black Bean Vegan Fiesta": 21.0,
+        "Crispy Vegan Falafel": 24.0,
+        "Asian Tofu": 29.0
+    }
+ }

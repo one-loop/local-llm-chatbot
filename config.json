@@ -1,0 +1,30 @@
+{
+    "mcpServers": {
+      "filesystem": {
+        "type": "local",
+        "command": ["npx", "@modelcontextprotocol/server-filesystem", "${env://WORK_DIR:-/tmp}"],
+        "environment": {
+          "DEBUG": "${env://DEBUG:-false}",
+          "LOG_LEVEL": "${env://LOG_LEVEL:-info}",
+          "API_TOKEN": "${env://FS_API_TOKEN}"
+        },
+        "allowedTools": ["read_file", "write_file"],
+        "excludedTools": ["delete_file"]
+      },
+      "github": {
+        "type": "local",
+        "command": ["docker", "run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN=${env://GITHUB_TOKEN}", "ghcr.io/github/github-mcp-server"],
+        "environment": {
+          "DEBUG": "${env://DEBUG:-false}"
+        }
+      },
+      "sqlite": {
+        "type": "local",
+        "command": ["uvx", "mcp-server-sqlite", "--db-path", "${env://DB_PATH:-/tmp/foo.db}"],
+        "environment": {
+          "SQLITE_DEBUG": "${env://DEBUG:-0}",
+          "DATABASE_URL": "${env://DATABASE_URL:-sqlite:///tmp/foo.db}"
+        }
+      }
+    }
+  }

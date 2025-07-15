@@ -19,8 +19,8 @@ This is a Next.js app that provides a chat UI for interacting with the local din
    ```
 
 3. **Start the development server:**
-   ```bash
-   npm run dev
+```bash
+npm run dev
    ```
    The app will be available at http://localhost:3000
 

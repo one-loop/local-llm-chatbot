@@ -1,5 +1,5 @@
 "use client"
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import styles from "./page.module.css";
 import ReactMarkdown from 'react-markdown';
 
@@ -9,10 +9,132 @@ interface Message {
   text: string;
 }
 
+// MascotEyes component: SVG mascot with eyes that follow the cursor
+function MascotEyes() {
+  // Eye center positions (relative to SVG viewBox)
+  const leftEyeOrigin = { x: 129.5, y: 118 };
+  const rightEyeOrigin = { x: 198.5, y: 118 };
+  // How far the eyes can move from their origin
+  const maxOffset = 7;
+  const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 });
+  const svgRef = useRef(null);
+
+  useEffect(() => {
+    function handleMouseMove(e) {
+      const svg = svgRef.current;
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      // SVG center (bubble center)
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      // Vector from center to mouse
+      const dx = e.clientX - centerX;
+      const dy = e.clientY - centerY;
+      // Normalize and scale to maxOffset
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const scale = dist > 0 ? Math.min(maxOffset, dist) / dist : 0;
+      setEyeOffset({ x: dx * scale, y: dy * scale });
+    }
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  return (
+    <svg
+      ref={svgRef}
+      width="80" height="80" viewBox="0 0 328 286"
+      style={{marginRight: 'auto', marginLeft: 'auto', marginBottom: 30, display: 'block'}}
+      fill="none" xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M261.768 238.869L212.482 225.691L248.59 189.583L261.768 238.869Z" fill="url(#paint0_linear_15_19)"/>
+      <path d="M265 138C265 193.228 220.228 238 165 238C109.772 238 65 193.228 65 138C65 82.7715 109.772 38 165 38C220.228 38 265 82.7715 265 138Z" fill="url(#paint1_linear_15_19)"/>
+      <path d="M0 118C0 109.163 7.16344 102 16 102H30C38.8366 102 46 109.163 46 118V163C46 171.837 38.8366 179 30 179H16C7.16344 179 0 171.837 0 163V118Z" fill="url(#paint2_linear_15_19)"/>
+      <path d="M282 119C282 110.163 289.163 103 298 103H312C320.837 103 328 110.163 328 119V164C328 172.837 320.837 180 312 180H298C289.163 180 282 172.837 282 164V119Z" fill="url(#paint3_linear_15_19)"/>
+      <path d="M164.5 0C240.439 0 302 61.5608 302 137.5C302 152.332 299.652 166.616 295.307 180H274.076C279.192 166.82 282 152.488 282 137.5C282 72.6065 229.393 20 164.5 20C99.6065 20 47 72.6065 47 137.5C47 202.393 99.6065 255 164.5 255C167.019 255 169.52 254.92 172 254.764V274.797C169.517 274.93 167.016 275 164.5 275C88.5608 275 27 213.439 27 137.5C27 61.5608 88.5608 0 164.5 0Z" fill="url(#paint4_linear_15_19)"/>
+      <path d="M182 268C182 277.941 173.941 286 164 286C154.059 286 146 277.941 146 268C146 258.059 154.059 250 164 250C173.941 250 182 258.059 182 268Z" fill="url(#paint5_linear_15_19)"/>
+      {/* Eyes (rectangles) */}
+      <rect x={121 + eyeOffset.x * 1.5} y={84 + eyeOffset.y * 1.5} width="17" height="68" rx="8.5" fill="#141414"/>
+      <rect x={190 + eyeOffset.x * 1.5} y={84 + eyeOffset.y * 1.5} width="17" height="68" rx="8.5" fill="#141414"/>
+      <defs>
+        <linearGradient id="paint0_linear_15_19" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="#999999"/>
+        </linearGradient>
+        <linearGradient id="paint1_linear_15_19" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="#999999"/>
+        </linearGradient>
+        <linearGradient id="paint2_linear_15_19" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="#999999"/>
+        </linearGradient>
+        <linearGradient id="paint3_linear_15_19" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="#999999"/>
+        </linearGradient>
+        <linearGradient id="paint4_linear_15_19" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="#999999"/>
+        </linearGradient>
+        <linearGradient id="paint5_linear_15_19" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="#999999"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+// Add a new MascotEyesSmall component for the 32x32 icon
+function MascotEyesSmall() {
+  // Use the same MascotEyes SVG but fixed at 32x32 and eyes centered (no movement)
+  return (
+    <svg width="32" height="32" viewBox="0 0 328 286" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M261.768 238.869L212.482 225.691L248.59 189.583L261.768 238.869Z" fill="url(#paint0_linear_15_19)"/>
+      <path d="M265 138C265 193.228 220.228 238 165 238C109.772 238 65 193.228 65 138C65 82.7715 109.772 38 165 38C220.228 38 265 82.7715 265 138Z" fill="url(#paint1_linear_15_19)"/>
+      <path d="M0 118C0 109.163 7.16344 102 16 102H30C38.8366 102 46 109.163 46 118V163C46 171.837 38.8366 179 30 179H16C7.16344 179 0 171.837 0 163V118Z" fill="url(#paint2_linear_15_19)"/>
+      <path d="M282 119C282 110.163 289.163 103 298 103H312C320.837 103 328 110.163 328 119V164C328 172.837 320.837 180 312 180H298C289.163 180 282 172.837 282 164V119Z" fill="url(#paint3_linear_15_19)"/>
+      <path d="M164.5 0C240.439 0 302 61.5608 302 137.5C302 152.332 299.652 166.616 295.307 180H274.076C279.192 166.82 282 152.488 282 137.5C282 72.6065 229.393 20 164.5 20C99.6065 20 47 72.6065 47 137.5C47 202.393 99.6065 255 164.5 255C167.019 255 169.52 254.92 172 254.764V274.797C169.517 274.93 167.016 275 164.5 275C88.5608 275 27 213.439 27 137.5C27 61.5608 88.5608 0 164.5 0Z" fill="url(#paint4_linear_15_19)"/>
+      <path d="M182 268C182 277.941 173.941 286 164 286C154.059 286 146 277.941 146 268C146 258.059 154.059 250 164 250C173.941 250 182 258.059 182 268Z" fill="url(#paint5_linear_15_19)"/>
+      {/* Eyes (rectangles) centered */}
+      <rect x={121} y={84} width="17" height="68" rx="8.5" fill="#141414"/>
+      <rect x={190} y={84} width="17" height="68" rx="8.5" fill="#141414"/>
+      <defs>
+        <linearGradient id="paint0_linear_15_19" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="#999999"/>
+        </linearGradient>
+        <linearGradient id="paint1_linear_15_19" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="#999999"/>
+        </linearGradient>
+        <linearGradient id="paint2_linear_15_19" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="#999999"/>
+        </linearGradient>
+        <linearGradient id="paint3_linear_15_19" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="#999999"/>
+        </linearGradient>
+        <linearGradient id="paint4_linear_15_19" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="#999999"/>
+        </linearGradient>
+        <linearGradient id="paint5_linear_15_19" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
+          <stop stopColor="white"/>
+          <stop offset="1" stopColor="#999999"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [centered, setCentered] = useState(true); // Fix: add this line
+  const [showTyping, setShowTyping] = useState(false); // Typing indicator
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -21,72 +143,111 @@ export default function Home() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const sendMessage = async () => {
+  const sendMessage = async (overrideInput?: string) => {
     if (loading) {
-      // If loading, terminate the response
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
       return;
     }
-    if (!input.trim()) return;
-    const userMessage: Message = { sender: "user", text: input };
+    const messageToSend = overrideInput !== undefined ? overrideInput : input;
+    if (!messageToSend.trim()) return;
+    setCentered(false); // Switch to chat layout after first message
+    const userMessage: Message = { sender: "user", text: messageToSend };
     setMessages((msgs) => [...msgs, userMessage]);
     setInput("");
     setLoading(true);
-    // Reset textarea height after sending
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+    setShowTyping(true); // Show typing indicator
+    if (textareaRef.current) textareaRef.current.style.height = '55px';
     scrollToBottom();
     try {
+      console.log('[Frontend] Sending message to backend:', messageToSend);
       const controller = new AbortController();
       abortControllerRef.current = controller;
       const res = await fetch("http://localhost:5000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage.text }),
+        body: JSON.stringify({
+          message: userMessage.text,
+          history: messages, // send full message history
+        }),
         signal: controller.signal,
       });
       if (!res.ok || !res.body) throw new Error("Failed to get response");
       let botText = "";
+      let statusMessageActive = false;
       setMessages((msgs) => [...msgs, { sender: "bot", text: "" }]);
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
+      let firstChunk = true;
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
         if (value) {
+          if (firstChunk) {
+            setShowTyping(false); // Hide typing indicator on first chunk
+            firstChunk = false;
+          }
           const chunk = decoder.decode(value);
+          // If the chunk is a status message, show it in the current bot bubble
+          if ((chunk.startsWith('[Fetching') || chunk.startsWith('[Looking up') || chunk.startsWith('[Checking')) && !statusMessageActive && botText === "") {
+            statusMessageActive = true;
+            setMessages((msgs) => {
+              const updated = [...msgs];
+              // Always update the last bot message
+              updated[updated.length - 1] = { sender: "bot", text: chunk.trim() };
+              return updated;
+            });
+            continue;
+          }
+          // If the LLM response starts, replace the status message in the same bubble
+          if (statusMessageActive) {
+            botText = "";
+            statusMessageActive = false;
+          }
           botText += chunk;
           setMessages((msgs) => {
             const updated = [...msgs];
+            // Always update the last bot message
             updated[updated.length - 1] = { sender: "bot", text: botText };
             return updated;
           });
           scrollToBottom();
+          // console.log('[Frontend] Received chunk:', chunk);
+          if (chunk.includes('Menu item found:')) {
+            console.log('[Frontend] Backend: Queried MCP server and found the item.');
+          }
+          if (chunk.includes('is not on the menu')) {
+            console.log('[Frontend] Backend: Queried MCP server and item was not found.');
+          }
         }
       }
       setLoading(false);
       abortControllerRef.current = null;
       scrollToBottom();
+      console.log('[Frontend] Streaming response finished.');
+      setShowTyping(false); // Hide typing indicator if not already hidden
     } catch (err) {
       if ((err as any).name === 'AbortError') {
         setMessages((msgs) => {
-          // Remove the last (incomplete) bot message
           if (msgs[msgs.length - 1]?.sender === 'bot') {
             return msgs.slice(0, -1);
           }
           return msgs;
         });
+        console.log('[Frontend] Streaming response aborted by user.');
       } else {
         setMessages((msgs) => [
           ...msgs,
           { sender: "bot", text: "Sorry, there was an error connecting to the AI." },
         ]);
+        console.error('[Frontend] Error connecting to backend:', err);
       }
       setLoading(false);
       abortControllerRef.current = null;
       scrollToBottom();
+      setShowTyping(false); // Hide typing indicator on error
     }
   };
 
@@ -100,8 +261,10 @@ export default function Home() {
   const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = '32px'; // reset to min height
-      textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+      textarea.style.height = '55px'; // reset to min height
+      textarea.style.minHeight = '55px'; // reset to min height
+      let scrollHeight = Math.max(55, textarea.scrollHeight)
+      textarea.style.height = Math.min(scrollHeight, 200) + 'px';
     }
     setInput(e.currentTarget.value);
   };
@@ -121,6 +284,12 @@ export default function Home() {
     if (hour < 12) return "Good Morning";
     if (hour < 18) return "Good Afternoon";
     return "Good Evening";
+  };
+
+  // Helper for suggestion click
+  const handleSuggestionClick = (text: string) => {
+    setInput(text);
+    sendMessage(text);
   };
 
   // Ensure the background color fills the whole page, even when scrolled
@@ -166,72 +335,54 @@ export default function Home() {
           justifyContent: 'center',
         }}>
           {messages.length === 0 && (
-            <div style={{color: '#fff', textAlign: 'center', fontSize: '1.5rem'}}>
-              {/* <img src="logo.png" style={{width: 100, height: 100, display: 'block', marginRight: 'auto', marginLeft: 'auto', marginBottom: 30, userSelect: 'none', pointerEvents: 'none'}}></img> */}
-              <svg width="80" height="80" viewBox="0 0 328 286" style={{marginRight: 'auto', marginLeft: 'auto', marginBottom: 30, display: 'block'}} fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M261.768 238.869L212.482 225.691L248.59 189.583L261.768 238.869Z" fill="url(#paint0_linear_4_73)"/>
-                <path d="M265 138C265 193.228 220.228 238 165 238C109.772 238 65 193.228 65 138C65 82.7715 109.772 38 165 38C220.228 38 265 82.7715 265 138Z" fill="url(#paint1_linear_4_73)"/>
-                <path d="M0 118C0 109.163 7.16344 102 16 102H30C38.8366 102 46 109.163 46 118V163C46 171.837 38.8366 179 30 179H16C7.16344 179 0 171.837 0 163V118Z" fill="url(#paint2_linear_4_73)"/>
-                <path d="M282 119C282 110.163 289.163 103 298 103H312C320.837 103 328 110.163 328 119V164C328 172.837 320.837 180 312 180H298C289.163 180 282 172.837 282 164V119Z" fill="url(#paint3_linear_4_73)"/>
-                <path d="M164.5 0C240.439 0 302 61.5608 302 137.5C302 152.332 299.652 166.616 295.307 180H274.076C279.192 166.82 282 152.488 282 137.5C282 72.6065 229.393 20 164.5 20C99.6065 20 47 72.6065 47 137.5C47 202.393 99.6065 255 164.5 255C167.019 255 169.52 254.92 172 254.764V274.797C169.517 274.93 167.016 275 164.5 275C88.5608 275 27 213.439 27 137.5C27 61.5608 88.5608 0 164.5 0Z" fill="url(#paint4_linear_4_73)"/>
-                <path d="M182 268C182 277.941 173.941 286 164 286C154.059 286 146 277.941 146 268C146 258.059 154.059 250 164 250C173.941 250 182 258.059 182 268Z" fill="url(#paint5_linear_4_73)"/>
-                <defs>
-                <linearGradient id="paint0_linear_4_73" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
-                <stop stopColor="white"/>
-                <stop offset="1" stopColor="#999999"/>
-                </linearGradient>
-                <linearGradient id="paint1_linear_4_73" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
-                <stop stopColor="white"/>
-                <stop offset="1" stopColor="#999999"/>
-                </linearGradient>
-                <linearGradient id="paint2_linear_4_73" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
-                <stop stopColor="white"/>
-                <stop offset="1" stopColor="#999999"/>
-                </linearGradient>
-                <linearGradient id="paint3_linear_4_73" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
-                <stop stopColor="white"/>
-                <stop offset="1" stopColor="#999999"/>
-                </linearGradient>
-                <linearGradient id="paint4_linear_4_73" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
-                <stop stopColor="white"/>
-                <stop offset="1" stopColor="#999999"/>
-                </linearGradient>
-                <linearGradient id="paint5_linear_4_73" x1="164" y1="0" x2="164" y2="286" gradientUnits="userSpaceOnUse">
-                <stop stopColor="white"/>
-                <stop offset="1" stopColor="#999999"/>
-                </linearGradient>
-                </defs>
-            </svg>
-              
-              <div style={{ fontSize: '1.2rem', marginBottom: 8, color: '#bbb' }}>{getGreeting()}</div>
-              How may I help you?
+            <div style={{color: '#fff', textAlign: 'center', fontSize: '1.5rem', position: 'relative'}}>
+              {/* Purple radial gradient background */}
               <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                gap: 12,
-                marginTop: 24,
-                flexWrap: 'wrap',
-              }}>
-                {suggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setInput(s.text)}
-                    style={{
-                      background: '#171717',
-                      color: s.color,
-                      border: '1px solid #2b2b2b',
-                      borderRadius: 20,
-                      padding: '8px 18px',
-                      fontSize: 15,
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      boxShadow: '0 1px 4px #0002',
-                      transition: 'background 0.2s',
-                    }}
-                  >
-                    {s.text}
-                  </button>
-                ))}
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '100%',
+                height: '100%',
+                zIndex: 0,
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(137,0,255,0.18) 0%, rgba(137,0,255,0.10) 20%, rgba(137,0,255,0.01) 80%)',
+                filter: 'blur(40px)',
+                pointerEvents: 'none',
+              }} />
+              {/* Mascot and greeting content (zIndex: 1) */}
+              <div style={{position: 'relative', zIndex: 1}}>
+                <MascotEyes />
+                <div style={{ fontSize: '1.2rem', marginBottom: 8, color: '#bbb' }}>{getGreeting()}</div>
+                How may I help you?
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: 12,
+                  marginTop: 24,
+                  flexWrap: 'wrap',
+                }}>
+                  {suggestions.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSuggestionClick(s.text)}
+                      style={{
+                        background: '#171717',
+                        color: s.color,
+                        border: '1px solid #2b2b2b',
+                        borderRadius: 20,
+                        padding: '8px 18px',
+                        fontSize: 15,
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        boxShadow: '0 1px 4px #0002',
+                        transition: 'background 0.2s',
+                      }}
+                    >
+                      {s.text}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -239,7 +390,26 @@ export default function Home() {
             <div key={idx} style={{
               display: 'flex',
               justifyContent: msg.sender === "user" ? "flex-end" : "flex-start",
+              position: 'relative',
+              alignItems: 'flex-start',
             }}>
+              {/* Bot avatar for bot messages */}
+              {msg.sender === 'bot' && (
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  minWidth: 32,
+                  minHeight: 32,
+                  marginRight: 12,
+                  marginTop: 16,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                }}>
+                  <MascotEyesSmall />
+                </div>
+              )}
               <span style={{
                 background: msg.sender === "user" ? "#303030" : "",
                 color: '#f3f3f3',
@@ -251,16 +421,85 @@ export default function Home() {
                 boxShadow: msg.sender === "user" ? "0 1px 4px #0002" : undefined,
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word',
+                display: 'inline-block',
               }}>
                 {/* Render bot messages as markdown, user messages as plain text */}
                 {msg.sender === 'bot' ? (
-                  <ReactMarkdown>{msg.text}</ReactMarkdown>
+                  <div>
+                    {/* Special style for status messages */}
+                    {msg.text.startsWith('[Fetching') || msg.text.startsWith('[Looking up') || msg.text.startsWith('[Checking') ? (
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        fontWeight: 400,
+                        fontSize: 16,
+                        background: 'linear-gradient(90deg, #eee 0%, #333 50%, #eee 100%)',
+                        backgroundSize: '200% 100%',
+                        backgroundPosition: '0% 0%',
+                        color: 'transparent',
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        animation: 'shimmerGradient 2s linear infinite',
+                        letterSpacing: 0.5,
+                      }}>
+                        {/* Spinner */}
+                        <span style={{
+                          display: 'inline-block',
+                          width: 16,
+                          height: 16,
+                          marginRight: 2,
+                          marginLeft: 6,
+                          border: '2px solid #bbb',
+                          borderTop: '2px solid #333',
+                          borderRadius: '50%',
+                          animation: 'spinLoader 0.8s linear infinite',
+                        }} />
+                        {msg.text}
+                        <style>{`
+                          @keyframes shimmerGradient {
+                            0% { background-position: 200% 0%; }
+                            100% { background-position: 0% 0%; }
+                          }
+                          @keyframes spinLoader {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                          }
+                        `}</style>
+                      </span>
+                    ) : (
+                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    )}
+                  </div>
                 ) : (
                   msg.text
                 )}
               </span>
             </div>
           ))}
+          {/* Typing indicator */}
+          {showTyping && (
+            <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', height: 16, marginLeft: 8, position: 'relative' }}>
+              <span style={{
+                display: 'inline-block',
+                width: 16,
+                height: 16,
+                borderRadius: '50%',
+                background: '#ffffff',
+                animation: 'pulse 1.5s infinite',
+                position: 'absolute',
+                top: '-27px',
+                left: '20px',
+              }} />
+              <style>{`
+                @keyframes pulse {
+                  0% { transform: scale(0.8); opacity: 1; }
+                  50% { transform: scale(1); opacity: 1; }
+                  100% { transform: scale(0.8); opacity: 1; }
+                }
+              `}</style>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
         {/* Input box and send button */}
@@ -315,7 +554,34 @@ export default function Home() {
               }}
             />
             <button
-              onClick={sendMessage}
+              onClick={() => sendMessage()}
+              disabled={!input.trim() && !loading}
+              style={{
+                position: 'absolute',
+                right: 54,
+                bottom: 12,
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                background: 'transparent',
+                color: '#fff',
+                cursor: 'pointer',
+                border: 'none',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 22,
+                boxShadow: '0 2px 8px #0002',
+                transition: 'opacity 0.2s',
+                zIndex: 2,
+              }}
+              aria-label={loading ? "Stop generating" : "Speak"}
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-label="" className="icon" font-size="inherit"><path d="M15.7806 10.1963C16.1326 10.3011 16.3336 10.6714 16.2288 11.0234L16.1487 11.2725C15.3429 13.6262 13.2236 15.3697 10.6644 15.6299L10.6653 16.835H12.0833L12.2171 16.8486C12.5202 16.9106 12.7484 17.1786 12.7484 17.5C12.7484 17.8214 12.5202 18.0894 12.2171 18.1514L12.0833 18.165H7.91632C7.5492 18.1649 7.25128 17.8672 7.25128 17.5C7.25128 17.1328 7.5492 16.8351 7.91632 16.835H9.33527L9.33429 15.6299C6.775 15.3697 4.6558 13.6262 3.84992 11.2725L3.76984 11.0234L3.74445 10.8906C3.71751 10.5825 3.91011 10.2879 4.21808 10.1963C4.52615 10.1047 4.84769 10.2466 4.99347 10.5195L5.04523 10.6436L5.10871 10.8418C5.8047 12.8745 7.73211 14.335 9.99933 14.335C12.3396 14.3349 14.3179 12.7789 14.9534 10.6436L15.0052 10.5195C15.151 10.2466 15.4725 10.1046 15.7806 10.1963ZM12.2513 5.41699C12.2513 4.17354 11.2437 3.16521 10.0003 3.16504C8.75675 3.16504 7.74835 4.17343 7.74835 5.41699V9.16699C7.74853 10.4104 8.75685 11.418 10.0003 11.418C11.2436 11.4178 12.2511 10.4103 12.2513 9.16699V5.41699ZM13.5814 9.16699C13.5812 11.1448 11.9781 12.7479 10.0003 12.748C8.02232 12.748 6.41845 11.1449 6.41828 9.16699V5.41699C6.41828 3.43889 8.02221 1.83496 10.0003 1.83496C11.9783 1.83514 13.5814 3.439 13.5814 5.41699V9.16699Z"></path></svg>
+            </button>
+            <button
+              onClick={() => sendMessage()}
               disabled={!input.trim() && !loading}
               style={{
                 position: 'absolute',
@@ -329,7 +595,7 @@ export default function Home() {
                 border: 'none',
                 fontWeight: 600,
                 cursor: (!input.trim() && !loading) ? 'not-allowed' : 'pointer',
-                opacity: (!input.trim() && !loading) ? 0.6 : 1,
+                // opacity: (!input.trim() && !loading) ? 0.6 : 1,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
