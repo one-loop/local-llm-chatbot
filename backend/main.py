@@ -90,6 +90,8 @@ def extract_menu_item(user_message: str):
         r'how much are the ([\w\s]+)',
         r'how much is ([\w\s]+)',
         r'can I get ([\w\s]+)',
+        r'order the ([\w\s]+)',
+        r'order a ([\w\s]+)',
         r'order ([\w\s]+)',
     ]
     for pat in patterns:
