@@ -16,6 +16,7 @@ This directory contains the Menu Control Point (MCP) server, which provides menu
 
 2. **cd to mcp directory and install dependencies:**
    ```sh
+   cd mcp
    pip install -r requirements.txt
    ```
 
