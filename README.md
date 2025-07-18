@@ -4,8 +4,8 @@ A simple AI chatbot application that runs locally using Ollama (Mistral Small 3.
 
 ## Features
 - Local backend using FastAPI (Python)
-- Frontend chat UI (HTML/JS/CSS)
-- Uses Ollama with Mistral Small 3.1 model
+- Frontend chat UI (Nextjs)
+- Uses Ollama with Mistral 3 7b model
 - Customizable system prompt for AI personality
 - Mac compatible
 
