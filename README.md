@@ -11,12 +11,13 @@ A simple AI chatbot application that runs locally using Ollama (Mistral Small 3.
 
 ## Setup
 1. **Install Ollama**: https://ollama.com/download
-2. **Pull the Mistral model**: `ollama pull mistral:3.1`
-3. **Backend**: See `backend/README.md` for Python setup
-4. **Frontend**: Open `frontend/index.html` in your browser
+2. **Pull the Mistral model**: `ollama pull mistral`
+3. **Backend**: See `backend/README.md` for Python setup which will run on localhost:5000
+4. **Frontend**: See `frontend/README.md` for setting up front end and open localhost:3000 in browser
+5. **MCP**: Open `mcp/README.md` for setting up MCP server which will run on localhost:9000
 
 ## Development
-- All code is in `backend/` and `frontend/` folders
+- All code is in `backend/`, `frontend/`, and `mcp/` folders
 - System prompt is in `backend/system_prompt.txt`
 
 ## License
