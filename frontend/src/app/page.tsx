@@ -17,10 +17,10 @@ function MascotEyes() {
   // How far the eyes can move from their origin
   const maxOffset = 7;
   const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 });
-  const svgRef = useRef(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
-    function handleMouseMove(e) {
+    function handleMouseMove(e: MouseEvent) {
       const svg = svgRef.current;
       if (!svg) return;
       const rect = svg.getBoundingClientRect();
@@ -135,9 +135,16 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [centered, setCentered] = useState(true); // Fix: add this line
   const [showTyping, setShowTyping] = useState(false); // Typing indicator
+  const [stoppedMessages, setStoppedMessages] = useState<Set<number>>(new Set()); // Track stopped messages
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+
+  useEffect(() => {
+    // Warm up the backend model on page load
+    fetch('http://localhost:5000/warmup').catch(() => {});
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -148,6 +155,9 @@ export default function Home() {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+      setLoading(false);
+      abortControllerRef.current = null;
+      setShowTyping(false);
       return;
     }
     const messageToSend = overrideInput !== undefined ? overrideInput : input;
@@ -170,6 +180,7 @@ export default function Home() {
         body: JSON.stringify({
           message: userMessage.text,
           history: messages, // send full message history
+          session_id: sessionId,
         }),
         signal: controller.signal,
       });
@@ -230,13 +241,10 @@ export default function Home() {
       setShowTyping(false); // Hide typing indicator if not already hidden
     } catch (err) {
       if ((err as any).name === 'AbortError') {
-        setMessages((msgs) => {
-          if (msgs[msgs.length - 1]?.sender === 'bot') {
-            return msgs.slice(0, -1);
-          }
-          return msgs;
-        });
+        // Don't remove the bot message when aborted - keep the partial response
         console.log('[Frontend] Streaming response aborted by user.');
+        // Mark the last bot message as stopped
+        setStoppedMessages(prev => new Set([...prev, messages.length]));
       } else {
         setMessages((msgs) => [
           ...msgs,
@@ -252,7 +260,7 @@ export default function Home() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !loading) {
+    if (e.key === "Enter" && !e.shiftKey) {
       sendMessage();
     }
   };
@@ -273,9 +281,9 @@ export default function Home() {
   const suggestions = [
     { text: "What's on the menu", color: "#fdcb6e" },
     { text: "What's Open", color: "#7f6ec7" },
-    { text: "Order a pizza", color: "#3baecc" },
+    { text: "Order a pepperoni pizza", color: "#3baecc" },
     { text: "What's my meal plan balance", color: "#c66483" },
-    { text: "How do I order online", color: "#43b47b" },
+    { text: "How do I make online orders", color: "#43b47b" },
   ];
 
   // Helper to get greeting based on time of day
@@ -393,6 +401,23 @@ export default function Home() {
               position: 'relative',
               alignItems: 'flex-start',
             }}>
+              {/* Stopped indicator for bot messages */}
+              {msg.sender === 'bot' && stoppedMessages.has(idx) && (
+                <div style={{
+                  position: 'absolute',
+                  top: -8,
+                  right: 8,
+                  background: '#666',
+                  color: '#fff',
+                  fontSize: '10px',
+                  padding: '2px 6px',
+                  borderRadius: '8px',
+                  opacity: 0.7,
+                  zIndex: 1,
+                }}>
+                  stopped
+                </div>
+              )}
               {/* Bot avatar for bot messages */}
               {msg.sender === 'bot' && (
                 <div style={{
@@ -525,13 +550,13 @@ export default function Home() {
               onChange={handleInput}
               onInput={handleInput}
               onKeyDown={e => {
-                if (e.key === "Enter" && !e.shiftKey && !loading) {
+                if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   sendMessage();
                 }
               }}
               placeholder="Ask anything..."
-              disabled={loading}
+              // disabled={loading}
               rows={1}
               style={{
                 flex: 1,
@@ -604,13 +629,13 @@ export default function Home() {
                 transition: 'opacity 0.2s',
                 zIndex: 2,
               }}
-              aria-label={loading ? "Stop generating" : "Send"}
+              aria-label={loading && !input.trim() ? "Stop generating" : "Send"}
             >
-              {loading ? (
-                // Square SVG for stop
+              {loading && !input.trim() ? (
+                // Square SVG for stop - only show when loading AND no input text
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="black" xmlns="http://www.w3.org/2000/svg" style={{display: 'block'}}><path d="M4.5 5.75C4.5 5.05964 5.05964 4.5 5.75 4.5H14.25C14.9404 4.5 15.5 5.05964 15.5 5.75V14.25C15.5 14.9404 14.9404 15.5 14.25 15.5H5.75C5.05964 15.5 4.5 14.9404 4.5 14.25V5.75Z"></path></svg>
               ) : (
-                // Arrow SVG for send
+                // Arrow SVG for send - show when not loading OR when there's input text
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="black" xmlns="http://www.w3.org/2000/svg" style={{display: 'block'}}><path d="M8.99992 16V6.41407L5.70696 9.70704C5.31643 10.0976 4.68342 10.0976 4.29289 9.70704C3.90237 9.31652 3.90237 8.6835 4.29289 8.29298L9.29289 3.29298L9.36907 3.22462C9.76184 2.90427 10.3408 2.92686 10.707 3.29298L15.707 8.29298L15.7753 8.36915C16.0957 8.76192 16.0731 9.34092 15.707 9.70704C15.3408 10.0732 14.7618 10.0958 14.3691 9.7754L14.2929 9.70704L10.9999 6.41407V16C10.9999 16.5523 10.5522 17 9.99992 17C9.44764 17 8.99992 16.5523 8.99992 16Z"></path></svg>
               )}
             </button>
