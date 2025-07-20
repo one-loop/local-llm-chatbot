@@ -14,8 +14,9 @@ This directory contains the Menu Control Point (MCP) server, which provides menu
    source venv/bin/activate
    ```
 
-2. **Install dependencies:**
+2. **cd to mcp directory and install dependencies:**
    ```sh
+   cd mcp
    pip install -r requirements.txt
    ```
 
