@@ -22,10 +22,6 @@ This directory contains the Menu Control Point (MCP) server, which provides menu
 
 3. **Run the MCP server:**
    ```sh
-   python main.py
-   ```
-   or (recommended for development):
-   ```sh
    uvicorn main:app --reload --port 9000
    ```
 
