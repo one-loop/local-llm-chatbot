@@ -1,0 +1,14 @@
+Input: [AVAILABLE_TOOLS] [{"type": "function", "function": {"name": "get_menu", "description": "Get the menu for the current day"}}][/AVAILABLE_TOOLS][INST] Whats the menu for today? [/INST]
+
+Output:   [{"name": "get_menu"}]
+
+Input: [AVAILABLE_TOOLS] [{"type": "function", "function": {"name": "get_current_we
+... ather", "description": "Get the current weather", "parameters": {"type": "ob
+... ject", "properties": {"location": {"type": "string", "description": "The cit
+... y and state, e.g. San Francisco, CA"}, "format": {"type": "string", "enum": 
+... ["celsius", "fahrenheit"], "description": "The temperature unit to use. Infe
+... r this from the users location."}}, "required": ["location", "format"]}}}][/
+... AVAILABLE_TOOLS][INST] What is the weather like today in San Francisco [/INS
+... T]
+
+Output: [{"name": "get_current_weather", "arguments": {"location": "San Francisco, CA"}}]

@@ -1,0 +1,34 @@
+
+=== ORDER - 2025-07-21 11:44:36 ===
+Item: Pepperoni
+Price: AED 43.0
+Item: Chicken Nuggets
+Price: AED 19.0
+Total: AED 62.0
+NYU ID: N12345678
+Building: A1A
+Phone: 123456789
+Special Request: None
+==================================================
+
+=== ORDER - 2025-07-21 11:48:00 ===
+Item: Pepperoni
+Price: AED 43.0
+Item: Mashed Potatoes
+Price: AED 9.0
+Total: AED 52.0
+NYU ID: N12345678
+Building: A1B
+Phone: 123456789
+Special Request: None
+==================================================
+
+=== ORDER - 2025-07-21 11:48:50 ===
+Item: Farm House
+Price: AED 41.0
+Total: AED 41.0
+NYU ID: N12345678
+Building: A6A
+Phone: 123456789
+Special Request: None
+==================================================

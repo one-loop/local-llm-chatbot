@@ -78,7 +78,7 @@ python3 test_ordering.py
 ```
 
 ## Usage Example
-1. User: "Is Margherita available?"
+1. User: "Is Margherita pizza available?"
 2. Bot: "Yes! Margherita is available for AED 31.00. Would you like to place an order?"
 3. User: "Yes"
 4. Bot: "Please provide the 8 digits of your NYU ID..."
