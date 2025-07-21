@@ -175,10 +175,12 @@ def extract_menu_item(user_message: str):
                 elif item_lower == category:
                     return extracted_item
             return extracted_item
-    # If no pattern matched, but the message is a single word or phrase, return it as the item name
+    # If no pattern matched, only treat as item if it matches a real menu item
     cleaned = user_message.strip()
-    if cleaned and len(cleaned.split()) <= 5:  # Allow up to 5 words for an item name
-        return cleaned
+    if cleaned and len(cleaned.split()) <= 5:
+        item = get_menu_item_from_file(cleaned)
+        if item:
+            return cleaned
     return None
 
 # Helper to load menu from menu.json
