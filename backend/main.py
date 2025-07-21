@@ -8,7 +8,7 @@ import json
 import re
 import datetime
 from typing import Dict, Optional, List
-
+from menu_embeddings import rag_extract_menu_item
 # Define the path to the system prompt file
 SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), 'system_prompt.txt')
 
@@ -135,48 +135,48 @@ def get_open_restaurants():
         return None
 
 # Enhanced item extraction that removes category words like "pizza", "wings", etc.
-def extract_menu_item(user_message: str):
-    # Common category words to remove from the end of item names
-    category_words = [
-        'pizza', '6 pcs', '8 pcs', '(6 pcs)', '(8 pcs)'
-    ]
+# def extract_menu_item(user_message: str):
+#     # Common category words to remove from the end of item names
+#     category_words = [
+#         'pizza', '6 pcs', '8 pcs', '(6 pcs)', '(8 pcs)'
+#     ]
     
-    patterns = [
-        r'is ([\w\s]+) available',
-        r'do you have ([\w\s]+)',
-        r'price of ([\w\s]+)',
-        r'how much is the ([\w\s]+)',
-        r'how much are the ([\w\s]+)',
-        r'how much is ([\w\s]+)',
-        r'can I get ([\w\s]+)',
-        r'order the ([\w\s]+)',
-        r'order a ([\w\s]+)',
-        r'order ([\w\s]+)',
-        r'get ([\w\s]+)',
-        r'want ([\w\s]+)',
-        r'like ([\w\s]+)',
-    ]
+#     patterns = [
+#         r'is ([\w\s]+) available',
+#         r'do you have ([\w\s]+)',
+#         r'price of ([\w\s]+)',
+#         r'how much is the ([\w\s]+)',
+#         r'how much are the ([\w\s]+)',
+#         r'how much is ([\w\s]+)',
+#         r'can I get ([\w\s]+)',
+#         r'order the ([\w\s]+)',
+#         r'order a ([\w\s]+)',
+#         r'order ([\w\s]+)',
+#         r'get ([\w\s]+)',
+#         r'want ([\w\s]+)',
+#         r'like ([\w\s]+)',
+#     ]
     
-    for pat in patterns:
-        print(pat)
-        m = re.search(pat, user_message, re.IGNORECASE)
-        if m:
-            extracted_item = m.group(1).strip()
+#     for pat in patterns:
+#         print(pat)
+#         m = re.search(pat, user_message, re.IGNORECASE)
+#         if m:
+#             extracted_item = m.group(1).strip()
             
-            # Remove category words from the end of the item name
-            item_lower = extracted_item.lower()
-            for category in category_words:
-                # Check if the item ends with the category word
-                if item_lower.endswith(f' {category}'):
-                    # Remove the category word and any leading/trailing spaces
-                    extracted_item = extracted_item[:-len(category)].strip()
-                    break
-                elif item_lower == category:
-                    # If the entire item is just a category word, return it as is
-                    return extracted_item
+#             # Remove category words from the end of the item name
+#             item_lower = extracted_item.lower()
+#             for category in category_words:
+#                 # Check if the item ends with the category word
+#                 if item_lower.endswith(f' {category}'):
+#                     # Remove the category word and any leading/trailing spaces
+#                     extracted_item = extracted_item[:-len(category)].strip()
+#                     break
+#                 elif item_lower == category:
+#                     # If the entire item is just a category word, return it as is
+#                     return extracted_item
             
-            return extracted_item
-    return None
+#             return extracted_item
+#     return None
 
 def process_order_flow(user_message: str, session_id: str) -> tuple[str, bool]:
     """
@@ -188,8 +188,10 @@ def process_order_flow(user_message: str, session_id: str) -> tuple[str, bool]:
     
     # Check if user wants to start ordering
     if order_state['state'] == 'idle':
-        item_name = extract_menu_item(user_message)
-        if item_name:
+        #item_name = extract_menu_item(user_message)
+        item_data = rag_extract_menu_item(user_message)
+        if item_data:
+        #if item_name:
             # This will be handled in the main chat flow
             return "", True
     
@@ -297,10 +299,17 @@ async def chat_endpoint(request: Request):
         if re.search(r"what'?s on the menu|show me the menu|today'?s menu|full menu", user_message, re.IGNORECASE):
             yield "[Fetching menu data...]\n"
         
-        # Check if the user is asking about a menu item
-        item_name = extract_menu_item(user_message)
-        if item_name:
+        # RAG-based item extraction
+        item_data = rag_extract_menu_item(user_message)
+        item = None
+        item_name = None
+        item_price = None
+
+        if item_data:
+            item_name = item_data["name"]
+            item_price = item_data["price"]
             yield f"[Looking up '{item_name}' in the menu...]\n"
+            item = await fetch_menu_item_from_mcp(item_name)
 
         # Now fetch menu data as before
         menu_context = ""
@@ -316,7 +325,6 @@ async def chat_endpoint(request: Request):
         menu_item_context = ""
         order_context = ""
         if item_name:
-            item = await fetch_menu_item_from_mcp(item_name)
             if item:
                 menu_item_context = f"Menu item found: {item['name']} (Price: AED {item['price']})"
                 
@@ -386,6 +394,7 @@ async def chat_endpoint(request: Request):
                 yield "[Error streaming from Ollama]"
 
     return StreamingResponse(ollama_stream(), media_type="text/plain")
+
 
 @app.get('/warmup')
 def warmup():
