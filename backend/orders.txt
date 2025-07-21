@@ -32,3 +32,55 @@ Building: A6A
 Phone: 123456789
 Special Request: None
 ==================================================
+
+=== ORDER - 2025-07-21 12:42:08 ===
+Item: Pepperoni
+Price: AED 43.0
+Item: Chicken Nuggets
+Price: AED 19.0
+Total: AED 62.0
+NYU ID: N12345678
+Building: A1C
+Phone: 123456789
+Special Request: None
+==================================================
+
+=== ORDER - 2025-07-21 13:34:29 ===
+Item: Pepperoni
+Price: AED 43.0
+Total: AED 43.0
+NYU ID: N12345678
+Building: A1A
+Phone: 123456789
+Special Request: None
+==================================================
+
+=== ORDER - 2025-07-21 14:58:57 ===
+ITEMS:
+- 1x Pepperoni: AED 43.0 each = AED 43.0
+TOTAL COST: AED 43.00
+NYU ID: N12345678
+Building: A1A
+Phone: 123456789
+Special Request: None
+==================================================
+
+=== ORDER - 2025-07-21 15:08:03 ===
+ITEMS:
+- 1x Pepperoni: AED 43.0 each = AED 43.0
+TOTAL COST: AED 43.00
+NYU ID: N12345678
+Building: A1A
+Phone: 123456789
+Special Request: None
+==================================================
+
+=== ORDER - 2025-07-21 15:08:53 ===
+ITEMS:
+- 2x Margherita: AED 31.0 each = AED 62.0
+TOTAL COST: AED 62.00
+NYU ID: N12345678
+Building: A1A
+Phone: 123456789
+Special Request: None
+==================================================

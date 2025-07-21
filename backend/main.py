@@ -8,9 +8,7 @@ import json
 import re
 import datetime
 from typing import Dict, Optional, List
-import asyncio
-
-from menu_embeddings import rag_extract_menu_item
+from menu_embeddings import rag_extract_menu_items, rag_extract_menu_item, format_items_summary
 
 # Define the path to the system prompt file
 SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), 'system_prompt.txt')
@@ -54,14 +52,23 @@ def save_order_to_file(order_data: Dict):
         with open(ORDERS_PATH, 'a', encoding='utf-8') as f:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             f.write(f"\n=== ORDER - {timestamp} ===\n")
+            
+            # Handle multiple items
             if 'items' in order_data:
+                f.write("ITEMS:\n")
+                total_cost = 0
                 for item in order_data['items']:
-                    f.write(f"Item: {item['name']}\n")
-                    f.write(f"Price: AED {item['price']}\n")
-                f.write(f"Total: AED {order_data.get('total', sum(item['price'] for item in order_data['items']))}\n")
+                    qty = item.get('quantity', 1)
+                    price = item.get('price', 0)
+                    total_price = item.get('total_price', price * qty)
+                    total_cost += total_price
+                    f.write(f"- {qty}x {item['name']}: AED {price} each = AED {total_price}\n")
+                f.write(f"TOTAL COST: AED {total_cost:.2f}\n")
             else:
+                # Backwards compatibility for single item
                 f.write(f"Item: {order_data['item_name']}\n")
                 f.write(f"Price: AED {order_data['price']}\n")
+            
             f.write(f"NYU ID: N{order_data['nyu_id']}\n")
             f.write(f"Building: {order_data['building']}\n")
             f.write(f"Phone: {order_data['phone']}\n")
@@ -75,7 +82,8 @@ def get_order_state(session_id: str) -> Dict:
     if session_id not in order_states:
         order_states[session_id] = {
             'state': 'idle',
-            'items': [],  # List of dicts: {name, price}
+            'items': [],  # Changed to support multiple items
+            'total_cost': 0,
             'nyu_id': None,
             'building': None,
             'phone': None,
@@ -89,16 +97,19 @@ def reset_order_state(session_id: str):
         order_states[session_id] = {
             'state': 'idle',
             'items': [],
+            'total_cost': 0,
             'nyu_id': None,
             'building': None,
             'phone': None,
             'special_request': None
         }
 
+def calculate_total_cost(items: List[Dict]) -> float:
+    """Calculate total cost of all items"""
+    return sum(item.get('total_price', item.get('price', 0) * item.get('quantity', 1)) for item in items)
+
 async def fetch_menu_item_from_mcp(item_name: str):
-    """
-    Query the MCP server for a menu item by name.
-    """
+    """Query the MCP server for a menu item by name."""
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(MCP_ITEM_URL, params={"name": item_name}, timeout=2)
@@ -111,9 +122,7 @@ async def fetch_menu_item_from_mcp(item_name: str):
         return None
 
 async def fetch_full_menu_from_mcp():
-    """
-    Query the MCP server for the full menu.
-    """
+    """Query the MCP server for the full menu."""
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.get(MCP_MENU_URL, timeout=2)
@@ -141,152 +150,49 @@ def get_open_restaurants():
         print(f"Error loading restaurants.json: {e}")
         return None
 
-# Enhanced item extraction that removes category words like "pizza", "wings", etc.
-# def extract_menu_item(user_message: str):
-#     # Common category words to remove from the end of item names
-#     category_words = [
-#         'pizza', '6 pcs', '8 pcs', '(6 pcs)', '(8 pcs)'
-#     ]
-    
-#     patterns = [
-#         r'is ([\w\s]+) available',
-#         r'do you have ([\w\s]+)',
-#         r'price of ([\w\s]+)',
-#         r'how much is the ([\w\s]+)',
-#         r'how much are the ([\w\s]+)',
-#         r'how much is ([\w\s]+)',
-#         r'can I get ([\w\s]+)',
-#         r'order the ([\w\s]+)',
-#         r'order a ([\w\s]+)',
-#         r'order ([\w\s]+)',
-#         r'get ([\w\s]+)',
-#         r'want ([\w\s]+)',
-#         r'like ([\w\s]+)',
-#     ]
-    
-#     for pat in patterns:
-#         m = re.search(pat, user_message, re.IGNORECASE)
-#         if m:
-#             extracted_item = m.group(1).strip()
-#             # Remove category words from the end of the item name
-#             item_lower = extracted_item.lower()
-#             for category in category_words:
-#                 if item_lower.endswith(f' {category}'):
-#                     extracted_item = extracted_item[:-len(category)].strip()
-#                     break
-#                 elif item_lower == category:
-#                     return extracted_item
-#             return extracted_item
-#     # If no pattern matched, only treat as item if it matches a real menu item
-#     cleaned = user_message.strip()
-#     if cleaned and len(cleaned.split()) <= 5:
-#         item = get_menu_item_from_file(cleaned)
-#         if item:
-#             return cleaned
-#     return None
-
-# Helper to load menu from menu.json
-MENU_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'menu.json'))
-def get_menu_item_from_file(item_name: str):
-    try:
-        with open(MENU_PATH, 'r', encoding='utf-8') as f:
-            menu = json.load(f)
-        # Recursively search for the item in all categories
-        def search(menu_section):
-            if isinstance(menu_section, dict):
-                for key, value in menu_section.items():
-                    # If value is a price (float/int), key is the item name
-                    if isinstance(value, (float, int)) and key.strip().lower() == item_name.strip().lower():
-                        return {"name": key, "price": value}
-                    # If value is a dict, search deeper
-                    elif isinstance(value, dict):
-                        found = search(value)
-                        if found:
-                            return found
-            return None
-        return search(menu)
-    except Exception as e:
-        print(f"Error loading menu.json: {e}")
-        return None
-
 def process_order_flow(user_message: str, session_id: str) -> tuple[str, bool]:
+    """
+    Process the order flow and return a response message and whether to continue with normal chat
+    Returns: (response_message, continue_with_normal_chat)
+    """
     order_state = get_order_state(session_id)
     user_message_lower = user_message.lower().strip()
-
-    # Start order: extract item
+    
+    # Check if user wants to start ordering or add more items
     if order_state['state'] == 'idle':
-        item_data = rag_extract_menu_item(user_message)
-        if item_data:
+        # Try to extract multiple items
+        items_data = rag_extract_menu_items(user_message)
+        if items_data:
             # This will be handled in the main chat flow
             return "", True
-
-    # Waiting for confirmation to add item
-    if order_state['state'] == 'waiting_for_order_confirmation':
-        if 'yes' in user_message_lower or 'order' in user_message_lower or 'confirm' in user_message_lower:
-            if 'pending_item' in order_state and order_state['pending_item']:
-                order_state['items'].append(order_state['pending_item'])
-                order_state['pending_item'] = None
-            order_state['state'] = 'ask_add_more_items'
-            return "Would you like to add another item to your order? (yes/no)", False
+    
+    # Check if user wants to add more items during order confirmation
+    elif order_state['state'] == 'waiting_for_order_confirmation':
+        if 'add' in user_message_lower or 'more' in user_message_lower:
+            # Try to extract additional items
+            additional_items = rag_extract_menu_items(user_message)
+            if additional_items:
+                order_state['items'].extend(additional_items)
+                order_state['total_cost'] = calculate_total_cost(order_state['items'])
+                items_summary = format_items_summary(order_state['items'])
+                return f"Added to your order! Your current order:\n\n{items_summary}\n\nWould you like to confirm this order or add more items?", False
+            else:
+                return "I couldn't find those items on the menu. Would you like to confirm your current order or try adding different items?", False
+        
+        elif 'yes' in user_message_lower or 'confirm' in user_message_lower:
+            # Debug print to check order state at confirmation
+            print(f"DEBUG: Confirming order - Items: {order_state['items']}, Total: {order_state['total_cost']}")
+            order_state['state'] = 'waiting_for_nyu_id'
+            return "Great! Please provide the 8 digits of your NYU ID card after the N (e.g., if your ID is N12345678, enter 12345678):", False
         elif 'no' in user_message_lower or 'cancel' in user_message_lower:
             reset_order_state(session_id)
             return "Order cancelled. How else can I help you today?", False
         else:
-            return "Please respond with 'yes' to confirm your order or 'no' to cancel.", False
-
-    if order_state['state'] == 'ask_add_more_items':
-        if 'yes' in user_message_lower:
-            order_state['state'] = 'waiting_for_next_item'
-            return "What item would you like to add?", False
-        elif 'no' in user_message_lower:
-            order_state['state'] = 'waiting_for_nyu_id'
-            return "Great! Please provide the 8 digits of your NYU ID card after the N (e.g., if your ID is N12345678, enter 12345678):", False
-        else:
-            return "Please respond with 'yes' to add another item or 'no' to proceed to checkout.", False
-
-    # Use RAG for next item extraction
-    if order_state['state'] == 'waiting_for_next_item':
-        item_data = rag_extract_menu_item(user_message)
-        if item_data:
-            order_state['pending_item'] = {'name': item_data['name'], 'price': item_data['price']}
-            order_state['state'] = 'waiting_for_next_item_confirmation'
-            return f"Add {item_data['name']} (AED {item_data['price']}) to your order? (yes/no)", False
-        else:
-            order_state['pending_item'] = None
-            order_state['state'] = 'item_not_found_next_action'
-            return f"Sorry, I couldn't identify the item or it's not on the menu. Would you like to try another item or proceed to checkout? (Type another item name, or say 'checkout')", False
-
-    # If item not found, let user try again or checkout
-    if order_state['state'] == 'item_not_found_next_action':
-        if 'checkout' in user_message_lower or 'no' in user_message_lower:
-            order_state['state'] = 'waiting_for_nyu_id'
-            return "Okay, let's proceed to checkout. Please provide the 8 digits of your NYU ID card after the N (e.g., if your ID is N12345678, enter 12345678):", False
-        else:
-            # Try to extract a new item using RAG
-            item_data = rag_extract_menu_item(user_message)
-            if item_data:
-                order_state['pending_item'] = {'name': item_data['name'], 'price': item_data['price']}
-                order_state['state'] = 'waiting_for_next_item_confirmation'
-                return f"Add {item_data['name']} (AED {item_data['price']}) to your order? (yes/no)", False
-            else:
-                return "Sorry, I couldn't identify the item or it's not on the menu. Please try another item or say 'checkout' to finish your order.", False
-
-    if order_state['state'] == 'waiting_for_next_item_confirmation':
-        if 'yes' in user_message_lower:
-            if 'pending_item' in order_state and order_state['pending_item']:
-                order_state['items'].append(order_state['pending_item'])
-                order_state['pending_item'] = None
-            order_state['state'] = 'ask_add_more_items'
-            return "Would you like to add another item to your order? (yes/no)", False
-        elif 'no' in user_message_lower:
-            order_state['pending_item'] = None
-            order_state['state'] = 'ask_add_more_items'
-            return "Okay, would you like to add another item to your order? (yes/no)", False
-        else:
-            return "Please respond with 'yes' to add this item or 'no' to skip it.", False
-
-    # NYU ID, building, phone, special request, as before
-    if order_state['state'] == 'waiting_for_nyu_id':
+            items_summary = format_items_summary(order_state['items'])
+            return f"Your current order:\n\n{items_summary}\n\nPlease respond with 'yes' to confirm, 'no' to cancel, or tell me what you'd like to add.", False
+    
+    elif order_state['state'] == 'waiting_for_nyu_id':
+        # Validate NYU ID (8 digits)
         nyu_id_match = re.search(r'(\d{8})', user_message)
         if nyu_id_match:
             order_state['nyu_id'] = nyu_id_match.group(1)
@@ -295,8 +201,8 @@ def process_order_flow(user_message: str, session_id: str) -> tuple[str, bool]:
             return f"Perfect! Now please select your building number from the following options: {buildings_list}", False
         else:
             return "Please enter exactly 8 digits of your NYU ID (e.g., 12345678):", False
-
-    if order_state['state'] == 'waiting_for_building':
+    
+    elif order_state['state'] == 'waiting_for_building':
         building = user_message.strip().upper()
         if building in AVAILABLE_BUILDINGS:
             order_state['building'] = building
@@ -305,8 +211,9 @@ def process_order_flow(user_message: str, session_id: str) -> tuple[str, bool]:
         else:
             buildings_list = ", ".join(AVAILABLE_BUILDINGS)
             return f"Please select a valid building from: {buildings_list}", False
-
-    if order_state['state'] == 'waiting_for_phone':
+    
+    elif order_state['state'] == 'waiting_for_phone':
+        # Basic phone validation
         phone_match = re.search(r'(\d{9,15})', user_message.replace(' ', '').replace('-', '').replace('+', ''))
         if phone_match:
             order_state['phone'] = phone_match.group(1)
@@ -314,28 +221,49 @@ def process_order_flow(user_message: str, session_id: str) -> tuple[str, bool]:
             return "Do you have any special requests for your order? (e.g., extra toppings, dietary restrictions, etc.) If not, just say 'no' or 'none':", False
         else:
             return "Please provide a valid phone number:", False
-
-    if order_state['state'] == 'waiting_for_special_request':
+    
+    elif order_state['state'] == 'waiting_for_special_request':
         if user_message_lower in ['no', 'none', 'n/a', 'no special requests']:
             order_state['special_request'] = 'None'
         else:
             order_state['special_request'] = user_message
+        
         # Complete the order
-        total = sum(item['price'] for item in order_state['items'])
-        items_str = ", ".join(f"{item['name']} (AED {item['price']})" for item in order_state['items'])
         order_data = {
             'items': order_state['items'],
-            'total': total,
+            'total_cost': order_state['total_cost'],
             'nyu_id': order_state['nyu_id'],
             'building': order_state['building'],
             'phone': order_state['phone'],
             'special_request': order_state['special_request']
         }
+        
+        # Debug print to check final order data
+        print(f"DEBUG: Final order data - Items: {order_data['items']}, Total: {order_data['total_cost']}")
+        
+        # Save order to file
         save_order_to_file(order_data)
+        
+        # Format confirmation message
+        items_list = []
+        for item in order_state['items']:
+            qty = item.get('quantity', 1)
+            if qty > 1:
+                items_list.append(f"{qty}x {item['name']}")
+            else:
+                items_list.append(item['name'])
+        
+        items_text = ", ".join(items_list)
+        
+        # Debug print to check items formatting
+        print(f"DEBUG: Items text: {items_text}, Total cost: {order_data['total_cost']}")
+        
+        # Reset order state
         reset_order_state(session_id)
-        confirmation_message = f"✅ Order confirmed for: {items_str}. Total: AED {total}. NYU ID: N{order_data['nyu_id']}, Building: {order_data['building']}, Phone Number: {order_data['phone']}. Special Request: {order_data['special_request']}."
+        
+        confirmation_message = f"✅ Order confirmed for: {items_text}. Total: AED {order_data['total_cost']:.2f}. NYU ID: N{order_data['nyu_id']}, Building: {order_data['building']}, Phone: {order_data['phone']}. Special Request: {order_data['special_request']}."
         return confirmation_message, False
-
+    
     return "", True
 
 @app.post('/chat')
@@ -373,21 +301,53 @@ async def chat_endpoint(request: Request):
         if re.search(r"what'?s on the menu|show me the menu|today'?s menu|full menu", user_message, re.IGNORECASE):
             yield "[Fetching menu data...]\n"
         
-        # Check if the user is asking about a menu item
-        # item_name = extract_menu_item(user_message)
-        # if item_name:
-        # RAG based item extraction
-        item_data = rag_extract_menu_item(user_message)
-        item = None
-        item_name = None
-        item_price = None
-        if item_data:
-            item_name = item_data['name']
-            item_price = item_data['price']
-            yield f"[Looking up '{item_name}' in the menu...]\n"
-            item = await fetch_menu_item_from_mcp(item_name)
+        # RAG-based multiple item extraction
+        items_data = rag_extract_menu_items(user_message)
+        menu_items_context = ""
+        order_context = ""
 
-        # Now fetch menu data as before
+        if items_data:
+            found_items = []
+            not_found_items = []
+            
+            for item_data in items_data:
+                item_name = item_data["name"]
+                yield f"[Looking up '{item_name}' in the menu...]\n"
+                
+                # Verify with MCP server
+                item = await fetch_menu_item_from_mcp(item_name)
+                if item:
+                    # Update with verified data from MCP
+                    verified_item = {
+                        'name': item['name'],
+                        'price': item['price'],
+                        'quantity': item_data.get('quantity', 1)
+                    }
+                    verified_item['total_price'] = verified_item['price'] * verified_item['quantity']
+                    found_items.append(verified_item)
+                else:
+                    not_found_items.append(item_data['name'])
+            
+            if found_items:
+                items_summary = format_items_summary(found_items)
+                menu_items_context = f"Menu items found:\n{items_summary}"
+                
+                # Check if user wants to order these items
+                if re.search(r'order|buy|get|want to order|purchase', user_message, re.IGNORECASE):
+                    order_state = get_order_state(session_id)
+                    order_state['state'] = 'waiting_for_order_confirmation'
+                    order_state['items'] = found_items
+                    order_state['total_cost'] = calculate_total_cost(found_items)
+                    order_context = f"\n[ORDER FLOW] The user wants to order multiple items. Ask them to confirm their order by responding with 'yes' or 'no'. They can also add more items."
+            
+            if not_found_items:
+                not_found_text = ", ".join(not_found_items)
+                if menu_items_context:
+                    menu_items_context += f"\n\nItems not found: {not_found_text}"
+                else:
+                    menu_items_context = f"Sorry, these items are not on the menu: {not_found_text}"
+
+        # Rest of the existing code for menu context, open restaurants, etc.
         menu_context = ""
         if re.search(r"what'?s on the menu|show me the menu|today'?s menu|full menu|what'?s available|what'?s available today", user_message, re.IGNORECASE):
             menu = await fetch_full_menu_from_mcp()
@@ -397,22 +357,6 @@ async def chat_endpoint(request: Request):
                     menu_context += f"- {item['name']}: AED {item['price']}\n"
             else:
                 menu_context = "[Menu data is currently unavailable.]"
-
-        menu_item_context = ""
-        order_context = ""
-        if item_name:
-            # item = await fetch_menu_item_from_mcp(item_name)
-            if item:
-                menu_item_context = f"Menu item found: {item['name']} (Price: AED {item['price']})"
-                
-                # Check if user wants to order this item
-                if re.search(r'order|buy|get|want to order', user_message, re.IGNORECASE):
-                    order_state = get_order_state(session_id)
-                    order_state['state'] = 'waiting_for_order_confirmation'
-                    order_state['pending_item'] = {'name': item['name'], 'price': item['price']}
-                    order_context = f"\n[ORDER FLOW] The user wants to order {item['name']} for AED {item['price']}. Ask them to confirm their order by responding with 'yes' or 'no'."
-            else:
-                menu_item_context = f"Sorry, '{item_name}' is not on the menu."
 
         # Check if the user is asking about open restaurants
         open_restaurants_context = ""
@@ -439,8 +383,8 @@ async def chat_endpoint(request: Request):
         prompt = system_prompt
         if menu_context:
             prompt += f"\n\n{menu_context}"
-        if menu_item_context:
-            prompt += f"\n\nMenu info: {menu_item_context}"
+        if menu_items_context:
+            prompt += f"\n\nMenu info: {menu_items_context}"
         if order_context:
             prompt += f"\n\n{order_context}"
         if open_restaurants_context:
@@ -471,7 +415,6 @@ async def chat_endpoint(request: Request):
 
     return StreamingResponse(ollama_stream(), media_type="text/plain")
 
-
 @app.get('/warmup')
 def warmup():
     """
@@ -491,4 +434,4 @@ def warmup():
         else:
             return Response(content=f"Ollama error: {r.text}", status_code=500)
     except Exception as e:
-        return Response(content=f"Warmup error: {e}", status_code=500) 
+        return Response(content=f"Warmup error: {e}", status_code=500)
