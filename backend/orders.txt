@@ -168,3 +168,27 @@ Building: A1A
 Phone: 1234567890
 Special Request: None
 ==================================================
+
+=== ORDER - 2025-07-21 19:30:51 ===
+ITEMS:
+- 2x Margherita: AED 31.0 each = AED 62.0
+- 2x Banana & Nutella: AED 35.0 each = AED 70.0
+- 3x Chicken Wings: AED 23.0 each = AED 69.0
+TOTAL COST: AED 201.00
+NYU ID: N12345678
+Building: A1A
+Phone: 0564087884
+Special Request: None
+==================================================
+
+=== ORDER - 2025-07-21 20:01:44 ===
+ITEMS:
+- 2x Margherita: AED 31.0 each = AED 62.0
+- 3x Chicken Wings: AED 23.0 each = AED 69.0
+- 4x Banana & Nutella: AED 35.0 each = AED 140.0
+TOTAL COST: AED 271.00
+NYU ID: N12345678
+Building: A3
+Phone: 0656667884
+Special Request: None
+==================================================
