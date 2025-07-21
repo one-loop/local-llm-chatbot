@@ -69,7 +69,8 @@ def call_ollama(prompt, system_prompt):
     payload = {
         "model": OLLAMA_MODEL,
         "prompt": f"<|system|>\n{system_prompt}\n<|user|>\n{prompt}\n<|assistant|>\n",
-        "stream": False
+        "stream": False,
+        "temperature": 0.1
     }
     response = requests.post(OLLAMA_URL, json=payload)
     if response.status_code == 200:

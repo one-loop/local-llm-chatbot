@@ -84,3 +84,14 @@ Building: A1A
 Phone: 123456789
 Special Request: None
 ==================================================
+
+=== ORDER - 2025-07-21 15:13:49 ===
+ITEMS:
+- 1x Pepperoni: AED 43.0 each = AED 43.0
+- 1x Margherita: AED 31.0 each = AED 31.0
+TOTAL COST: AED 74.00
+NYU ID: N12345678
+Building: A1A
+Phone: 123456789
+Special Request: None
+==================================================

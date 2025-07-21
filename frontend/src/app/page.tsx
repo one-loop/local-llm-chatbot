@@ -151,6 +151,8 @@ export default function Home() {
   };
 
   const sendMessage = async (overrideInput?: string) => {
+    const chatList = document.querySelector('.chat-message-list') as HTMLElement | null;
+    if (chatList) chatList.style.justifyContent = 'flex-start';
     if (loading) {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -332,7 +334,7 @@ export default function Home() {
         background: 'transparent',
       }}>
         {/* Chat message list */}
-        <div style={{
+        <div className='chat-message-list' style={{
           flex: 1,
           overflowY: 'auto',
           padding: 32,
