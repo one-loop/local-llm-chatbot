@@ -152,7 +152,13 @@ export default function Home() {
 
   const sendMessage = async (overrideInput?: string) => {
     const chatList = document.querySelector('.chat-message-list') as HTMLElement | null;
-    if (chatList) chatList.style.justifyContent = 'flex-start';
+    if (chatList) chatList.style.justifyContent = 'flex-start'; // Reset justify content to flex-start
+    // scroll to the bottom of the chat list
+    if (chatList) chatList.style.height += '500px';
+    chatList?.scrollTo({
+      top: chatList.scrollHeight,
+      behavior: "smooth"
+    });
     if (loading) {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -202,30 +208,33 @@ export default function Home() {
             setShowTyping(false); // Hide typing indicator on first chunk
             firstChunk = false;
           }
+          // Simplified status message handling
           const chunk = decoder.decode(value);
-          // If the chunk is a status message, show it in the current bot bubble
-          if ((chunk.startsWith('[Fetching') || chunk.startsWith('[Looking up') || chunk.startsWith('[Checking')) && !statusMessageActive && botText === "") {
+          const isStatusChunk = chunk.startsWith('[Fetching') || chunk.startsWith('[Looking up') || chunk.startsWith('[Checking');
+
+          if (isStatusChunk) {
             statusMessageActive = true;
+            botText = chunk.trim(); // Overwrite with new status
             setMessages((msgs) => {
               const updated = [...msgs];
-              // Always update the last bot message
-              updated[updated.length - 1] = { sender: "bot", text: chunk.trim() };
+              updated[updated.length - 1] = { sender: "bot", text: botText };
               return updated;
             });
-            continue;
+          } else {
+            // This is a regular content chunk
+            if (statusMessageActive) {
+              // If we were previously showing a status, reset the text
+              botText = ""; 
+              statusMessageActive = false;
+            }
+            botText += chunk;
+            setMessages((msgs) => {
+              const updated = [...msgs];
+              // Append new content. This will replace a status message if one was just active.
+              updated[updated.length - 1] = { sender: "bot", text: botText };
+              return updated;
+            });
           }
-          // If the LLM response starts, replace the status message in the same bubble
-          if (statusMessageActive) {
-            botText = "";
-            statusMessageActive = false;
-          }
-          botText += chunk;
-          setMessages((msgs) => {
-            const updated = [...msgs];
-            // Always update the last bot message
-            updated[updated.length - 1] = { sender: "bot", text: botText };
-            return updated;
-          });
           scrollToBottom();
           // console.log('[Frontend] Received chunk:', chunk);
           if (chunk.includes('Menu item found:')) {

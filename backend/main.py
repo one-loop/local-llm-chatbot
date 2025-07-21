@@ -283,6 +283,7 @@ async def chat_endpoint(request: Request):
 
     # Check if we're in an order flow
     order_response, continue_normal_chat = process_order_flow(user_message, session_id)
+    prompt = ""
     if order_response:
         # Return the order flow response directly
         async def order_response_stream():
@@ -328,7 +329,10 @@ async def chat_endpoint(request: Request):
                 else:
                     not_found_items.append(item_data['name'])
             
+            yield ""
+            
             if found_items:
+
                 items_summary = format_items_summary(found_items)
                 menu_items_context = f"Menu items found:\n{items_summary}"
                 
@@ -372,7 +376,7 @@ async def chat_endpoint(request: Request):
                 open_restaurants_context = "[Restaurant data is currently unavailable.]"
 
         # Build the conversation history prompt
-        history_prompt = ""
+        history_prompt = "CHAT HISTORY: \n"
         for msg in history:
             if msg.get("sender") == "user":
                 history_prompt += f"User: {msg['text']}\n"
@@ -394,7 +398,8 @@ async def chat_endpoint(request: Request):
         payload = {
             "model": OLLAMA_MODEL,
             "prompt": prompt,
-            "stream": True
+            "stream": True,
+            "temperature": 0.1
         }
 
         async with httpx.AsyncClient(timeout=None) as client:
@@ -425,7 +430,8 @@ def warmup():
         payload = {
             "model": OLLAMA_MODEL,
             "prompt": "Hello!",
-            "stream": False
+            "stream": False,
+            "temperature": 0.1
         }
         # Send a dummy request to Ollama to trigger model load
         r = requests.post(OLLAMA_URL, json=payload, timeout=10)

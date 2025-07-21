@@ -95,3 +95,76 @@ Building: A1A
 Phone: 123456789
 Special Request: None
 ==================================================
+
+=== ORDER - 2025-07-21 15:29:28 ===
+ITEMS:
+- 1x Pepperoni: AED 43.0 each = AED 43.0
+TOTAL COST: AED 43.00
+NYU ID: N12345678
+Building: A1A
+Phone: 123456789
+Special Request: None
+==================================================
+
+=== ORDER - 2025-07-21 15:50:41 ===
+ITEMS:
+- 1x Pepperoni: AED 43.0 each = AED 43.0
+TOTAL COST: AED 43.00
+NYU ID: N12345678
+Building: A1A
+Phone: 234567899
+Special Request: None
+==================================================
+
+=== ORDER - 2025-07-21 16:38:56 ===
+ITEMS:
+- 1x Pepperoni: AED 43.0 each = AED 43.0
+TOTAL COST: AED 43.00
+NYU ID: N12345678
+Building: A1C
+Phone: 123456789
+Special Request: None
+==================================================
+
+=== ORDER - 2025-07-21 16:41:02 ===
+ITEMS:
+- 1x Chicken Nuggets: AED 19.0 each = AED 19.0
+- 1x Mashed Potatoes: AED 9.0 each = AED 9.0
+TOTAL COST: AED 28.00
+NYU ID: N12345678
+Building: A1A
+Phone: 09876789021
+Special Request: None
+==================================================
+
+=== ORDER - 2025-07-21 16:43:17 ===
+ITEMS:
+- 1x Dynamite Chicken: AED 39.0 each = AED 39.0
+TOTAL COST: AED 39.00
+NYU ID: N12345678
+Building: A1C
+Phone: 123456789
+Special Request: None
+==================================================
+
+=== ORDER - 2025-07-21 16:45:47 ===
+ITEMS:
+- 1x Dynamite Chicken: AED 39.0 each = AED 39.0
+- 1x Chicken Nuggets: AED 19.0 each = AED 19.0
+- 1x Pepperoni: AED 43.0 each = AED 43.0
+TOTAL COST: AED 101.00
+NYU ID: N12345678
+Building: A1A
+Phone: 123456789
+Special Request: Make it spicy
+==================================================
+
+=== ORDER - 2025-07-21 16:58:32 ===
+ITEMS:
+- 1x Pepperoni: AED 43.0 each = AED 43.0
+TOTAL COST: AED 43.00
+NYU ID: N13456789
+Building: A1A
+Phone: 1234567890
+Special Request: None
+==================================================
