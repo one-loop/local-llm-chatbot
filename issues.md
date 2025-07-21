@@ -1,18 +1,6 @@
 
 Issues
 
-* Sometimes the bot doesn't get into the oder flow when a user wants to order a specific item and confirms that they want to start the order (i.e. it doesn't request for the user's NYU ID, phone number, building etc.)
-
-Example:
-```
-Is the grilled salmon available today
-Yes, the Grilled Salmon Steak is available today for AED 45.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.
-
-yes
-Great! I found the Grilled Salmon Steak on our menu for AED 45.0. To place your order, please let me know if you would like any side dishes or specific cooking instructions. If you don't have a preference, we will serve it with our signature roasted vegetables and mashed potatoes. Once you confirm your order, I'll arrange for it to be delivered to your preferred location at New York University Abu Dhabi. To proceed, please tell me if you would like any side dishes or specific cooking instructions for your Grilled Salmon Steak.
-```
-
----
 
 * If the user prompts to order/get information of specific categories of food (e.g. pizza, acai bowls), the bot doesn't respond accurately/access the mcp server. It hallucinates the response
 
