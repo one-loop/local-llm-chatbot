@@ -10,6 +10,8 @@ import datetime
 from typing import Dict, Optional, List
 import asyncio
 
+from menu_embeddings import rag_extract_menu_item
+
 # Define the path to the system prompt file
 SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), 'system_prompt.txt')
 
@@ -140,48 +142,48 @@ def get_open_restaurants():
         return None
 
 # Enhanced item extraction that removes category words like "pizza", "wings", etc.
-def extract_menu_item(user_message: str):
-    # Common category words to remove from the end of item names
-    category_words = [
-        'pizza', '6 pcs', '8 pcs', '(6 pcs)', '(8 pcs)'
-    ]
+# def extract_menu_item(user_message: str):
+#     # Common category words to remove from the end of item names
+#     category_words = [
+#         'pizza', '6 pcs', '8 pcs', '(6 pcs)', '(8 pcs)'
+#     ]
     
-    patterns = [
-        r'is ([\w\s]+) available',
-        r'do you have ([\w\s]+)',
-        r'price of ([\w\s]+)',
-        r'how much is the ([\w\s]+)',
-        r'how much are the ([\w\s]+)',
-        r'how much is ([\w\s]+)',
-        r'can I get ([\w\s]+)',
-        r'order the ([\w\s]+)',
-        r'order a ([\w\s]+)',
-        r'order ([\w\s]+)',
-        r'get ([\w\s]+)',
-        r'want ([\w\s]+)',
-        r'like ([\w\s]+)',
-    ]
+#     patterns = [
+#         r'is ([\w\s]+) available',
+#         r'do you have ([\w\s]+)',
+#         r'price of ([\w\s]+)',
+#         r'how much is the ([\w\s]+)',
+#         r'how much are the ([\w\s]+)',
+#         r'how much is ([\w\s]+)',
+#         r'can I get ([\w\s]+)',
+#         r'order the ([\w\s]+)',
+#         r'order a ([\w\s]+)',
+#         r'order ([\w\s]+)',
+#         r'get ([\w\s]+)',
+#         r'want ([\w\s]+)',
+#         r'like ([\w\s]+)',
+#     ]
     
-    for pat in patterns:
-        m = re.search(pat, user_message, re.IGNORECASE)
-        if m:
-            extracted_item = m.group(1).strip()
-            # Remove category words from the end of the item name
-            item_lower = extracted_item.lower()
-            for category in category_words:
-                if item_lower.endswith(f' {category}'):
-                    extracted_item = extracted_item[:-len(category)].strip()
-                    break
-                elif item_lower == category:
-                    return extracted_item
-            return extracted_item
-    # If no pattern matched, only treat as item if it matches a real menu item
-    cleaned = user_message.strip()
-    if cleaned and len(cleaned.split()) <= 5:
-        item = get_menu_item_from_file(cleaned)
-        if item:
-            return cleaned
-    return None
+#     for pat in patterns:
+#         m = re.search(pat, user_message, re.IGNORECASE)
+#         if m:
+#             extracted_item = m.group(1).strip()
+#             # Remove category words from the end of the item name
+#             item_lower = extracted_item.lower()
+#             for category in category_words:
+#                 if item_lower.endswith(f' {category}'):
+#                     extracted_item = extracted_item[:-len(category)].strip()
+#                     break
+#                 elif item_lower == category:
+#                     return extracted_item
+#             return extracted_item
+#     # If no pattern matched, only treat as item if it matches a real menu item
+#     cleaned = user_message.strip()
+#     if cleaned and len(cleaned.split()) <= 5:
+#         item = get_menu_item_from_file(cleaned)
+#         if item:
+#             return cleaned
+#     return None
 
 # Helper to load menu from menu.json
 MENU_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'menu.json'))
@@ -213,8 +215,8 @@ def process_order_flow(user_message: str, session_id: str) -> tuple[str, bool]:
 
     # Start order: extract item
     if order_state['state'] == 'idle':
-        item_name = extract_menu_item(user_message)
-        if item_name:
+        item_data = rag_extract_menu_item(user_message)
+        if item_data:
             # This will be handled in the main chat flow
             return "", True
 
@@ -242,21 +244,17 @@ def process_order_flow(user_message: str, session_id: str) -> tuple[str, bool]:
         else:
             return "Please respond with 'yes' to add another item or 'no' to proceed to checkout.", False
 
-    # Hard-coded menu.json lookup for next item
+    # Use RAG for next item extraction
     if order_state['state'] == 'waiting_for_next_item':
-        item_name = extract_menu_item(user_message)
-        if item_name:
-            item = get_menu_item_from_file(item_name)
-            if item and 'name' in item and 'price' in item:
-                order_state['pending_item'] = {'name': item['name'], 'price': item['price']}
-                order_state['state'] = 'waiting_for_next_item_confirmation'
-                return f"Add {item['name']} (AED {item['price']}) to your order? (yes/no)", False
-            else:
-                order_state['pending_item'] = None
-                order_state['state'] = 'item_not_found_next_action'
-                return f"Sorry, '{item_name}' is not on the menu. Would you like to try another item or proceed to checkout? (Type another item name, or say 'checkout')", False
+        item_data = rag_extract_menu_item(user_message)
+        if item_data:
+            order_state['pending_item'] = {'name': item_data['name'], 'price': item_data['price']}
+            order_state['state'] = 'waiting_for_next_item_confirmation'
+            return f"Add {item_data['name']} (AED {item_data['price']}) to your order? (yes/no)", False
         else:
-            return "Sorry, I couldn't identify the item. Please specify the menu item you'd like to add.", False
+            order_state['pending_item'] = None
+            order_state['state'] = 'item_not_found_next_action'
+            return f"Sorry, I couldn't identify the item or it's not on the menu. Would you like to try another item or proceed to checkout? (Type another item name, or say 'checkout')", False
 
     # If item not found, let user try again or checkout
     if order_state['state'] == 'item_not_found_next_action':
@@ -264,18 +262,14 @@ def process_order_flow(user_message: str, session_id: str) -> tuple[str, bool]:
             order_state['state'] = 'waiting_for_nyu_id'
             return "Okay, let's proceed to checkout. Please provide the 8 digits of your NYU ID card after the N (e.g., if your ID is N12345678, enter 12345678):", False
         else:
-            # Try to extract a new item
-            item_name = extract_menu_item(user_message)
-            if item_name:
-                item = get_menu_item_from_file(item_name)
-                if item and 'name' in item and 'price' in item:
-                    order_state['pending_item'] = {'name': item['name'], 'price': item['price']}
-                    order_state['state'] = 'waiting_for_next_item_confirmation'
-                    return f"Add {item['name']} (AED {item['price']}) to your order? (yes/no)", False
-                else:
-                    return f"Sorry, '{item_name}' is not on the menu. Please try another item or say 'checkout' to finish your order.", False
+            # Try to extract a new item using RAG
+            item_data = rag_extract_menu_item(user_message)
+            if item_data:
+                order_state['pending_item'] = {'name': item_data['name'], 'price': item_data['price']}
+                order_state['state'] = 'waiting_for_next_item_confirmation'
+                return f"Add {item_data['name']} (AED {item_data['price']}) to your order? (yes/no)", False
             else:
-                return "Sorry, I couldn't identify the item. Please specify the menu item you'd like to add, or say 'checkout' to finish your order.", False
+                return "Sorry, I couldn't identify the item or it's not on the menu. Please try another item or say 'checkout' to finish your order.", False
 
     if order_state['state'] == 'waiting_for_next_item_confirmation':
         if 'yes' in user_message_lower:
@@ -380,9 +374,18 @@ async def chat_endpoint(request: Request):
             yield "[Fetching menu data...]\n"
         
         # Check if the user is asking about a menu item
-        item_name = extract_menu_item(user_message)
-        if item_name:
+        # item_name = extract_menu_item(user_message)
+        # if item_name:
+        # RAG based item extraction
+        item_data = rag_extract_menu_item(user_message)
+        item = None
+        item_name = None
+        item_price = None
+        if item_data:
+            item_name = item_data['name']
+            item_price = item_data['price']
             yield f"[Looking up '{item_name}' in the menu...]\n"
+            item = await fetch_menu_item_from_mcp(item_name)
 
         # Now fetch menu data as before
         menu_context = ""
@@ -398,7 +401,7 @@ async def chat_endpoint(request: Request):
         menu_item_context = ""
         order_context = ""
         if item_name:
-            item = await fetch_menu_item_from_mcp(item_name)
+            # item = await fetch_menu_item_from_mcp(item_name)
             if item:
                 menu_item_context = f"Menu item found: {item['name']} (Price: AED {item['price']})"
                 
@@ -467,6 +470,7 @@ async def chat_endpoint(request: Request):
                 yield "[Error streaming from Ollama]"
 
     return StreamingResponse(ollama_stream(), media_type="text/plain")
+
 
 @app.get('/warmup')
 def warmup():
