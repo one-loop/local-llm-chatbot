@@ -37,6 +37,18 @@ def extract_quantities_and_items(user_message: str) -> List[Dict[str, str]]:
     Extract items with quantities from user message.
     Returns list of dicts with 'text' and 'quantity' keys.
     """
+    # Convert number words to digits
+    number_words = {
+        'one': '1', 'two': '2', 'three': '3', 'four': '4', 'five': '5',
+        'six': '6', 'seven': '7', 'eight': '8', 'nine': '9', 'ten': '10',
+        'a': '1', 'an': '1'
+    }
+    
+    # Replace number words with digits
+    processed_message = user_message.lower()
+    for word, digit in number_words.items():
+        processed_message = re.sub(r'\b' + word + r'\b', digit, processed_message)
+    
     # Patterns to match quantity + item combinations
     patterns = [
         r'(\d+)\s*x?\s*([^,\n\r]+?)(?=\s*(?:,|and|\d+\s*x?|\n|\r|$))',  # "2x pizza", "3 burgers"
@@ -47,8 +59,10 @@ def extract_quantities_and_items(user_message: str) -> List[Dict[str, str]]:
     items_with_qty = []
     processed_spans = []
     
+    print(f"DEBUG: Processing message: '{user_message}' -> '{processed_message}'")
+    
     for pattern in patterns:
-        for match in re.finditer(pattern, user_message, re.IGNORECASE):
+        for match in re.finditer(pattern, processed_message, re.IGNORECASE):
             start, end = match.span()
             
             # Check if this span overlaps with already processed spans
@@ -63,6 +77,8 @@ def extract_quantities_and_items(user_message: str) -> List[Dict[str, str]]:
             else:
                 item_text, qty = groups[0].strip(), groups[1]
             
+            print(f"DEBUG: Found pattern match - qty: {qty}, item: {item_text}")
+            
             items_with_qty.append({
                 'text': item_text,
                 'quantity': int(qty)
@@ -71,7 +87,7 @@ def extract_quantities_and_items(user_message: str) -> List[Dict[str, str]]:
     # If no quantity patterns found, look for items without explicit quantities
     if not items_with_qty:
         # Split by common separators and look for menu items
-        parts = re.split(r',|\sand\s|\n|\r', user_message, flags=re.IGNORECASE)
+        parts = re.split(r',|\sand\s|\n|\r', processed_message, flags=re.IGNORECASE)
         for part in parts:
             part = part.strip()
             if len(part) > 2:  # Ignore very short parts
@@ -80,6 +96,7 @@ def extract_quantities_and_items(user_message: str) -> List[Dict[str, str]]:
                     'quantity': 1
                 })
     
+    print(f"DEBUG: Final extracted items: {items_with_qty}")
     return items_with_qty
 
 def rag_extract_menu_items(user_message: str, threshold=0.5) -> List[Dict]:
@@ -92,9 +109,13 @@ def rag_extract_menu_items(user_message: str, threshold=0.5) -> List[Dict]:
     
     found_items = []
     
+    print(f"DEBUG: RAG processing {len(items_with_qty)} extracted items")
+    
     for item_data in items_with_qty:
         item_text = item_data['text']
         quantity = item_data['quantity']
+        
+        print(f"DEBUG: RAG processing item: '{item_text}' with quantity: {quantity}")
         
         # Use RAG to find the best matching menu item
         user_embedding = model.encode(item_text, convert_to_tensor=True)
@@ -102,12 +123,16 @@ def rag_extract_menu_items(user_message: str, threshold=0.5) -> List[Dict]:
         best_idx = torch.argmax(scores).item()
         best_score = scores[best_idx].item()
         
+        print(f"DEBUG: Best match for '{item_text}': '{item_names[best_idx]}' (score: {best_score})")
+        
         if best_score >= threshold:
             menu_item = flat_items[best_idx].copy()
             menu_item['quantity'] = quantity
             menu_item['total_price'] = menu_item['price'] * quantity
+            print(f"DEBUG: Added item: {menu_item}")
             found_items.append(menu_item)
     
+    print(f"DEBUG: RAG final result: {found_items}")
     return found_items
 
 def rag_extract_menu_item(user_message: str, threshold=0.6) -> Optional[Dict]:

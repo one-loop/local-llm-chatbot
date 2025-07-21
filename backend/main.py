@@ -180,6 +180,8 @@ def process_order_flow(user_message: str, session_id: str) -> tuple[str, bool]:
                 return "I couldn't find those items on the menu. Would you like to confirm your current order or try adding different items?", False
         
         elif 'yes' in user_message_lower or 'confirm' in user_message_lower:
+            # Debug print to check order state at confirmation
+            print(f"DEBUG: Confirming order - Items: {order_state['items']}, Total: {order_state['total_cost']}")
             order_state['state'] = 'waiting_for_nyu_id'
             return "Great! Please provide the 8 digits of your NYU ID card after the N (e.g., if your ID is N12345678, enter 12345678):", False
         elif 'no' in user_message_lower or 'cancel' in user_message_lower:
@@ -236,6 +238,9 @@ def process_order_flow(user_message: str, session_id: str) -> tuple[str, bool]:
             'special_request': order_state['special_request']
         }
         
+        # Debug print to check final order data
+        print(f"DEBUG: Final order data - Items: {order_data['items']}, Total: {order_data['total_cost']}")
+        
         # Save order to file
         save_order_to_file(order_data)
         
@@ -249,6 +254,9 @@ def process_order_flow(user_message: str, session_id: str) -> tuple[str, bool]:
                 items_list.append(item['name'])
         
         items_text = ", ".join(items_list)
+        
+        # Debug print to check items formatting
+        print(f"DEBUG: Items text: {items_text}, Total cost: {order_data['total_cost']}")
         
         # Reset order state
         reset_order_state(session_id)
