@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2025-07-22T12:44:05.955234",
+    "sender": "user",
+    "message": "do you have chicken wings?"
+  },
+  {
+    "timestamp": "2025-07-22T12:44:10.408488",
+    "sender": "bot",
+    "message": " Yes, we have Chicken Wings available for AED 23.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel."
+  },
+  {
+    "timestamp": "2025-07-22T12:44:15.938046",
+    "sender": "user",
+    "message": "i want 5 of them"
+  },
+  {
+    "timestamp": "2025-07-22T12:44:19.382686",
+    "sender": "bot",
+    "message": " Great! You've selected 5 pieces of Chicken Wings, priced at AED 23.0 each. That will be a total of AED 115.0. To confirm your order, please reply with 'yes'. If you'd like to make any changes or need assistance, feel free to let me know."
+  },
+  {
+    "timestamp": "2025-07-22T12:44:24.472156",
+    "sender": "user",
+    "message": "yes"
+  },
+  {
+    "timestamp": "2025-07-22T12:44:27.961867",
+    "sender": "bot",
+    "message": " Thank you for your order! You have selected 5 pieces of Chicken Wings at a total cost of AED 115.0. Your order has been placed successfully. Please come and pick up your order from the dining hall when you are ready. If you need any assistance or have any questions, feel free to ask. Enjoy your meal!"
+  },
+  {
+    "timestamp": "2025-07-22T12:45:19.594649",
+    "sender": "user",
+    "message": "do you not need my nyu id?"
+  },
+  {
+    "timestamp": "2025-07-22T12:45:24.120427",
+    "sender": "bot",
+    "message": " No, at New York University Abu Dhabi, we don't require your NYU ID for ordering in the dining hall. However, it may be needed for identification purposes or to access certain areas on campus. If you have any other questions or concerns, feel free to ask!"
+  }
+]
