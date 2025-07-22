@@ -5,6 +5,7 @@ import datetime
 import asyncio
 from pathlib import Path
 from typing import Dict, List, Optional
+from fastapi import BackgroundTasks
 from menu_embeddings import rag_extract_menu_items
 
 # Paths for conversation and order files
@@ -99,6 +100,12 @@ class OrderKeywordDetector:
         r'\byes\b', r'\bconfirm\b', r'\bokay\b', r'\bsure\b', r'\bgood\b'
     ]
     
+    # Keywords for personal information
+    INFO_KEYWORDS = [
+        r'\bnyu.*id\b', r'\bid.*\d{8}\b', r'\bbuilding\b', r'\bphone\b',
+        r'\bA\d[ABC]\b', r'\bspecial.*request\b'
+    ]
+    
     @staticmethod
     def scan_for_order_intent(conversation: List[Dict]) -> Optional[Dict]:
         """Scan conversation for order-related patterns"""
@@ -143,7 +150,6 @@ class OrderKeywordDetector:
         }
         
         print(f"DEBUG: Order detected - Items: {len(extracted_items)}, Stage: {stage}")
-        print(f"DEBUG: Last user message: '{user_messages[-1]['message'] if user_messages else 'None'}'")
         return order_data
     
     @staticmethod
@@ -151,27 +157,24 @@ class OrderKeywordDetector:
         """Determine what stage of the order process we're in"""
         
         # Look at the last few messages to determine stage
-        recent_text = " ".join([msg['message'] for msg in user_messages[-5:]])
+        recent_text = " ".join([msg['message'] for msg in user_messages[-3:]])
         
-        # Check for confirmation words first (most recent priority)
-        last_message = user_messages[-1]['message'].lower().strip() if user_messages else ""
-        
-        # If last message is confirmation, mark as confirming
-        if re.search(r'\b(yes|yeah|yep|confirm|ok|okay|sure|correct|right|proceed)\b', last_message):
-            return "confirming_order"
-        
-        # Check for NYU ID patterns (8 digits)
-        if re.search(r'\b\d{8}\b', recent_text):
+        # Check for NYU ID patterns
+        if re.search(r'\d{8}', recent_text):
             return "nyu_id_provided"
         
         # Check for building patterns
         if re.search(r'\bA\d[ABC]\b', recent_text, re.IGNORECASE):
             return "building_provided"
         
-        # Check for phone patterns (9-15 digits in a row)
-        phone_text = recent_text.replace(' ', '').replace('-', '').replace('+', '')
-        if re.search(r'\b\d{9,15}\b', phone_text):
+        # Check for phone patterns
+        if re.search(r'\d{9,15}', recent_text.replace(' ', '').replace('-', '')):
             return "phone_provided"
+        
+        # Check for confirmation
+        if any(re.search(keyword, recent_text, re.IGNORECASE) 
+               for keyword in OrderKeywordDetector.CONFIRMATION_KEYWORDS):
+            return "confirming_order"
         
         return "order_intent"
     
@@ -227,10 +230,6 @@ class BackgroundOrderProcessor:
     def _is_order_updated(old_order: Dict, new_order: Dict) -> bool:
         """Check if the order has been meaningfully updated"""
         
-        # Always update if no old order
-        if not old_order:
-            return True
-        
         # Check if items changed
         old_items = old_order.get('items', [])
         new_items = new_order.get('items', [])
@@ -242,20 +241,73 @@ class BackgroundOrderProcessor:
         old_stage = old_order.get('stage', '')
         new_stage = new_order.get('stage', '')
         
-        # Always update if stage changed
-        if old_stage != new_stage:
-            return True
+        stage_progression = {
+            'order_intent': 0,
+            'confirming_order': 1,
+            'nyu_id_provided': 2,
+            'building_provided': 3,
+            'phone_provided': 4
+        }
         
-        # Update if conversation progressed significantly
-        old_conv_length = old_order.get('conversation_length', 0)
-        new_conv_length = new_order.get('conversation_length', 0)
+        old_stage_level = stage_progression.get(old_stage, 0)
+        new_stage_level = stage_progression.get(new_stage, 0)
         
-        # Update if conversation has grown by 2+ messages
-        if new_conv_length - old_conv_length >= 2:
-            return True
-        
-        return False
+        return new_stage_level > old_stage_level
 
+def get_order_context_for_ai(session_id: str) -> str:
+    """Get order context to add to AI prompt"""
+    
+    detected_order = OrderKeywordDetector.get_detected_order(session_id)
+    
+    if not detected_order:
+        return ""
+    
+    items = detected_order.get('items', [])
+    stage = detected_order.get('stage', 'order_intent')
+    total_cost = detected_order.get('total_cost', 0)
+    
+    if not items:
+        return ""
+    
+    # Format items summary
+    items_summary = []
+    for item in items:
+        qty = item.get('quantity', 1)
+        name = item.get('name', 'Unknown')
+        price = item.get('price', 0)
+        if qty > 1:
+            items_summary.append(f"{qty}x {name} (AED {price} each)")
+        else:
+            items_summary.append(f"{name} (AED {price})")
+    
+    items_text = ", ".join(items_summary)
+    
+    # Create context based on stage
+    context = f"\n[DETECTED ORDER] Background system detected order intent: {items_text} (Total: AED {total_cost:.2f})"
+    
+    if stage == "order_intent":
+        context += "\nAsk user if they want to confirm this order."
+    elif stage == "confirming_order":
+        context += "\nUser seems to be confirming. Ask for NYU ID (8 digits after N)."
+    elif stage == "nyu_id_provided":
+        context += "\nNYU ID provided. Ask for building (A1A, A1B, A1C, etc.)."
+    elif stage == "building_provided":
+        context += "\nBuilding provided. Ask for phone number."
+    elif stage == "phone_provided":
+        context += "\nPhone provided. Ask for special requests, then complete order."
+    
+    return context
+
+# Utility functions for the main FastAPI app
+def add_background_order_processing(session_id: str, background_tasks: BackgroundTasks):
+    """Add background order processing task"""
+    background_tasks.add_task(BackgroundOrderProcessor.process_session_orders, session_id)
+
+def cleanup_session_files(session_id: str, background_tasks: BackgroundTasks):
+    """Add cleanup task for session files"""
+    background_tasks.add_task(ConversationLogger.cleanup_session, session_id)
+
+# Test functions
 def test_order_detection():
     """Test the order detection system"""
     
@@ -286,6 +338,8 @@ def test_order_detection():
     
     if detected_order:
         OrderKeywordDetector.save_detected_order(test_session, detected_order)
+        context = get_order_context_for_ai(test_session)
+        print(f"AI Context: {context}")
     
     # Cleanup
     ConversationLogger.cleanup_session(test_session)

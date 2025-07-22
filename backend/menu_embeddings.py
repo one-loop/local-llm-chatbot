@@ -41,7 +41,7 @@ def extract_quantities_and_items(user_message: str) -> List[Dict[str, str]]:
     number_words = {
         'one': '1', 'two': '2', 'three': '3', 'four': '4', 'five': '5',
         'six': '6', 'seven': '7', 'eight': '8', 'nine': '9', 'ten': '10',
-        'a': '1', 'an': '1'
+        'a': '1', 'an': '1', 'the': '1', 'some': '1', 'a few': '1'
     }
     
     # Replace number words with digits
