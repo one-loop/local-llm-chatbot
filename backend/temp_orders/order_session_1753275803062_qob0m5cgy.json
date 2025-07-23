@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "category": "Chicken Nuggets"
+    }
+  ],
+  "stage": "order_intent",
+  "total_cost": 0,
+  "detected_at": "2025-07-23T17:04:59.318450",
+  "conversation_length": 2
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2025-07-23T14:01:19.233641",
+    "sender": "user",
+    "message": "I want to order an acai bowl"
+  },
+  {
+    "timestamp": "2025-07-23T14:01:51.625822",
+    "sender": "bot",
+    "message": " Great! To place an order for an Acai Bowl, please let me know the flavor and size you prefer. Here are our flavors: OG Bowl (Banana, Blueberry, Strawberry, Granola, Chia Seed), Tropical Bowl (Passion Fruit, Mango, Kiwi, Granola, Chia Seed), Choco Bowl (Strawberry, Banana, Hazelnut, Nutella), and Berry Bowl (Blueberry, Strawberry, Banana, Granola). For sizes, we have Small for AED 39.0 and Large for AED 49.0. Please select a flavor and size for your Acai Bowl, such as 'Small OG Bowl' or 'Large Choco Bowl'.\n\nNow, could you please provide me with your NYU ID (8 digits), Building Number (from the available list) and Phone Number (in UAE format) so I can process your order smoothly? Additionally, do you have any special requests for your order, like extra toppings or dietary restrictions?"
+  },
+  {
+    "timestamp": "2025-07-23T14:02:08.969696",
+    "sender": "user",
+    "message": "I want to order a small OG bowl"
+  },
+  {
+    "timestamp": "2025-07-23T14:02:39.332017",
+    "sender": "bot",
+    "message": " Great! To place an order for a Small OG Bowl, please let me know if you have any special requests for your order (like extra toppings, dietary restrictions, etc.). If not, please provide me with your NYU ID (8 digits), Building Number (from the available list) and Phone Number (in UAE format) so I can process your order smoothly.\n\nFor your convenience, here are the buildings available on our campus: A1A, A2B, A3C, W1D, W2E, W3F, W4G, W5H, W6I. Please select a building from this list and provide your 8-digit NYU ID number when you are ready. If you don't know your ID number yet, you can find it on your NYU card or through the NYU portal.\n\nOnce you provide these details, we can move forward with your order."
+  },
+  {
+    "timestamp": "2025-07-23T14:02:45.080377",
+    "sender": "user",
+    "message": "No special requests. My NYU ID is 12345655, my Building number is A1A, and my phone number is +97152345678"
+  },
+  {
+    "timestamp": "2025-07-23T14:03:06.692776",
+    "sender": "bot",
+    "message": " Thank you for providing the necessary details! Now, to confirm your order for a Small OG Bowl, please double-check that I have all the correct information. Your NYU ID is 12345655, building number is A1A, and phone number is +97152345678. If everything looks good, let's proceed with your order.\n\nLastly, do you have any special requests for your order? (like extra toppings, dietary restrictions, etc.)"
+  },
+  {
+    "timestamp": "2025-07-23T14:03:14.242111",
+    "sender": "user",
+    "message": "No special requests, everything is correct"
+  },
+  {
+    "timestamp": "2025-07-23T14:03:27.304666",
+    "sender": "bot",
+    "message": " Great! I found the Small OG Bowl on our menu for AED 39.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel. If you confirm, I will ask for your remaining details to process your order smoothly."
+  }
+]

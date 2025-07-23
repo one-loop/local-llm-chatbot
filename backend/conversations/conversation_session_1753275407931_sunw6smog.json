@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2025-07-23T16:57:26.347821",
+    "sender": "user",
+    "message": "I want to order 3 pepperoni pizzas and 2 chicken alfredos"
+  },
+  {
+    "timestamp": "2025-07-23T16:58:05.654584",
+    "sender": "bot",
+    "message": " Thank you for your order request! To proceed, could you please provide me with the following information:\n\n1. Your NYU ID (8 digits)\n2. Your Building Number (e.g., A1A, A2B)\n3. A valid UAE mobile number starting with '5'\n4. Any special requests for your order (like extra toppings or dietary restrictions)\n\nOnce I have this information, I can confirm the availability and price of each item you selected and guide you through the ordering process. If any of the provided information is invalid, please correct it accordingly."
+  },
+  {
+    "timestamp": "2025-07-23T16:58:44.113792",
+    "sender": "user",
+    "message": "Ok, you now have all the provided information, now move on to confirming the order"
+  },
+  {
+    "timestamp": "2025-07-23T16:59:09.171894",
+    "sender": "bot",
+    "message": " Great! Let's move on to confirming your order. First, let me check the availability and price of each item you selected: 3 pepperoni pizzas and 2 chicken alfredos.\n\nOnce I have this information, I can guide you through the ordering process. If any of the provided information was invalid or missing, please correct it accordingly.\n\nDo you have a valid NYU ID (8 digits), your Building Number (e.g., A1A, A2B), and a UAE mobile number starting with '5'? And do you have any special requests for your order (like extra toppings or dietary restrictions)?"
+  },
+  {
+    "timestamp": "2025-07-23T16:59:27.826801",
+    "sender": "user",
+    "message": "Yes I do have all the valid ID information you may need"
+  },
+  {
+    "timestamp": "2025-07-23T16:59:55.580546",
+    "sender": "bot",
+    "message": " Thank you for placing your order! To proceed with the transaction, could you please provide me with the following details to ensure we can process it correctly:\n\n1. Your NYU ID (8 digits)\n2. Your Building Number (e.g., A1A, A2B)\n3. A valid UAE mobile number starting with '5'\n4. Any special requests for your order (like extra toppings or dietary restrictions)\n\nOnce I have this information, I can confirm the availability and price of each item you selected and guide you through the ordering process. If any of the provided information is invalid or missing, please correct it accordingly."
+  }
+]

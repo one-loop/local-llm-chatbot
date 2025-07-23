@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-23T15:48:58.803579",
+    "sender": "user",
+    "message": "Cart"
+  },
+  {
+    "timestamp": "2025-07-23T15:49:38.521381",
+    "sender": "bot",
+    "message": " Hello there! I see you're interested in our dining services at NYU Abu Dhabi. To help you better, could you please provide me with your 8-digit NYU ID number? If you're not a student or staff member here, don't worry—I can still assist you with general information about our menus and restaurants!\n\nAfter providing your NYU ID, I would need to know which building you're currently located in on our campus. Could you please provide the building number? If you're unsure, I can help you find it.\n\nIf you have any questions about our menu or restaurant availability, feel free to ask! I'll do my best to guide you through our offerings and assist you with placing an order if you'd like.\n\nOnce you provide your NYU ID and building number, I'll be able to help you more efficiently. If you have any other questions or need assistance in the meantime, don't hesitate to ask!"
+  }
+]

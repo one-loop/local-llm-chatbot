@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2025-07-23T17:23:13.883835",
+    "sender": "user",
+    "message": "I want to order a pepperoni pizza"
+  },
+  {
+    "timestamp": "2025-07-23T17:23:40.682161",
+    "sender": "bot",
+    "message": "Great! I found a Pepperoni pizza for AED 43.0 on our menu. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\n\nTo proceed, could you please provide the following information:\n- Your NYU ID (8 digits)\n- The building number where you are located\n- A valid UAE mobile phone number starting with '5'\n- Any special requests for your order\n\nPlease let me know if you need any assistance!"
+  },
+  {
+    "timestamp": "2025-07-23T17:23:42.646629",
+    "sender": "user",
+    "message": "Yes, I'd also like to add a beef supreme pizza to the order as well"
+  },
+  {
+    "timestamp": "2025-07-23T17:24:17.565635",
+    "sender": "user",
+    "message": "Ok, what is my current order now"
+  },
+  {
+    "timestamp": "2025-07-23T17:24:34.029108",
+    "sender": "bot",
+    "message": "To proceed with your order, could you please provide the following information:\n\n1. Your NYU ID (8 digits): \n2. The building number where you are located:\n3. A valid UAE mobile phone number starting with '5':\n4. Any special requests for your order?\n\nThis will help us process your order quickly.\n\nThank you!"
+  },
+  {
+    "timestamp": "2025-07-23T17:25:17.790121",
+    "sender": "user",
+    "message": "Can I see my current order"
+  }
+]

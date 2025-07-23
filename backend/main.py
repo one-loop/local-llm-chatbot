@@ -25,7 +25,7 @@ SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), 'system_prompt.txt'
 # Ollama API endpoint (assumes Ollama is running locally)
 OLLAMA_URL = 'http://localhost:11434/api/generate'
 # OLLAMA_MODEL = 'qwen2.5'
-OLLAMA_MODEL = 'mistral'
+OLLAMA_MODEL = 'qwen2.5'
 
 # MCP server endpoints
 MCP_ITEM_URL = 'http://localhost:9000/menu/item'
@@ -270,101 +270,83 @@ def get_or_create_order_state(session_id: str) -> OrderState:
     return order_states[session_id]
 
 def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
-    """Extract order completion data from conversation history with change detection"""
-    
+    """Extract order completion data from conversation history with change detection and missing fields tracking"""
     user_messages = []
     bot_messages = []
-    bot_messages = []
-    
     for msg in conversation:
         if msg['sender'] == 'user':
             user_messages.append(msg['message'])
         else:
             bot_messages.append(msg['message'])
-    
-    # Combine all user messages for analysis
     combined_text = " ".join(user_messages)
-    
-    # Extract order information
     items = rag_extract_menu_items(combined_text)
     items = normalize_order_items(items)
-    
-    # Extract NYU ID (8 digits) - must be explicitly provided
+    # NYU ID
     nyu_id_match = re.search(r'\b(\d{8})\b', combined_text)
     nyu_id = nyu_id_match.group(1) if nyu_id_match else None
     nyu_id_valid = validate_nyu_id(nyu_id) if nyu_id else False
-    
-    # Extract building (A1A, A2B, etc.) - must be explicitly provided
+    # Building
     building_match = re.search(r'\b(A\d[ABC])\b', combined_text, re.IGNORECASE)
     building = building_match.group(1).upper() if building_match else None
     building_valid = validate_building(building) if building else False
-    
-    # Extract phone (UAE mobile number validation)
+    # Phone
     phone_match = re.search(r'\b(\d{9,15})\b', combined_text.replace(' ', '').replace('-', ''))
     phone = phone_match.group(1) if phone_match else None
-    
-    # Validate phone number (UAE mobile: +9715xxxxxxxx)
     valid_phone = False
     if phone:
         try:
             parsed = phonenumbers.parse(phone, "AE")
             if phonenumbers.is_valid_number(parsed) and phonenumbers.region_code_for_number(parsed) == "AE":
-                # Get the national number (should be 9-15 digits, start with 5)
                 national_number = str(parsed.national_number)
                 if len(national_number) >= 9 and len(national_number) <= 15 and national_number.startswith('5'):
                     valid_phone = True
         except Exception:
             valid_phone = False
-    
-    # Extract special requests
-    special_request = "None"
+    # Special request
+    special_request = None
     for msg in reversed(user_messages[-10:]):
         if any(keyword in msg.lower() for keyword in ['special', 'request', 'note', 'dietary', 'allergy']):
             if not any(word in msg.lower() for word in ['no', 'none', 'nothing']):
                 special_request = msg
                 break
-    
-    # Check if we have all required fields and they're valid
-    has_all_fields = (items and nyu_id_valid and building_valid and valid_phone)
-    
-    if items:
-        order_data = {
-            'items': items,
-            'total_cost': sum(item.get('total_price', item.get('price', 0) * item.get('quantity', 1)) for item in items),
-            'nyu_id': nyu_id,
-            'building': building,
-            'phone': phone,
-            'special_request': special_request,
-            'is_complete': has_all_fields,
-            'nyu_id_valid': nyu_id_valid,
-            'building_valid': building_valid,
-            'valid_phone': valid_phone
-        }
-        
-        # Track both missing and invalid fields
-        missing_fields = []
-        invalid_fields = []
-        
-        if not nyu_id:
-            missing_fields.append('nyu_id')
-        elif not nyu_id_valid:
-            invalid_fields.append('nyu_id')
-            
-        if not building:
-            missing_fields.append('building')
-        elif not building_valid:
-            invalid_fields.append('building')
-            
-        if not phone:
-            missing_fields.append('phone')
-        elif not valid_phone:
-            invalid_fields.append('phone')
-        
-        order_data['missing_fields'] = missing_fields
-        order_data['invalid_fields'] = invalid_fields
-        return order_data
-    
-    return None
+    if special_request is None:
+        for msg in reversed(user_messages[-10:]):
+            if any(word in msg.lower() for word in ['no special', 'no request', 'none', 'nothing']):
+                special_request = 'None'
+                break
+    # Track missing/invalid fields
+    missing_fields = []
+    invalid_fields = []
+    if not items:
+        missing_fields.append('items')
+    if not nyu_id:
+        missing_fields.append('nyu_id')
+    elif not nyu_id_valid:
+        invalid_fields.append('nyu_id')
+    if not building:
+        missing_fields.append('building')
+    elif not building_valid:
+        invalid_fields.append('building')
+    if not phone:
+        missing_fields.append('phone')
+    elif not valid_phone:
+        invalid_fields.append('phone')
+    if special_request is None:
+        missing_fields.append('special_request')
+    # All details collected flag
+    all_details_collected = not missing_fields and not invalid_fields
+    order_data = {
+        'items': items,
+        'total_cost': sum(item.get('total_price', item.get('price', 0) * item.get('quantity', 1)) for item in items) if items else 0,
+        'nyu_id': nyu_id,
+        'building': building,
+        'phone': phone,
+        'special_request': special_request,
+        'missing_fields': missing_fields,
+        'invalid_fields': invalid_fields,
+        'all_details_collected': all_details_collected
+    }
+    return order_data
 
 def check_for_direct_order_response(session_id: str, user_message: str) -> Optional[str]:
     """Check if we should give a direct order response instead of using AI"""
@@ -425,6 +407,17 @@ async def ollama_stream():
     menu_items_context = ""
     order_context = ""
     category_context = ""
+
+    # --- NEW: Order summary and total cost for new order intent ---
+    order_summary_context = ""
+    # Only show summary if user is placing a new order (not just providing details)
+    if items_data and any(item.get('quantity', 1) > 0 for item in items_data):
+        found_items = [item for item in items_data if 'name' in item]
+        if found_items:
+            items_summary = format_items_summary(found_items)
+            total_cost = sum(item['total_price'] for item in found_items)
+            order_summary_context = f"You want to order: {items_summary}\nTotal: AED {total_cost:.2f}\n"
+    # --- END NEW ---
 
     if items_data:
         found_items = []
@@ -522,42 +515,36 @@ async def ollama_stream():
             open_restaurants_context = "[Restaurant data is currently unavailable.]"
 
     # Add order status context if there's an active order
+    order_data = extract_order_completion_data(ConversationLogger.get_conversation(session_id))
     order_status_context = ""
     if order_data:
-        missing_fields = order_data.get('missing_fields', [])
-        invalid_fields = order_data.get('invalid_fields', [])
-        
         order_status_context = "\n[[ORDER STATUS]]\n"
         if order_data['items']:
-            items_text = ", ".join([f"{item.get('quantity', 1)}x {item['name']}" for item in order_data['items']])
+            items_text = ", ".join([
+                f"{item.get('quantity', 1)}x {item['name']}"
+                for item in order_data['items']
+                if isinstance(item, dict) and 'name' in item
+            ])
             order_status_context += f"Current order: {items_text} (Total: AED {order_data['total_cost']:.2f})\n"
-        
         # Add validation context
         order_status_context += "\n[[VALIDATION REQUIREMENTS]]\n"
         order_status_context += "- NYU ID must be exactly 8 digits\n"
         order_status_context += f"- Building must be one of: {', '.join(AVAILABLE_BUILDINGS)}\n"
         order_status_context += "- Phone number must be a valid UAE mobile number starting with '5'\n"
-        
-        if missing_fields or invalid_fields:
-            order_status_context += "\n[[VALIDATION STATUS]]\n"
-            
-            if missing_fields:
+        order_status_context += "- Special request (optional, but must be asked)\n"
+        # Show missing/invalid fields
+        if order_data['missing_fields'] or order_data['invalid_fields']:
+            order_status_context += "\n[[MISSING/INVALID FIELDS]]\n"
+            if order_data['missing_fields']:
                 order_status_context += "Missing information:\n"
-                for field in missing_fields:
+                for field in order_data['missing_fields']:
                     order_status_context += f"- {field}\n"
-            
-            if invalid_fields:
+            if order_data['invalid_fields']:
                 order_status_context += "Invalid information provided:\n"
-                for field in invalid_fields:
-                    if field == 'nyu_id':
-                        order_status_context += f"- NYU ID '{order_data['nyu_id']}' is invalid (must be 8 digits)\n"
-                    elif field == 'building':
-                        order_status_context += f"- Building '{order_data['building']}' is not a valid option\n"
-                    elif field == 'phone':
-                        order_status_context += f"- Phone number '{order_data['phone']}' is not a valid UAE mobile number\n"
-        else:
-            order_status_context += "\nAll required information has been provided and validated.\n"
-        
+                for field in order_data['invalid_fields']:
+                    order_status_context += f"- {field}\n"
+        if order_data['all_details_collected']:
+            order_status_context += "\nAll user details and information have been collected. You can now proceed to finalize the order. No more details are required to be asked from the user.\n"
         if order_data.get('special_request') and order_data['special_request'] != 'None':
             order_status_context += f"\nSpecial request: {order_data['special_request']}\n"
 
@@ -925,6 +912,17 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         order_context = ""
         category_context = ""
 
+        # --- NEW: Order summary and total cost for new order intent ---
+        order_summary_context = ""
+        # Only show summary if user is placing a new order (not just providing details)
+        if items_data and any(item.get('quantity', 1) > 0 for item in items_data):
+            found_items = [item for item in items_data if 'name' in item]
+            if found_items:
+                items_summary = format_items_summary(found_items)
+                total_cost = sum(item['total_price'] for item in found_items)
+                order_summary_context = f"You want to order: {items_summary}\nTotal: AED {total_cost:.2f}\n"
+        # --- END NEW ---
+
         if items_data:
             found_items = []
             not_found_items = []
@@ -989,20 +987,18 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                         if cat_items:
                             cat_summary = "\n".join([f"- {i['name']}: AED {i['price']}" for i in cat_items])
                             category_context += f"\n[MENU CATEGORY: {cat_name}]\n{cat_summary}\n"
-            if not_found_items:
-                not_found_text = ", ".join(not_found_items)
-                if menu_items_context:
-                    menu_items_context += f"\n\nItems not found: {not_found_text}"
-                else:
-                    menu_items_context = f"Items not found: {not_found_text}"
-                    menu_items_context = f"Items not found: {not_found_text}"
+                if not_found_items:
+                    not_found_text = ", ".join(not_found_items)
+                    if menu_items_context:
+                        menu_items_context += f"\n\nItems not found: {not_found_text}"
+                    else:
+                        menu_items_context = f"Items not found: {not_found_text}"
 
         # Get menu context for full menu requests
         menu_context = ""
         if re.search(r"what'?s on the menu|show me the menu|today'?s menu|full menu|what'?s available|what'?s available today", user_message, re.IGNORECASE):
             menu = await fetch_full_menu_from_mcp()
             if menu:
-                menu_context = "[MENU DATA]:\n"
                 menu_context = "[MENU DATA]:\n"
                 for item in menu:
                     menu_context += f"- {item['name']}: AED {item['price']}\n"
@@ -1017,19 +1013,15 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             if open_list is not None:
                 if open_list:
                     open_restaurants_context = "[OPEN RESTAURANTS]:\n" + "\n".join(f"- {r}" for r in open_list)
-                    open_restaurants_context = "[OPEN RESTAURANTS]:\n" + "\n".join(f"- {r}" for r in open_list)
                 else:
-                    open_restaurants_context = "[No restaurants are currently open.]"
                     open_restaurants_context = "[No restaurants are currently open.]"
             else:
                 open_restaurants_context = "[Restaurant data is currently unavailable.]"
 
         # Add order status context if there's an active order
+        order_data = extract_order_completion_data(ConversationLogger.get_conversation(session_id))
         order_status_context = ""
         if order_data:
-            missing_fields = order_data.get('missing_fields', [])
-            invalid_fields = order_data.get('invalid_fields', [])
-            
             order_status_context = "\n[[ORDER STATUS]]\n"
             if order_data['items']:
                 items_text = ", ".join([
@@ -1041,33 +1033,25 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                     order_status_context += f"Current order: {items_text} (Total: AED {order_data['total_cost']:.2f})\n"
                 else:
                     order_status_context += f"Current order: [No individual items listed] (Total: AED {order_data['total_cost']:.2f})\n"
-            
             # Add validation context
             order_status_context += "\n[[VALIDATION REQUIREMENTS]]\n"
             order_status_context += "- NYU ID must be exactly 8 digits\n"
             order_status_context += f"- Building must be one of: {', '.join(AVAILABLE_BUILDINGS)}\n"
             order_status_context += "- Phone number must be a valid UAE mobile number starting with '5'\n"
-            
-            if missing_fields or invalid_fields:
-                order_status_context += "\n[[VALIDATION STATUS]]\n"
-                
-                if missing_fields:
+            order_status_context += "- Special request (optional, but must be asked)\n"
+            # Show missing/invalid fields
+            if order_data['missing_fields'] or order_data['invalid_fields']:
+                order_status_context += "\n[[MISSING/INVALID FIELDS]]\n"
+                if order_data['missing_fields']:
                     order_status_context += "Missing information:\n"
-                    for field in missing_fields:
+                    for field in order_data['missing_fields']:
                         order_status_context += f"- {field}\n"
-                
-                if invalid_fields:
+                if order_data['invalid_fields']:
                     order_status_context += "Invalid information provided:\n"
-                    for field in invalid_fields:
-                        if field == 'nyu_id':
-                            order_status_context += f"- NYU ID '{order_data['nyu_id']}' is invalid (must be 8 digits)\n"
-                        elif field == 'building':
-                            order_status_context += f"- Building '{order_data['building']}' is not a valid option\n"
-                        elif field == 'phone':
-                            order_status_context += f"- Phone number '{order_data['phone']}' is not a valid UAE mobile number\n"
-            else:
-                order_status_context += "\nAll required information has been provided and validated.\n"
-            
+                    for field in order_data['invalid_fields']:
+                        order_status_context += f"- {field}\n"
+            if order_data['all_details_collected']:
+                order_status_context += "\nAll user details and information have been collected. You can now proceed to finalize the order. No more details are required to be asked from the user.\n"
             if order_data.get('special_request') and order_data['special_request'] != 'None':
                 order_status_context += f"\nSpecial request: {order_data['special_request']}\n"
 

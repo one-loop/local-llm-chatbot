@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-23T16:19:07.689926",
+    "sender": "user",
+    "message": "Can I order a peppperoni and a margherita pizza. How much will it be"
+  },
+  {
+    "timestamp": "2025-07-23T16:19:36.660350",
+    "sender": "bot",
+    "message": " Sure, let's get started with your order. The Pepperoni and Margherita pizzas are available from our menu for AED 43.0 and AED 31.0 respectively. Would you like to place an order for these items? Please respond with 'yes' to confirm or 'no' to cancel.\n\n[[ORDER FLOW]]\n\nTo confirm your order, I'll need a few more details:\n- Your NYU ID (8 digits)\n- The building where you are currently located\n- Your phone number in UAE format\n- Any special requests for your order (like extra toppings, dietary restrictions, etc.)"
+  }
+]

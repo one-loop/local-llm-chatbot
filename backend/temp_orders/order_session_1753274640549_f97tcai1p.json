@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "category": "Pepperoni"
+    },
+    {
+      "category": "Chicken Alfredo"
+    }
+  ],
+  "stage": "nyu_id_provided",
+  "total_cost": 0,
+  "detected_at": "2025-07-23T16:45:52.251460",
+  "conversation_length": 3
+}

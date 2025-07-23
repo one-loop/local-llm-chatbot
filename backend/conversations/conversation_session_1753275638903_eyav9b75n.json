@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-23T17:00:42.490024",
+    "sender": "user",
+    "message": "I want some chicken nuggets"
+  },
+  {
+    "timestamp": "2025-07-23T17:01:41.636531",
+    "sender": "bot",
+    "message": " Great! I found Chicken Nuggets on our menu for AED 19.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\n\nIf the user responds 'yes':\n\nAssistant: Alright, let me get your order details. Firstly, I need your NYU ID (8 digits).\n\nIf the user provides a valid NYU ID:\n\nAssistant: Thank you! Now, could you please tell me your building number? It should be one of A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, or A6C.\n\nIf the user provides a valid building number:\n\nAssistant: Perfect! Now I need your phone number in UAE format which should start with '5'.\n\nIf the user provides a valid phone number:\n\nAssistant: Great! Lastly, do you have any special requests for your order like extra toppings, dietary restrictions, etc.?\n\nIf the user responds 'yes':\n\nAssistant: Alright, please let me know your exact request so I can make sure it's noted correctly.\n\nIf the user responds 'no':\n\nAssistant: Okay, I will note that you have no special requests for your order. Now, let me total up your order. Your Chicken Nuggets will cost AED 19.0, and with no additional charges for special requests, your total is AED 19.0. Is there anything else you would like to add to your order? If not, I'll submit it for you!\n\nIf the user asks about other menu items:\n\nAssistant: Of course! Let me check our menu for you. Please remind me what item you were interested in.\n\n(Repeat the process for each missing piece of information)"
+  }
+]

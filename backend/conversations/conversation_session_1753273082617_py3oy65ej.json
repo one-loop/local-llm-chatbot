@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-23T16:18:17.999533",
+    "sender": "user",
+    "message": "Can I order a peppperoni and a margherita pizza"
+  },
+  {
+    "timestamp": "2025-07-23T16:19:00.016192",
+    "sender": "bot",
+    "message": " Certainly! Let's get started with your order. First, could you please provide me with your NYU ID, the building where you are currently located, and your phone number in UAE format? This will help us ensure that we deliver your order to the correct location. Do you have any special requests for your order, like extra toppings or dietary restrictions? Once I have all this information, I can confirm the availability of the items you've requested.\n\nPlease provide me with the following details:\n- NYU ID (8 digits)\n- Building Number (e.g., A1A, A2B)\n- Phone Number (UAE format, e.g., 971501234567)\n- Special Requests (like extra toppings or dietary restrictions)\n\nOnce you've provided these details, I can confirm the availability of the items and guide you through the ordering process if you decide to proceed."
+  }
+]

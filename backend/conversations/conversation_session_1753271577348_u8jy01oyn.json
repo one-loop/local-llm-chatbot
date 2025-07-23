@@ -1,0 +1,17 @@
+[
+  {
+    "timestamp": "2025-07-23T15:54:29.483483",
+    "sender": "user",
+    "message": "I want to order 2 margheritas and 3 pepperoni pizzas"
+  },
+  {
+    "timestamp": "2025-07-23T15:55:08.020972",
+    "sender": "bot",
+    "message": " To place your order, please provide your NYU ID, building number, and phone number in the following format:\n\n- NYU ID: 8 digits (e.g., 12345678)\n- Building Number: A1A, A2B, etc. (e.g., A1A)\n- Phone Number: UAE format (e.g., +971555555555)\n\nDo you have any special requests for your order? (like extra toppings, dietary restrictions, etc.)\n\nOnce I have all the necessary information, I can help guide you through the ordering process. If you need assistance with the format or have questions about anything else, feel free to ask!"
+  },
+  {
+    "timestamp": "2025-07-23T15:55:13.784020",
+    "sender": "user",
+    "message": "Yes, how much will the order total be"
+  }
+]

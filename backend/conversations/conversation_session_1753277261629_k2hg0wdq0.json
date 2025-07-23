@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-23T17:27:51.473935",
+    "sender": "user",
+    "message": "Can I have 99 pepperoni pizzas? How much will it be"
+  },
+  {
+    "timestamp": "2025-07-23T17:28:08.201421",
+    "sender": "bot",
+    "message": "I see you're interested in ordering pepperoni pizzas. However, we can only process one item at a time. Could you please confirm how many pepperoni pizzas you would like to order?\n\nAlso, could you provide me with your NYU ID (8 digits), building number, and UAE mobile phone number starting with '5'? I will also need to know if you have any special requests for your order.\n\nHow many pepperoni pizzas would you like to order? Please respond with the number of pizzas you need."
+  }
+]

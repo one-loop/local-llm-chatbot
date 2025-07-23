@@ -574,7 +574,7 @@ async def ollama_stream():
         prompt += f"\n\n{menu_context}"
     if menu_items_context:
         prompt += f"\n\n{menu_items_context}"
-    if category_context:
+    if  tegory_context:
         prompt += f"\n\n{category_context}"
     if order_context:
         prompt += f"\n\n{order_context}"

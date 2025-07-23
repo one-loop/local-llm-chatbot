@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2025-07-23T17:08:07.709197",
+    "sender": "user",
+    "message": "Hello, what can you do"
+  },
+  {
+    "timestamp": "2025-07-23T17:08:20.237285",
+    "sender": "bot",
+    "message": "Hello! I can help you place an order at our dining hall. Could you please provide me with your NYU ID, the building number where you are located (from A1A to A6C), and a valid UAE mobile phone number starting with '5'? Additionally, let me know if you have any special requests for your order."
+  },
+  {
+    "timestamp": "2025-07-23T17:08:42.646722",
+    "sender": "user",
+    "message": "Do you have pepperoni pizza on the menu"
+  },
+  {
+    "timestamp": "2025-07-23T17:09:01.699702",
+    "sender": "bot",
+    "message": "I'll need to check our menu first. Could you please provide your NYU ID, the building number where you are located (from A1A to A6C), and a valid UAE mobile phone number starting with '5'? Additionally, let me know if you have any special requests for your order.\n\nOnce I confirm the availability of pepperoni pizza on our menu, I can provide more details."
+  }
+]

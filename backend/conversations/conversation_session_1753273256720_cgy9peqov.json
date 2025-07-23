@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2025-07-23T16:21:34.525913",
+    "sender": "user",
+    "message": "I want to order 2 margherita and 2 pepperoni pizzas"
+  },
+  {
+    "timestamp": "2025-07-23T16:22:06.322527",
+    "sender": "bot",
+    "message": " I'm glad you'd like to place an order! Let me confirm, you would like to order 2 Margherita pizzas and 2 Pepperoni pizzas, correct? If so, please provide your NYU ID, building number, and phone number in the following format:\n- NYU ID: 8 digits\n- Building Number: e.g., A1A or A2B\n- Phone Number (UAE format): 9 digits without hyphens or spaces\n\nAlso, do you have any special requests for your order? (like extra toppings, dietary restrictions, etc.)"
+  },
+  {
+    "timestamp": "2025-07-23T16:22:41.132644",
+    "sender": "user",
+    "message": "My NYU ID is 1232431, my Building number is A1A, my Phone Number is 509341312"
+  },
+  {
+    "timestamp": "2025-07-23T16:22:56.094149",
+    "sender": "bot",
+    "message": " Thank you for providing your NYU ID, building number, and phone number. Now, let me confirm your order: You would like to order 2 Margherita pizzas and 2 Pepperoni pizzas, correct? If so, please tell me if you have any special requests for your order (like extra toppings, dietary restrictions, etc.)"
+  },
+  {
+    "timestamp": "2025-07-23T16:23:11.212541",
+    "sender": "user",
+    "message": "Yes, I want to order those items. Can you just make it spicy?"
+  },
+  {
+    "timestamp": "2025-07-23T16:23:29.564437",
+    "sender": "bot",
+    "message": " Great! It looks like you would like 2 Margherita pizzas and 2 Pepperoni pizzas with some spice added to them. To complete your order, please confirm your NYU ID, building number, and phone number in the following format:\n- NYU ID: 8 digits\n- Building Number: e.g., A1A or A2B\n- Phone Number (UAE format): 9 digits without hyphens or spaces\n\nDo you have any additional special requests for your order, like dietary restrictions?"
+  }
+]

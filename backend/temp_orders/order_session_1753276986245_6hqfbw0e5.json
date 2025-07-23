@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "category": "Pepperoni"
+    },
+    {
+      "category": "Beef Supreme"
+    }
+  ],
+  "stage": "confirming_order",
+  "total_cost": 0,
+  "detected_at": "2025-07-23T17:23:42.898644",
+  "conversation_length": 3
+}
