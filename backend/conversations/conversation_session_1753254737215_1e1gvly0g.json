@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2025-07-23T11:12:20.022383",
+    "sender": "user",
+    "message": "Can I order a pizza"
+  },
+  {
+    "timestamp": "2025-07-23T11:12:47.594946",
+    "sender": "user",
+    "message": "I want to order a dynamite chicken pizza"
+  },
+  {
+    "timestamp": "2025-07-23T11:13:02.433338",
+    "sender": "bot",
+    "message": " Great! The Dynamite Chicken pizza is available for AED 39.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel. Also, could you provide your NYU ID, building, and phone number so we can proceed with your order? This will help us verify your affiliation to NYUAD."
+  },
+  {
+    "timestamp": "2025-07-23T11:13:16.531459",
+    "sender": "user",
+    "message": "yes I want to order. MY NYU ID is 12345678, my phone number is 123456789"
+  }
+]

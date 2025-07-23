@@ -1,0 +1,44 @@
+{
+  "items": [
+    {
+      "name": "Chicken Alfredo",
+      "price": 35.0,
+      "quantity": 3,
+      "total_price": 105.0
+    },
+    {
+      "name": "Pepperoni",
+      "price": 43.0,
+      "quantity": 1,
+      "total_price": 43.0
+    },
+    {
+      "name": "Chicken Nuggets",
+      "price": 19.0,
+      "quantity": 1,
+      "total_price": 19.0
+    },
+    {
+      "name": "Chicken Alfredo",
+      "price": 35.0,
+      "quantity": 3,
+      "total_price": 105.0
+    },
+    {
+      "name": "Pepperoni",
+      "price": 43.0,
+      "quantity": 1,
+      "total_price": 43.0
+    },
+    {
+      "name": "Chicken Nuggets",
+      "price": 19.0,
+      "quantity": 1,
+      "total_price": 19.0
+    }
+  ],
+  "stage": "order_intent",
+  "total_cost": 334.0,
+  "detected_at": "2025-07-22T14:28:40.354237",
+  "conversation_length": 6
+}

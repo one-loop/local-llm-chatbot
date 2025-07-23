@@ -1,0 +1,27 @@
+[
+  {
+    "timestamp": "2025-07-23T11:02:57.220423",
+    "sender": "user",
+    "message": "Can I order an acai bowl"
+  },
+  {
+    "timestamp": "2025-07-23T11:03:24.304190",
+    "sender": "bot",
+    "message": " Of course! To place an order for an Acai Bowl, please select a flavor and a size. Here are the options we have available:\n- Small: AED 39.0\n- Large: AED 49.0\n\nFlavors:\n- OG Bowl: Banana, Blueberry, Strawberry, Granola, Chia Seed\n- Tropical Bowl: Passion Fruit, Mango, Kiwi, Granola, Chia Seed\n- Choco Bowl: Strawberry, Banana, Hazelnut, Nutella\n- Berry Bowl: Blueberry, Strawberry, Banana, Granola\n\nPlease let me know which flavor and size you prefer. For example, 'Small OG Bowl' or 'Large Choco Bowl'. Once you've selected your Acai Bowl, I can guide you through the ordering process."
+  },
+  {
+    "timestamp": "2025-07-23T11:03:25.025321",
+    "sender": "user",
+    "message": "Can I order a small OG Bowl?"
+  },
+  {
+    "timestamp": "2025-07-23T11:03:39.962795",
+    "sender": "bot",
+    "message": " Great! The Small OG Bowl is available for AED 39.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel. If you'd like, you can also add a drink or extra toppings to your order. Let me know if you need help finding something specific."
+  },
+  {
+    "timestamp": "2025-07-23T11:03:40.969591",
+    "sender": "user",
+    "message": "yes, OI'd like to order"
+  }
+]

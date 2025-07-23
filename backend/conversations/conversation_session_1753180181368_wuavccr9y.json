@@ -1,0 +1,117 @@
+[
+  {
+    "timestamp": "2025-07-22T14:29:53.259383",
+    "sender": "user",
+    "message": "Hello, can I order some chicken nuggets and a pepperoni pizza please"
+  },
+  {
+    "timestamp": "2025-07-22T14:30:25.864656",
+    "sender": "bot",
+    "message": " Hello! It seems you'd like to order Chicken Nuggets (AED 19.0) and Pepperoni (AED 43.0), totaling AED 62.00. To complete your order, I need a few more details from you:\n- NYU ID (8 digits)\n- Valid building number (options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C)\n- Phone number\n\nPlease provide these details so I can process your order."
+  },
+  {
+    "timestamp": "2025-07-22T14:30:32.393480",
+    "sender": "user",
+    "message": "Also, can you add some french fries to the order as well"
+  },
+  {
+    "timestamp": "2025-07-22T14:31:02.094818",
+    "sender": "user",
+    "message": "yes"
+  },
+  {
+    "timestamp": "2025-07-22T14:31:26.130257",
+    "sender": "bot",
+    "message": " Great! French Fries have been added to your order, making the total AED 71.00. To complete your order, I need a few more details from you:\n- NYU ID (8 digits)\n- Valid building number (options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C)\n- Phone number\n\nPlease provide these details so I can process your order."
+  },
+  {
+    "timestamp": "2025-07-22T14:32:29.512215",
+    "sender": "user",
+    "message": "NYU ID: 12345676465423134"
+  },
+  {
+    "timestamp": "2025-07-22T14:32:44.781460",
+    "sender": "bot",
+    "message": " Thank you for providing your NYU ID. However, it seems there might be an issue as the format provided is not valid. I need an 8-digit number. Please double-check and provide your NYU ID again. Once you've done that, I will ask for your building number and phone number to complete the order process."
+  },
+  {
+    "timestamp": "2025-07-22T14:32:57.875500",
+    "sender": "user",
+    "message": "My NYU Id is 123456"
+  },
+  {
+    "timestamp": "2025-07-22T14:33:11.026957",
+    "sender": "bot",
+    "message": " Thank you for correcting your NYU ID. However, it seems the length of the ID provided is still not valid. I need an 8-digit number. Please double-check and provide your NYU ID again so that I can complete the order process. Once you've done that, I will ask for your building number and phone number."
+  },
+  {
+    "timestamp": "2025-07-22T14:33:19.128207",
+    "sender": "user",
+    "message": "Ok, my NYU ID is 21353134"
+  },
+  {
+    "timestamp": "2025-07-22T14:33:49.794941",
+    "sender": "bot",
+    "message": " Thank you for providing a valid NYU ID (8 digits). To continue with the order process, please provide me with a valid building number from the following options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C. Once you've done that, I will ask for your phone number to complete the order process."
+  },
+  {
+    "timestamp": "2025-07-22T14:33:59.902895",
+    "sender": "user",
+    "message": "I live in A1"
+  },
+  {
+    "timestamp": "2025-07-22T14:34:22.045585",
+    "sender": "bot",
+    "message": " Thank you for providing your building number. However, it seems there might be an issue as I only see options for apartment buildings with more specific letters (e.g., A1A, A1B, A1C). Please double-check the building name and provide me with a valid building number from the following options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C. Once you've done that, I will ask for your phone number to complete the order process."
+  },
+  {
+    "timestamp": "2025-07-22T14:34:32.202696",
+    "sender": "user",
+    "message": "Oh I moved to B2 recently actually"
+  },
+  {
+    "timestamp": "2025-07-22T14:34:53.083179",
+    "sender": "bot",
+    "message": " Thank you for letting me know about the change in building. To continue with the order process, please provide a valid building number from the following options: B2A, B2B, or B2C. Once you've done that, I will ask for your phone number to complete the order process.\n\nPlease note that the provided options are for apartments and not dorms. If you live in a different kind of housing, please let me know so I can assist you accordingly.\n\nOnce again, thank you for ordering from us! We look forward to serving you."
+  },
+  {
+    "timestamp": "2025-07-22T14:34:58.611846",
+    "sender": "user",
+    "message": "I live in A1A"
+  },
+  {
+    "timestamp": "2025-07-22T14:35:32.617726",
+    "sender": "bot",
+    "message": " Great! I see that you live in apartment A1A. To complete your order process, I need your phone number. Please provide a valid phone number with country code (e.g., +971512345678). Once you've done that, your order for Chicken Nuggets, Pepperoni, and French Fries will be confirmed, and I will send you the details about picking up your food.\n\nThank you for ordering from us! We look forward to serving you."
+  },
+  {
+    "timestamp": "2025-07-22T14:35:35.724730",
+    "sender": "user",
+    "message": "My number is 503438517"
+  },
+  {
+    "timestamp": "2025-07-22T14:35:47.756451",
+    "sender": "bot",
+    "message": " Thank you for providing your phone number. Now that everything is in order, your order for Chicken Nuggets, Pepperoni, and French Fries has been confirmed. You will receive a notification when your food is ready to be picked up. Have a great day!"
+  },
+  {
+    "timestamp": "2025-07-22T14:35:50.077725",
+    "sender": "user",
+    "message": "thank you"
+  },
+  {
+    "timestamp": "2025-07-22T14:35:59.643011",
+    "sender": "bot",
+    "message": " You're welcome! If you have any other questions or need assistance in the future, feel free to ask. Enjoy your meal at New York University Abu Dhabi dining hall!"
+  },
+  {
+    "timestamp": "2025-07-22T14:39:19.675077",
+    "sender": "user",
+    "message": "Can I place another order"
+  },
+  {
+    "timestamp": "2025-07-22T14:39:44.528717",
+    "sender": "bot",
+    "message": " Certainly! To place another order, please provide me with your NYU ID (8 digits), a valid building number (options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C), and your phone number. Once you've done that, I can help you with the ordering process again.\n\nIf you have any questions about our menu or services, feel free to ask! Enjoy your meal at New York University Abu Dhabi dining hall!"
+  }
+]

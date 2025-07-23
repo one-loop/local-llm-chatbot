@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2025-07-22T16:06:44.791820",
+    "sender": "user",
+    "message": "Hello, I'd like to order 3 chicken alfredos and 1 pepperoni pizza"
+  },
+  {
+    "timestamp": "2025-07-22T16:07:09.399460",
+    "sender": "bot",
+    "message": "Great! I found 3x Chicken Alfredo for AED 35.0 each and Pepperoni for AED 43.0 on our menu. The total comes to AED 148.00.\n\nWould you like to place an order for this item? Please confirm by responding with 'yes' or 'no'. Additionally, could you please provide your NYU ID (8 digits), building number (A1A, A1B, etc.), and a valid UAE mobile phone number starting with '5' so we can complete the order?\n\nThank you!"
+  },
+  {
+    "timestamp": "2025-07-22T16:07:10.884877",
+    "sender": "user",
+    "message": "yes I'd like to order"
+  },
+  {
+    "timestamp": "2025-07-22T16:07:25.576008",
+    "sender": "bot",
+    "message": "Great! I found 3x Chicken Alfredo for AED 35.0 each and Pepperoni for AED 43.0 on our menu. The total comes to AED 148.00.\n\nCould you please provide your NYU ID (8 digits), building number (A1A, A1B, etc.), and a valid UAE mobile phone number starting with '5' so we can complete the order?\n\nThank you!"
+  },
+  {
+    "timestamp": "2025-07-22T16:07:36.946729",
+    "sender": "user",
+    "message": "NYU ID: 999301\nBuilding Number: B1\nPhone Number: 971501234567"
+  },
+  {
+    "timestamp": "2025-07-22T16:07:56.174376",
+    "sender": "bot",
+    "message": "Great! I have received your order for 3 Chicken Alfredos and 1 Pepperoni Pizza. The total is AED 148.00.\n\nYour NYU ID is 999301, building number B1, and phone number 971501234567. Is this information correct?\n\nIf so, your order will be placed shortly. Thank you for choosing the dining hall at New York University Abu Dhabi!"
+  },
+  {
+    "timestamp": "2025-07-22T16:08:02.573506",
+    "sender": "user",
+    "message": "Yes I think it's correct"
+  },
+  {
+    "timestamp": "2025-07-22T16:08:20.716622",
+    "sender": "bot",
+    "message": "Perfect! Your order of 3 Chicken Alfredos and 1 Pepperoni Pizza has been placed.\n\nThe total is AED 148.00, and your NYU ID, building number B1, and phone number 971501234567 are confirmed to be correct.\n\nThank you for ordering with us! Your order will be ready shortly. Enjoy your meal!\n\nIs there anything else I can assist you with?"
+  }
+]

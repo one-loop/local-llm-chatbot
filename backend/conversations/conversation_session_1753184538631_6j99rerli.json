@@ -1,0 +1,37 @@
+[
+  {
+    "timestamp": "2025-07-22T15:42:21.538806",
+    "sender": "user",
+    "message": "What's on the menu"
+  },
+  {
+    "timestamp": "2025-07-22T15:43:01.568167",
+    "sender": "user",
+    "message": "Can I order a pepperoni pizza"
+  },
+  {
+    "timestamp": "2025-07-22T15:43:25.875841",
+    "sender": "bot",
+    "message": " Yes, the Pepperoni pizza is available on our menu for AED 43.00. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel. If you confirm, I can guide you through the ordering process.\n\n[ORDER FLOW]\nCurrent order: 1x Pepperoni (Total: AED 43.00)\nStill needed:\n- NYU ID (8 digits)\n- Valid building number (options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C)\n- Phone number"
+  },
+  {
+    "timestamp": "2025-07-22T15:43:30.508362",
+    "sender": "user",
+    "message": "yes"
+  },
+  {
+    "timestamp": "2025-07-22T15:43:52.297013",
+    "sender": "bot",
+    "message": " Great! I found Pepperoni pizza on our menu for AED 43.00. To proceed with your order, please provide me with your NYU ID (8 digits), a valid building number from the following options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C. Lastly, please provide me with your phone number. Once you have provided all the necessary details, I'll complete your order for pickup or delivery."
+  },
+  {
+    "timestamp": "2025-07-22T15:44:13.662277",
+    "sender": "user",
+    "message": "123456578, 504331443, A1A"
+  },
+  {
+    "timestamp": "2025-07-22T15:44:42.726019",
+    "sender": "bot",
+    "message": " Thank you for placing an order for the Pepperoni pizza at NYU Abu Dhabi dining hall. To finalize your order, please confirm the delivery or pickup location within the university campus. You can choose from the following buildings: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C. Once you provide me with your preferred location, I'll complete your order for the desired time and ensure it's ready for pickup or delivery at your convenience."
+  }
+]

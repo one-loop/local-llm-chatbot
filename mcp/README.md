@@ -10,6 +10,7 @@ This directory contains the Menu Control Point (MCP) server, which provides menu
 
 1. **(Optional) Create and activate a virtual environment:**
    ```sh
+   cd mcp
    python3 -m venv venv
    source venv/bin/activate
    ```

@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "name": "Pepperoni",
+      "price": 43.0,
+      "quantity": 1,
+      "total_price": 43.0
+    }
+  ],
+  "stage": "nyu_id_provided",
+  "total_cost": 43.0,
+  "detected_at": "2025-07-22T16:48:43.903557",
+  "conversation_length": 10
+}

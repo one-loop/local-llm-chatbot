@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "name": "Chicken Alfredo",
+      "price": 35.0,
+      "quantity": 3,
+      "total_price": 105.0
+    },
+    {
+      "name": "Pepperoni",
+      "price": 43.0,
+      "quantity": 1,
+      "total_price": 43.0
+    }
+  ],
+  "stage": "phone_provided",
+  "total_cost": 148.0,
+  "detected_at": "2025-07-22T14:17:41.149856",
+  "conversation_length": 5
+}

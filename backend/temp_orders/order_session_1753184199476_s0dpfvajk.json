@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "name": "Chicken Nuggets",
+      "price": 19.0,
+      "quantity": 1,
+      "total_price": 19.0
+    }
+  ],
+  "stage": "order_intent",
+  "total_cost": 19.0,
+  "detected_at": "2025-07-22T15:40:13.152903",
+  "conversation_length": 3
+}

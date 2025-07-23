@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-23T10:57:54.497293",
+    "sender": "user",
+    "message": "What acai bowls do you have"
+  },
+  {
+    "timestamp": "2025-07-23T10:58:20.042780",
+    "sender": "bot",
+    "message": " We have Small and Large Acai Bowls available. The Small is priced at AED 39.0, while the Large is AED 49.0. Would you like to place an order for one of these items? Please confirm by responding 'yes' to continue or 'no' to cancel. If you have any other questions, feel free to ask! [In case the user confirms order, proceed with validation and ordering process]"
+  }
+]

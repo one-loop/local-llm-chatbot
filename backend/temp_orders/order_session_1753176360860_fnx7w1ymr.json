@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "name": "Margherita",
+      "price": 31.0,
+      "quantity": 1,
+      "total_price": 31.0
+    }
+  ],
+  "stage": "order_intent",
+  "total_cost": 31.0,
+  "detected_at": "2025-07-22T13:26:48.971157",
+  "conversation_length": 2
+}

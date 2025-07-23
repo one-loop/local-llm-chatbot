@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "name": "Pepperoni",
+      "price": 43.0,
+      "quantity": 1,
+      "total_price": 43.0
+    },
+    {
+      "name": "Chicken Nuggets",
+      "price": 19.0,
+      "quantity": 1,
+      "total_price": 19.0
+    }
+  ],
+  "stage": "order_intent",
+  "total_cost": 62.0,
+  "detected_at": "2025-07-22T14:59:52.486767",
+  "conversation_length": 5
+}

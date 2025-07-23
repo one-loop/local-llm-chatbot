@@ -1,0 +1,47 @@
+[
+  {
+    "timestamp": "2025-07-23T13:05:13.681367",
+    "sender": "user",
+    "message": "Can I order a pepperoni pizza"
+  },
+  {
+    "timestamp": "2025-07-23T13:05:21.530652",
+    "sender": "bot",
+    "message": " The pepperoni pizza is available for AED 43.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel."
+  },
+  {
+    "timestamp": "2025-07-23T13:05:23.549804",
+    "sender": "user",
+    "message": "yes"
+  },
+  {
+    "timestamp": "2025-07-23T13:05:38.449960",
+    "sender": "bot",
+    "message": " To place an order for the pepperoni pizza, let's first confirm your details. Please provide me with your 8-digit NYU ID, building code, and UAE mobile number in this format: xxxxxxxx, A1A, +971 xxxxxxxxxx.\n\nOnce I have that information, we can proceed with your order. If you don't have any of these details yet, no worries—just let me know when you have them ready. In the meantime, I can help answer any other questions you may have about NYUAD dining options!"
+  },
+  {
+    "timestamp": "2025-07-23T13:06:03.499247",
+    "sender": "user",
+    "message": "Myy NYU ID is 12345678, my building is A1A, and my number is 123456789"
+  },
+  {
+    "timestamp": "2025-07-23T13:06:28.025745",
+    "sender": "bot",
+    "message": " Great! It looks like your NYU ID is correctly formatted as 12345678 and your building code matches one of the options provided at A1A. However, I'd need to verify that your phone number is in the correct format. Please provide me with a valid UAE mobile number in this format: +971 xxxxxxxxxx. Once I have all the necessary information, we can proceed with your order for the pepperoni pizza. If you don't have any of these details yet, no worries—just let me know when you have them ready. In the meantime, I can help answer any other questions you may have about NYUAD dining options!"
+  },
+  {
+    "timestamp": "2025-07-23T13:06:28.680369",
+    "sender": "user",
+    "message": "My number is +971 123245678"
+  },
+  {
+    "timestamp": "2025-07-23T13:06:41.496797",
+    "sender": "user",
+    "message": "Yes they are correct"
+  },
+  {
+    "timestamp": "2025-07-23T13:07:05.527321",
+    "sender": "bot",
+    "message": " Great! It looks like your phone number is correctly formatted as +971 123245678. However, I'd need to verify that your NYU ID and building code are in the correct format. Please provide me with an 8-digit NYU ID and one of the following building codes: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C. Once I have all the necessary information, we can proceed with your order for the pepperoni pizza. If you don't have any of these details yet, no worries—just let me know when you have them ready. In the meantime, I can help answer any other questions you may have about NYUAD dining options!"
+  }
+]

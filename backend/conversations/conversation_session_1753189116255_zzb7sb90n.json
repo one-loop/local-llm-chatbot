@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-22T16:58:40.732999",
+    "sender": "user",
+    "message": "Add pizza to cart"
+  },
+  {
+    "timestamp": "2025-07-22T16:58:47.743357",
+    "sender": "bot",
+    "message": " I found Pizza on our menu. It is not available at this time, but you can check back later for availability. Would you like to try something else?"
+  }
+]

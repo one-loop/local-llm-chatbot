@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-23T11:12:04.639223",
+    "sender": "user",
+    "message": "I want to order a banana and nutella pizza"
+  },
+  {
+    "timestamp": "2025-07-23T11:12:12.422359",
+    "sender": "bot",
+    "message": " The Banana & Nutella pizza is available on our menu for AED 35.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel. Additionally, I will need your NYU ID, building number, and phone number to proceed with the order."
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "timestamp": "2025-07-23T10:49:53.028019",
+    "sender": "user",
+    "message": "Do you have acai bowl"
+  },
+  {
+    "timestamp": "2025-07-23T10:50:20.831270",
+    "sender": "user",
+    "message": "yes, I'd like to place an order"
+  },
+  {
+    "timestamp": "2025-07-23T10:50:34.714355",
+    "sender": "bot",
+    "message": " Great! To proceed with your order, I will need a few more details from you:\n\n* Your NYU ID (8 digits)\n* The building where you are located on campus (e.g., A1A, A2B, etc.)\n\nPlease respond with your NYU ID and building location when ready."
+  },
+  {
+    "timestamp": "2025-07-23T10:50:40.397883",
+    "sender": "user",
+    "message": "My NYU ID is 12345678, and my building number is A1A, and my phone number is 523456789"
+  },
+  {
+    "timestamp": "2025-07-23T10:51:02.792897",
+    "sender": "bot",
+    "message": " Thank you for providing your NYU ID (12345678), building location (A1A), and phone number (523456789). Let me check the validity of your information.\n\nYour 8-digit NYU ID and building location appear to be correct. However, I'm unable to validate your phone number because it is not in the format I was expecting. Please provide your phone number in a format like this: (000) 123 4567 or 0001234567.\n\nOnce you have provided the correct format for your phone number, I can complete processing your order."
+  },
+  {
+    "timestamp": "2025-07-23T10:51:23.365155",
+    "sender": "user",
+    "message": "Ok, my phone number is +971-2-628-5511"
+  },
+  {
+    "timestamp": "2025-07-23T10:51:47.110752",
+    "sender": "bot",
+    "message": " Thank you for providing your corrected phone number: +971-2-628-5511. Let me verify if it's valid. Your phone number appears to be valid. Now, I can complete processing your order.\n\nTo finalize your order, please confirm the details as follows:\n\n* NYU ID: 12345678\n* Building Location: A1A\n* Phone Number: +971-2-628-5511\n\nIf everything looks correct, simply say \"yes\" to complete your order. To cancel or make changes, please respond with \"no\" or specify what needs to be adjusted."
+  },
+  {
+    "timestamp": "2025-07-23T10:51:50.615981",
+    "sender": "user",
+    "message": "yes"
+  },
+  {
+    "timestamp": "2025-07-23T10:52:02.136243",
+    "sender": "bot",
+    "message": " Great! Your order for the Acai Bowl (Small) has been placed successfully. We will deliver it to you at Building A1A. You can expect your delivery within 30 minutes. Thank you, and enjoy your meal at NYU Abu Dhabi! If you have any questions or concerns, feel free to ask."
+  }
+]

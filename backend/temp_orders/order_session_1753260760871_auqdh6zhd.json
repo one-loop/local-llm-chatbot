@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "category": "Pizza"
+    }
+  ],
+  "stage": "confirming_order",
+  "total_cost": 0,
+  "detected_at": "2025-07-23T12:55:17.716827",
+  "conversation_length": 10
+}

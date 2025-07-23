@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "category": "Pepperoni"
+    }
+  ],
+  "stage": "confirming_order",
+  "total_cost": 0,
+  "detected_at": "2025-07-23T11:51:03.328274",
+  "conversation_length": 11
+}

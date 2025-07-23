@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2025-07-23T10:59:21.124098",
+    "sender": "user",
+    "message": "Can I order a pizza"
+  },
+  {
+    "timestamp": "2025-07-23T10:59:40.156756",
+    "sender": "user",
+    "message": "Can I order a farm house pizza"
+  },
+  {
+    "timestamp": "2025-07-23T11:00:03.689658",
+    "sender": "bot",
+    "message": " Yes, the Farm House pizza is available for AED 41.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel. Additionally, to complete your order, we will need your NYU ID, building number, and phone number in the following format:\n\n- NYU ID: exactly 8 digits\n- Building: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C\n- Phone number: a valid UAE mobile number starting with '5'"
+  },
+  {
+    "timestamp": "2025-07-23T11:00:19.807448",
+    "sender": "user",
+    "message": "yes I'd like to place an order. Here are my details: NYU ID: 12345678, Building: A1A, Phone Number: +971501234567"
+  }
+]

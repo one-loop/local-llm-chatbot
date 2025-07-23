@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-23T13:00:47.292806",
+    "sender": "user",
+    "message": "Can I order some sides"
+  },
+  {
+    "timestamp": "2025-07-23T13:01:06.945907",
+    "sender": "bot",
+    "message": " Of course! We offer a variety of sides here at NYUAD dining hall, including Steamed Vegetables (AED 9.0), Grilled Vegetables (AED 9.0), Breaded Onion Rings (AED 9.0), French Fries (AED 9.0), Potato Wedges (AED 9.0), Mashed Potatoes (AED 9.0), and Sweet Potato Fries (AED 11.0). Which sides would you like to order? Please let me know if there's something specific you're interested in, and I can help guide you through the ordering process."
+  }
+]

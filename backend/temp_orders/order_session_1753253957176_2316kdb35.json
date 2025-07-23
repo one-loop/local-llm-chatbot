@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "category": "Pizza"
+    },
+    {
+      "category": "Farm House"
+    }
+  ],
+  "stage": "confirming_order",
+  "total_cost": 0,
+  "detected_at": "2025-07-23T11:00:20.258991",
+  "conversation_length": 4
+}

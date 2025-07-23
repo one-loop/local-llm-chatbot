@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "category": "Acai Bowls"
+    },
+    {
+      "category": "OG Bowl"
+    }
+  ],
+  "stage": "confirming_order",
+  "total_cost": 0,
+  "detected_at": "2025-07-23T11:03:41.727030",
+  "conversation_length": 5
+}

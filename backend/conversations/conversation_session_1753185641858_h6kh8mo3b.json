@@ -1,0 +1,47 @@
+[
+  {
+    "timestamp": "2025-07-22T16:00:43.226429",
+    "sender": "user",
+    "message": "Can i order a pizza"
+  },
+  {
+    "timestamp": "2025-07-22T16:01:08.674434",
+    "sender": "bot",
+    "message": "Sure! I found Pepperoni available for AED 43.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\n\n[ORDER FLOW] Great! I found Pepperoni on our menu for AED 43.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel."
+  },
+  {
+    "timestamp": "2025-07-22T16:01:20.326980",
+    "sender": "user",
+    "message": "yes"
+  },
+  {
+    "timestamp": "2025-07-22T16:01:29.408831",
+    "sender": "bot",
+    "message": "Great! Your order for Pepperoni has been placed. Is there anything else you would like to add to your order, or is there anything else I can assist you with?"
+  },
+  {
+    "timestamp": "2025-07-22T16:01:51.446067",
+    "sender": "user",
+    "message": "Can I also order some chicken nuggets"
+  },
+  {
+    "timestamp": "2025-07-22T16:02:08.765825",
+    "sender": "user",
+    "message": "yes"
+  },
+  {
+    "timestamp": "2025-07-22T16:02:24.466361",
+    "sender": "bot",
+    "message": "Great! I found Chicken Nuggets on our menu for AED 19.0. Would you like to add this item to your order? Please respond with 'yes' to confirm or 'no' to cancel.\n\n[ORDER FLOW] Great! Your order now includes:\n- Pepperoni\n- Chicken Nuggets\n\nWould you like to proceed with placing the order? Please respond with 'yes' to confirm or 'no' to cancel."
+  },
+  {
+    "timestamp": "2025-07-22T16:02:28.345958",
+    "sender": "user",
+    "message": "yes"
+  },
+  {
+    "timestamp": "2025-07-22T16:02:51.550851",
+    "sender": "bot",
+    "message": "Great! Your order for Pepperoni and Chicken Nuggets has been placed. The total is AED 62.0.\n\nYour current order includes:\n- Pepperoni (AED 43.0)\n- Chicken Nuggets (AED 19.0)\n\nIs there anything else you would like to add to your order, or is there anything else I can assist you with?\n\n[ORDER CONTEXT]\nCurrent order: \n- Pepperoni (AED 43.0)\n- Chicken Nuggets (AED 19.0) (Total: AED 62.0)\n\nPlease provide your NYU ID (8 digits), a valid building number, and your phone number to complete the order."
+  }
+]

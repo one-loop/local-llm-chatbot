@@ -1,0 +1,17 @@
+[
+  {
+    "timestamp": "2025-07-23T11:03:53.993316",
+    "sender": "user",
+    "message": "Do you have acai bowls"
+  },
+  {
+    "timestamp": "2025-07-23T11:04:04.672398",
+    "sender": "bot",
+    "message": " Yes, we do offer Acai Bowls here at NYU Abu Dhabi. Please select a flavor and size for your order. For example, 'Small OG Bowl' or 'Large Choco Bowl'."
+  },
+  {
+    "timestamp": "2025-07-23T11:04:14.722120",
+    "sender": "user",
+    "message": "yes I'd like to order a small OG bowl"
+  }
+]

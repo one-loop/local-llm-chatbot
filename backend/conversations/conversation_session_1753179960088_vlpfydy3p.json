@@ -1,0 +1,37 @@
+[
+  {
+    "timestamp": "2025-07-22T14:26:17.305864",
+    "sender": "user",
+    "message": "Hello, I'd like to order 3 chicken alfredos and 1 pepperoni pizza"
+  },
+  {
+    "timestamp": "2025-07-22T14:26:53.851142",
+    "sender": "user",
+    "message": "Yes, I'd also like to add some chicken nuggets to my order please"
+  },
+  {
+    "timestamp": "2025-07-22T14:27:22.727638",
+    "sender": "bot",
+    "message": " Great! I found Chicken Nuggets on our menu for AED 19.0. Would you like to place an order for this item as well? To confirm your updated order, please tell me the total number of Chicken Alfredo, Pepperoni, and Chicken Nuggets, along with your NYU ID (8 digits) and valid building number (options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C). Please respond with the total count and your details."
+  },
+  {
+    "timestamp": "2025-07-22T14:27:53.051810",
+    "sender": "user",
+    "message": "Yes I'd like to order those 3 items"
+  },
+  {
+    "timestamp": "2025-07-22T14:28:14.686011",
+    "sender": "bot",
+    "message": " Great! To complete your order, please tell me the total number of Chicken Alfredo, Pepperoni, and Chicken Nuggets. Also, I would need your NYU ID (8 digits) and valid building number (options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C). Once I have that information, I can proceed with your order."
+  },
+  {
+    "timestamp": "2025-07-22T14:28:39.720805",
+    "sender": "user",
+    "message": "3 chicken alfredo, 1 pepperoni and some chicken nuggets please"
+  },
+  {
+    "timestamp": "2025-07-22T14:29:23.204835",
+    "sender": "bot",
+    "message": " Thank you for confirming your order! You would like to order 3 Chicken Alfredo, 1 Pepperoni, and some Chicken Nuggets. The total for your order is AED 167.00 (AED 105.0 for the Chicken Alfredo, AED 43.0 for the Pepperoni, and AED 19.0 for the Chicken Nuggets).\n\nTo complete your order, I would need your NYU ID (8 digits) and valid building number (options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C). Once I have that information, I can proceed with your order. Please respond with your details to confirm your order."
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "category": "Pizza"
+    },
+    {
+      "category": "Banana & Nutella"
+    }
+  ],
+  "stage": "confirming_order",
+  "total_cost": 0,
+  "detected_at": "2025-07-23T11:11:54.402864",
+  "conversation_length": 3
+}

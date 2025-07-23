@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2025-07-22T15:09:05.207409",
+    "sender": "user",
+    "message": "Can I order a pepperoni pizza"
+  },
+  {
+    "timestamp": "2025-07-22T15:09:41.062684",
+    "sender": "bot",
+    "message": " Great! I found Pepperoni on our menu for AED 43.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel. If you would like to proceed, could you please provide me with your NYU ID (8 digits), valid building number (options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C) and a phone number (9-15 digits)?\n\nPlease note: The information provided is for internal use only and should not be repeated in the conversation with the user.\n\n[ORDER STATUS] - User has requested to order Pepperoni, awaiting NYU ID, building number, and phone number."
+  },
+  {
+    "timestamp": "2025-07-22T15:10:08.650554",
+    "sender": "user",
+    "message": "yes"
+  },
+  {
+    "timestamp": "2025-07-22T15:10:27.684881",
+    "sender": "bot",
+    "message": " Wonderful! To confirm your order, could you please provide me with your NYU ID (8 digits), valid building number (options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C) and a phone number (9-15 digits)? I'll proceed with your order once I have all the necessary details."
+  },
+  {
+    "timestamp": "2025-07-22T15:11:03.124121",
+    "sender": "user",
+    "message": "Yes, my NYU ID is 12345"
+  },
+  {
+    "timestamp": "2025-07-22T15:11:22.508312",
+    "sender": "bot",
+    "message": " Thank you for providing your NYU ID. To complete the order process, could you please provide me with a valid building number (options: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C) and a phone number (9-15 digits)? I'll proceed with your order once I have all the necessary details.\n\n[ORDER STATUS] - User has provided their NYU ID, awaiting building number and phone number."
+  },
+  {
+    "timestamp": "2025-07-22T15:16:39.695391",
+    "sender": "user",
+    "message": "Yes, my building is A1"
+  },
+  {
+    "timestamp": "2025-07-22T15:17:12.154646",
+    "sender": "bot",
+    "message": " Thank you for providing your building number. To finalize your order, could you please provide me with a valid phone number (9-15 digits)? I'll proceed with your order once I have all the necessary details.\n\n[ORDER STATUS] - User has provided their NYU ID and building number, awaiting phone number."
+  }
+]

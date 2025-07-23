@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "category": "Pizza"
+    },
+    {
+      "category": "Pepperoni"
+    }
+  ],
+  "stage": "confirming_order",
+  "total_cost": 0,
+  "detected_at": "2025-07-23T11:40:35.230067",
+  "conversation_length": 5
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2025-07-23T12:56:32.154947",
+    "sender": "user",
+    "message": "Can I order an acai bowl"
+  },
+  {
+    "timestamp": "2025-07-23T12:56:47.514617",
+    "sender": "bot",
+    "message": " Yes, you can certainly order an acai bowl here at New York University Abu Dhabi! Please select a flavor and size for your acai bowl order. Here are the flavors available: OG Bowl, Tropical Bowl, Choco Bowl, Berry Bowl. Sizes are Small (AED 39.0) and Large (AED 49.0). For example: 'Small OG Bowl' or 'Large Choco Bowl'. Which one would you like to order?"
+  },
+  {
+    "timestamp": "2025-07-23T12:56:49.774356",
+    "sender": "user",
+    "message": "I want a small OG Bowl"
+  },
+  {
+    "timestamp": "2025-07-23T12:57:02.680330",
+    "sender": "user",
+    "message": "yes"
+  },
+  {
+    "timestamp": "2025-07-23T12:57:33.778011",
+    "sender": "user",
+    "message": "My NYU ID is 12345678, My building is A1A and my phone number is 503193104"
+  },
+  {
+    "timestamp": "2025-07-23T12:57:58.861821",
+    "sender": "bot",
+    "message": " Great! I found the OG Bowl on our menu for AED 39.0. To place an order, please provide your NYU ID (8 digits), the building where you are located (e.g., A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C), and your phone number.\n\nFor example: '12345678', 'A1A', or '503193104'. I'll need this information to complete your order."
+  }
+]

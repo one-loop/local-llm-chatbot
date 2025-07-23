@@ -1,0 +1,27 @@
+[
+  {
+    "timestamp": "2025-07-23T11:38:12.696521",
+    "sender": "user",
+    "message": "Can I order a pizza\n"
+  },
+  {
+    "timestamp": "2025-07-23T11:39:18.613117",
+    "sender": "bot",
+    "message": " Of course! Our dining hall offers several pizza options. Here are some of them along with their prices:\n\n- Margherita: AED 31.0\n- Al Funghi: AED 35.0\n- Paneer Kathi: AED 39.0\n- Farm House: AED 41.0\n- Banana & Nutella: AED 35.0\n- Chicken Alfredo: AED 35.0\n- Chicken Tikka: AED 35.0\n- Dynamite Chicken: AED 39.0\n- Pepperoni: AED 43.0\n- Beef Supreme: AED 47.0\n- Seafood Marinara: AED 43.0\n- Smoked Salmon & Avocado: AED 49.0\n\nIf you'd like to place an order for one of these pizzas, please let me know the specific item you'd prefer and confirm your NYU ID, building, and phone number when ready. To start the ordering process, respond with 'yes' or provide the necessary details as follows:\n\n- NYU ID: 8 digits (e.g., 12345678)\n- Building: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C\n- Phone number: valid UAE mobile number (e.g., 555555555)\n\nGreat! I found [your requested pizza name] on our menu for AED [price]. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel."
+  },
+  {
+    "timestamp": "2025-07-23T11:39:48.306747",
+    "sender": "user",
+    "message": "Can I order a pepperoni pizza"
+  },
+  {
+    "timestamp": "2025-07-23T11:40:21.811878",
+    "sender": "bot",
+    "message": " Great! I found Pepperoni on our menu for AED 43.0. Would you like to place an order for this item? To proceed, please provide your NYU ID, building, and phone number when ready. Here's the format to follow:\n\n- NYU ID: 8 digits (e.g., 12345678)\n- Building: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C\n- Phone number: valid UAE mobile number (e.g., 555555555)\n\nPlease respond with the necessary details as soon as possible to start the ordering process."
+  },
+  {
+    "timestamp": "2025-07-23T11:40:34.771732",
+    "sender": "user",
+    "message": "Yes, I want to order this. My NYU ID is 12345678, Building is A5C, and phone number is 555555555"
+  }
+]

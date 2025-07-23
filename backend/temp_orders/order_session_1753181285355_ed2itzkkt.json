@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "name": "Chicken Nuggets",
+      "price": 19.0,
+      "quantity": 1,
+      "total_price": 19.0
+    },
+    {
+      "name": "Chicken Tikka",
+      "price": 35.0,
+      "quantity": 1,
+      "total_price": 35.0
+    }
+  ],
+  "stage": "building_provided",
+  "total_cost": 54.0,
+  "detected_at": "2025-07-22T14:52:56.579597",
+  "conversation_length": 5
+}

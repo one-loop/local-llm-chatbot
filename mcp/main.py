@@ -25,6 +25,17 @@ def flatten_menu(menu):
     recurse(menu)
     return items
 
+# New: Helper to find a category and return its subtree
+def find_category(menu, category_name):
+    if isinstance(menu, dict):
+        for k, v in menu.items():
+            if k.lower() == category_name.lower():
+                return v
+            result = find_category(v, category_name)
+            if result is not None:
+                return result
+    return None
+
 @app.get('/menu/item')
 def get_menu_item(name: str = Query(..., description="Name of the menu item")):
     """
@@ -37,6 +48,20 @@ def get_menu_item(name: str = Query(..., description="Name of the menu item")):
         if item['name'].lower() == name.lower():
             return item
     return JSONResponse(status_code=404, content={"error": f"Item '{name}' not found in the menu."})
+
+# New: Endpoint to get all items in a category
+@app.get('/menu/category')
+def get_menu_category(category: str = Query(..., description="Name of the menu category")):
+    """
+    Return all items (with prices) in the given category, recursively.
+    """
+    with open(MENU_PATH, 'r') as f:
+        menu = json.load(f)
+    subtree = find_category(menu, category)
+    if subtree is None:
+        return JSONResponse(status_code=404, content={"error": f"Category '{category}' not found in the menu."})
+    items = flatten_menu(subtree)
+    return items
 
 @app.get('/menu/today')
 def get_menu_today():
