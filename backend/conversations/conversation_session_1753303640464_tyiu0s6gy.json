@@ -1,0 +1,37 @@
+[
+  {
+    "timestamp": "2025-07-24T00:47:23.410901",
+    "sender": "user",
+    "message": "Can I order a pizza"
+  },
+  {
+    "timestamp": "2025-07-24T00:47:52.075830",
+    "sender": "user",
+    "message": "I want to order a margherita and a farm house pizza please"
+  },
+  {
+    "timestamp": "2025-07-24T00:48:13.858530",
+    "sender": "bot",
+    "message": " Great! I found the Margherita (AED 31.0) and Farm House (AED 41.0) pizzas on our menu. Would you like to place an order for these items? Please respond with 'yes' to confirm or 'no' to cancel.\n\n[[ORDER STATUS]]: NYU ID, Building Number, Phone Number, Special Requests\n\nIf you confirm your order, I will need your NYU ID, Building Number, and Phone Number. Also, do you have any special requests for your order like extra toppings or dietary restrictions?"
+  },
+  {
+    "timestamp": "2025-07-24T00:48:15.083393",
+    "sender": "user",
+    "message": "yes"
+  },
+  {
+    "timestamp": "2025-07-24T00:48:46.168267",
+    "sender": "bot",
+    "message": " To place your order for the Margherita (AED 31.0) and Farm House (AED 41.0) pizzas, I'll need some information from you. Firstly, may I have your NYU ID please? It should be an 8-digit number.\n\nNext, what is the building where you are located? Our options include A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, and A6C.\n\nLastly, could you please provide your phone number in UAE format? This will help us to contact you when your order is ready for pickup.\n\nDo you have any special requests for your order like extra toppings or dietary restrictions? If so, please let me know!"
+  },
+  {
+    "timestamp": "2025-07-24T00:48:54.247074",
+    "sender": "user",
+    "message": "Ok, My NYU ID is 12343243, My Building Number is A1A, and my Phone number is 34803081323 and I don't have any special requests"
+  },
+  {
+    "timestamp": "2025-07-24T00:49:28.471668",
+    "sender": "bot",
+    "message": " Great! Based on your provided information, I can confirm that you are requesting the Margherita (AED 31.0) and Farm House (AED 41.0) pizzas. To complete your order, please provide me with the following details:\n- Your NYU ID number (8 digits)\n- The building where you are located (e.g., A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, or A6C)\n- Your phone number in UAE format (e.g., 971501234567)\n- Do you have any special requests for your order like extra toppings or dietary restrictions? If so, please let me know!"
+  }
+]

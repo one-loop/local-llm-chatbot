@@ -47,4 +47,4 @@
 
 ## Notes
 - The backend is designed to work with the Next.js frontend in the `frontend/` directory (which runs on port 3000).
-- For further customization, edit the system prompt in `system_prompt.txt`. 
+- For further customization, edit the system prompt in `system_prompt.txt`.
