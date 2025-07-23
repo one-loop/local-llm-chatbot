@@ -17,7 +17,6 @@ from background_order_system import (
     ConversationLogger, OrderKeywordDetector, BackgroundOrderProcessor
 )
 from menu_embeddings import rag_extract_menu_items, rag_extract_menu_item, format_items_summary
-from menu_embeddings import is_category_name
 
 # Define the path to the system prompt file
 SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), 'system_prompt.txt')
@@ -30,7 +29,6 @@ OLLAMA_MODEL = 'qwen2.5'
 # MCP server endpoints
 MCP_ITEM_URL = 'http://localhost:9000/menu/item'
 MCP_MENU_URL = 'http://localhost:9000/menu/today'
-MCP_CATEGORY_URL = 'http://localhost:9000/menu/category'
 
 RESTAURANTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'restaurants.json'))
 
@@ -85,27 +83,17 @@ def save_final_order_to_file(order_data: Dict):
     except Exception as e:
         print(f"Error saving order: {e}")
 
-# Validation Functions
-def validate_nyu_id(text: str) -> Dict[str, Union[str, bool]]:
-    """Validate if the text contains a valid NYU ID (8 digits)"""
-    if not text:
-        return {"valid": False, "message": "No NYU ID found", "nyu_id": None}
+def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
+    """Extract order completion data from conversation history with change detection"""
     
-    # Find any 8-digit number in the text
-    nyu_id_match = re.search(r'\b(\d{8})\b', text)
-    if not nyu_id_match:
-        return {"valid": False, "message": "NYU ID must be exactly 8 digits", "nyu_id": None}
+    user_messages = []
+    bot_messages = []
     
-    nyu_id = nyu_id_match.group(1)
-    return {"valid": True, "message": "Valid NYU ID", "nyu_id": nyu_id}
-
-def validate_phone_number(text: str) -> Dict[str, Union[str, bool]]:
-    """Validate if the text contains a valid UAE phone number"""
-    if not text:
-        return {"valid": False, "message": "No phone number found", "phone": None}
-    
-    # Clean the text of spaces and hyphens
-    cleaned_text = text.replace(' ', '').replace('-', '')
+    for msg in conversation:
+        if msg['sender'] == 'user':
+            user_messages.append(msg['message'])
+        else:
+            bot_messages.append(msg['message'])
     
     # Find any number between 9-15 digits
     phone_match = re.search(r'\b(\d{9,15})\b', cleaned_text)
@@ -369,19 +357,11 @@ def check_for_direct_order_response(session_id: str, user_message: str) -> Optio
     
     print(f"DEBUG: Checking direct response - Stage: {stage}, Message: '{user_message}'")
     
-    # Only handle order confirmation and cancellation
+    # Only handle explicit cancellations here
     if stage == "confirming_order":
-        if re.search(r'\b(yes|yeah|yep|confirm|ok|okay|sure|correct|right|proceed)\b', user_message_lower):
-            # Start the order flow
-            order_state = get_or_create_order_state(session_id)
-            order_state.start_order(items, total_cost)
-            return None  # Let the LLM handle the response with function calling
-        elif re.search(r'\b(no|nah|nope|cancel|wrong|incorrect)\b', user_message_lower):
+        if re.search(r'\b(no|nah|nope|cancel|wrong|incorrect)\b', user_message_lower):
             OrderKeywordDetector.save_detected_order(session_id, None)
-            # Reset order state
-            order_state = get_or_create_order_state(session_id)
-            order_state.reset()
-            return None  # Let the LLM handle the response
+            return None  # Let the LLM handle the response naturally
     
     return None
 
@@ -686,38 +666,41 @@ async def ollama_stream():
         ConversationLogger.log_message(session_id, bot_response, "bot")
 
 def check_for_order_completion(session_id: str) -> Optional[str]:
-    """Check if an order can be completed"""
-    order_state = get_or_create_order_state(session_id)
+    """Check if an order can be completed and return confirmation message"""
     
-    if not order_state.in_order_flow:
+    conversation = ConversationLogger.get_conversation(session_id)
+    if len(conversation) < 3:  # Need at least some conversation
         return None
     
-    # Check if all required information is valid
-    if (order_state.nyu_id and 
-        order_state.building and order_state.building in AVAILABLE_BUILDINGS and
-        order_state.phone and
-        order_state.special_request is not None):  # Include special request check
+    # Extract order data from entire conversation
+    order_data = extract_order_completion_data(conversation)
+    if not order_data:
+        return None
+    
+    # FIX: Actually complete the order if we have all valid information
+    if order_data.get('is_complete') and order_data.get('valid_building'):
+        # Format items for display
+        items_list = []
+        for item in order_data['items']:
+            qty = item.get('quantity', 1)
+            if qty > 1:
+                items_list.append(f"{qty}x {item['name']}")
+            else:
+                items_list.append(item['name'])
         
-        # Format order data for saving
-        order_data = {
-            'items': order_state.items,
-            'total_cost': order_state.total_cost,
-            'nyu_id': order_state.nyu_id,
-            'building': order_state.building,
-            'phone': order_state.phone,
-            'special_request': order_state.special_request
-        }
+        items_text = ", ".join(items_list)
         
         # Save the completed order
         save_final_order_to_file(order_data)
         
-        # Clean up
+        # Clean up session files after successful order
         ConversationLogger.cleanup_session(session_id)
-        order_state.reset()
         
-        # Return confirmation message
-        return ("Your order is confirmed! Please take your receipt to the dining hall to pick up your food. "
-                "Thank you for ordering with us!")
+        # FIX: Return the actual completion message instead of None
+        confirmation = f"✅ Order confirmed! Items: {items_text}. Total: AED {order_data['total_cost']:.2f}. NYU ID: N{order_data['nyu_id']}, Building: {order_data['building']}, Phone: {order_data['phone']}. Special Request: {order_data['special_request']}. Your order has been placed successfully!"
+        
+        print(f"DEBUG: Order completed for session {session_id}")
+        return confirmation
     
     return None
 
@@ -747,19 +730,6 @@ async def fetch_full_menu_from_mcp():
         print(f"Error fetching full menu from MCP: {e}")
         return None
 
-async def fetch_menu_category_from_mcp(category_name: str):
-    """Query the MCP server for all items in a category by name."""
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(MCP_CATEGORY_URL, params={"category": category_name}, timeout=2)
-            if resp.status_code == 200:
-                return resp.json()
-            else:
-                return None
-    except Exception as e:
-        print(f"Error fetching menu category from MCP: {e}")
-        return None
-
 def get_open_restaurants():
     now = datetime.datetime.now().time()
     try:
@@ -775,40 +745,6 @@ def get_open_restaurants():
     except Exception as e:
         print(f"Error loading restaurants.json: {e}")
         return None
-
-def parse_acai_bowl_order(text: str) -> Optional[Dict]:
-    """
-    Parse an acai bowl order from text like 'Small OG Bowl', return item dict with name, price, quantity, total_price.
-    """
-    try:
-        with open(MENU_PATH, 'r') as f:
-            menu = json.load(f)
-        acai = menu.get('Acai Bowls', {})
-        sizes = {k.lower(): v for k, v in acai.items() if k in ['Small', 'Large']}
-        flavors = [k.lower() for k in acai.keys() if k not in ['Small', 'Large']]
-        # Look for size and flavor in text
-        size_match = None
-        for size in sizes:
-            if re.search(rf'\b{size}\b', text.lower()):
-                size_match = size
-                break
-        flavor_match = None
-        for flavor in flavors:
-            if flavor in text.lower():
-                flavor_match = flavor
-                break
-        if size_match and flavor_match:
-            price = sizes[size_match]
-            name = f"{size_match.capitalize()} {flavor_match.title()} Bowl"
-            return {
-                'name': name,
-                'price': price,
-                'quantity': 1,
-                'total_price': price * 1
-            }
-    except Exception as e:
-        print(f"Error parsing acai bowl order: {e}")
-    return None
 
 @app.post('/chat')
 async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
@@ -833,18 +769,6 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
     # Process background order detection
     await BackgroundOrderProcessor.process_session_orders(session_id)
     
-    # Get order state
-    order_state = get_or_create_order_state(session_id)
-    
-    # Check for special request responses
-    if order_state.in_order_flow and order_state.special_request is None:
-        user_message_lower = user_message.lower().strip()
-        if user_message_lower in ['no', 'none', 'n/a', 'no special requests', 'nothing']:
-            order_state.special_request = 'None'
-        elif not re.search(r'\b(nyu|id|building|phone|number)\b', user_message_lower):
-            # If message doesn't look like other order info, treat as special request
-            order_state.special_request = user_message.strip()
-    
     # Check for explicit order cancellation
     direct_response = check_for_direct_order_response(session_id, user_message)
     if direct_response:
@@ -856,22 +780,8 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
     
     # Extract current order state
     order_data = extract_order_completion_data(ConversationLogger.get_conversation(session_id))
-    # If waiting for special request
-    if hasattr(order_state, 'special_request') and order_state.special_request is None:
-        user_message_lower = body["message"].strip().lower()
-        if user_message_lower in ['no', 'none', 'n/a', 'no special requests']:
-            order_state.special_request = 'None'
-        else:
-            order_state.special_request = body["message"].strip()
-        # After setting, check for order completion again
-        completion_message = check_for_order_completion(session_id)
-        if completion_message:
-            async def completion_response_stream():
-                yield completion_message
-            ConversationLogger.log_message(session_id, completion_message, "bot")
-            return StreamingResponse(completion_response_stream(), media_type="text/plain")
-
-    # Check for order completion
+    
+    # FIX: Check for order completion and actually return the message
     completion_message = check_for_order_completion(session_id)
     if completion_message:
         async def completion_response_stream():
@@ -896,18 +806,6 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         
         # RAG-based multiple item extraction for immediate responses
         items_data = rag_extract_menu_items(user_message)
-        # Normalize acai bowl orders
-        new_items_data = []
-        for item in items_data:
-            if 'text' in item and ('acai' in item['text'].lower() or 'bowl' in item['text'].lower()):
-                acai_item = parse_acai_bowl_order(item['text'])
-                if acai_item:
-                    new_items_data.append(acai_item)
-                else:
-                    new_items_data.append(item)
-            else:
-                new_items_data.append(item)
-        items_data = new_items_data
         menu_items_context = ""
         order_context = ""
         category_context = ""
@@ -926,36 +824,29 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         if items_data:
             found_items = []
             not_found_items = []
-            found_categories = []
+            
             for item_data in items_data:
-                if 'category' in item_data:
-                    category_name = item_data['category']
-                    yield f"[Looking up category '{category_name}' in the menu...]\n"
-                    category_items = await fetch_menu_category_from_mcp(category_name)
-                    if category_items:
-                        found_categories.append({'category': category_name, 'items': category_items})
-                    else:
-                        not_found_items.append(category_name)
-                elif 'name' in item_data:
-                    item_name = item_data["name"]
-                    yield f"[Looking up '{item_name}' in the menu...]\n"
-                    # Verify with MCP server
-                    item = await fetch_menu_item_from_mcp(item_name)
-                    if item:
-                        # Update with verified data from MCP
-                        verified_item = {
-                            'name': item['name'],
-                            'price': item['price'],
-                            'quantity': item_data.get('quantity', 1)
-                        }
-                        verified_item['total_price'] = verified_item['price'] * verified_item['quantity']
-                        found_items.append(verified_item)
-                    else:
-                        not_found_items.append(item_data['name'])
+                item_name = item_data["name"]
+                yield f"[Looking up '{item_name}' in the menu...]\n"
+                
+                # Verify with MCP server
+                item = await fetch_menu_item_from_mcp(item_name)
+                if item:
+                    # Update with verified data from MCP
+                    verified_item = {
+                        'name': item['name'],
+                        'price': item['price'],
+                        'quantity': item_data.get('quantity', 1)
+                    }
+                    verified_item['total_price'] = verified_item['price'] * verified_item['quantity']
+                    found_items.append(verified_item)
+                else:
+                    not_found_items.append(item_data['name'])
             
             if found_items:
                 items_summary = format_items_summary(found_items)
                 menu_items_context = f"Menu items found:\n{items_summary}"
+                
                 # Check for order intent
                 if re.search(r'order|buy|get|want|purchase|can i get|i\'?ll have', user_message, re.IGNORECASE):
                     total_cost = sum(item['total_price'] for item in found_items)
@@ -1053,7 +944,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             if order_data['all_details_collected']:
                 order_status_context += "\nAll user details and information have been collected. You can now proceed to finalize the order. No more details are required to be asked from the user.\n"
             if order_data.get('special_request') and order_data['special_request'] != 'None':
-                order_status_context += f"\nSpecial request: {order_data['special_request']}\n"
+                order_status_context += f"Special request: {order_data['special_request']}\n"
 
         # Build the conversation history prompt
         history_prompt = ""
@@ -1073,66 +964,23 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             prompt += f"\n\n{menu_context}"
         if menu_items_context:
             prompt += f"\n\n{menu_items_context}"
-        if category_context:
-            prompt += f"\n\n{category_context}"
         if order_context:
             prompt += f"\n\n{order_context}"
-        if order_status_context:
-            prompt += f"\n\n{order_status_context}"
         if open_restaurants_context:
             prompt += f"\n\n{open_restaurants_context}"
         prompt += f"\n{history_prompt}User: {user_message}\nAssistant:"
 
-        # Add order state context if in order flow
-        order_state = get_or_create_order_state(session_id)
+        # Log the full prompt for debugging
+        print("\n================ DEBUG: LLM PROMPT ================")
+        print(prompt)
+        print("================ END DEBUG: LLM PROMPT ================\n")
         
-        if order_state.in_order_flow:
-            order_status = "\n[[ORDER STATUS]]\n"
-            items_inner = ', '.join([
-                f"{item.get('quantity', 1)}x {item['name']}"
-                for item in (order_state.items or [])
-                if isinstance(item, dict) and 'name' in item
-            ])
-            order_status += f"Items: {items_inner}\n"
-            order_status += f"Total: AED {order_state.total_cost:.2f}\n"
-            
-            # Show provided information
-            order_status += "\nProvided Information:\n"
-            if order_state.nyu_id:
-                order_status += f"- NYU ID: {order_state.nyu_id}\n"
-            if order_state.building:
-                order_status += f"- Building: {order_state.building}\n"
-            if order_state.phone:
-                order_status += f"- Phone: {order_state.phone}\n"
-            if order_state.special_request is not None:
-                order_status += f"- Special Request: {order_state.special_request}\n"
-            
-            # Show missing information
-            order_status += "\nMissing Information:\n"
-            if not order_state.nyu_id:
-                order_status += "- NYU ID (must be 8 digits)\n"
-            if not order_state.building:
-                order_status += f"- Building (must be one of: {', '.join(AVAILABLE_BUILDINGS)})\n"
-            if not order_state.phone:
-                order_status += "- Phone number (must be a valid UAE mobile number)\n"
-            if order_state.special_request is None:
-                order_status += "- Special Request (ask if they have any special requests, dietary restrictions, etc.)\n"
-            
-            prompt += order_status
-            
-            # Add validation tools to the payload
-            payload = {
-                "model": OLLAMA_MODEL,
-                "prompt": prompt,
-                "stream": True,
-                "tools": VALIDATION_TOOLS
-            }
-        else:
-            payload = {
-                "model": OLLAMA_MODEL,
-                "prompt": prompt,
-                "stream": True
-            }
+        payload = {
+            "model": OLLAMA_MODEL,
+            "prompt": prompt,
+            "stream": True,
+            "temperature": 0.1
+        }
 
         # Collect the bot response for logging
         bot_response = ""
@@ -1149,45 +997,11 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                                 chunk = data["response"]
                                 bot_response += chunk
                                 yield chunk
-                            elif "tool_calls" in data:
-                                # Handle tool calls
-                                for tool_call in data["tool_calls"]:
-                                    function_name = tool_call["function"]["name"]
-                                    function_args = json.loads(tool_call["function"]["arguments"])
-                                    
-                                    if function_name in VALIDATION_FUNCTIONS:
-                                        result = VALIDATION_FUNCTIONS[function_name](**function_args)
-                                        
-                                        # Update order state based on validation results
-                                        if result["valid"]:
-                                            if function_name == "validate_nyu_id":
-                                                order_state.nyu_id = result["nyu_id"]
-                                            elif function_name == "validate_phone_number":
-                                                order_state.phone = result["phone"]
-                                            elif function_name == "validate_building":
-                                                order_state.building = result["building"]
-                                        
-                                        # Add validation result to prompt context
-                                        prompt += f"\n[[VALIDATION RESULT]]\n{json.dumps(result)}\n"
-                                        
-                                        # Get model's response to the validation
-                                        validation_response = await client.post(
-                                            OLLAMA_URL,
-                                            json={"model": OLLAMA_MODEL, "prompt": prompt}
-                                        )
-                                        validation_data = validation_response.json()
-                                        if "response" in validation_data:
-                                            chunk = validation_data["response"]
-                                            bot_response += chunk
-                                            yield chunk
                         except Exception as e:
                             print(f"Streaming parse error: {e}")
-            except httpx.RequestError as e:
-                print(f"Ollama connection error: {e}")
-                yield "[Sorry, there was an error connecting to the AI server. Please try again later or contact support.]"
             except Exception as e:
                 print(f"Ollama streaming error: {e}")
-                error_msg = "[Sorry, an unexpected error occurred while processing your request. Please try again later.]"
+                error_msg = "[Error streaming from Ollama]"
                 bot_response = error_msg
                 yield error_msg
         

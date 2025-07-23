@@ -6,6 +6,19 @@ import re
 from typing import List, Dict, Optional
 
 # Load and flatten menu
+
+def get_all_categories(menu):
+    """Recursively collect all category names (top-level and subcategories)."""
+    categories = set()
+    def recurse(obj, parent=None):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                categories.add(k)
+                if isinstance(v, dict):
+                    recurse(v, k)
+    recurse(menu)
+    return list(categories)
+
 def flatten_menu(menu):
     items = []
     def recurse(obj, parent_name=None):
@@ -27,10 +40,17 @@ with open(MENU_PATH, 'r') as f:
 
 flat_items = flatten_menu(menu)
 item_names = [item["name"] for item in flat_items]
+category_names = get_all_categories(menu)
+
+# Combine item and category names for embeddings
+all_names = item_names + category_names
 
 # Load model and encode
 model = SentenceTransformer("all-MiniLM-L6-v2")
-menu_embeddings = model.encode(item_names, convert_to_tensor=True)
+menu_embeddings = model.encode(all_names, convert_to_tensor=True)
+
+def is_category(name: str) -> bool:
+    return name in category_names
 
 def extract_quantities_and_items(user_message: str) -> List[Dict[str, str]]:
     """
@@ -101,44 +121,32 @@ def extract_quantities_and_items(user_message: str) -> List[Dict[str, str]]:
 
 def rag_extract_menu_items(user_message: str, threshold=0.5) -> List[Dict]:
     """
-    Extract multiple menu items from user message using RAG.
-    Returns list of items with their quantities.
+    Extract multiple menu items or categories from user message using RAG.
+    Returns list of dicts: if a category, dict has {'category': name}; if item, dict has {'name': name, ...}
     """
-    # Extract items with quantities from the message
     items_with_qty = extract_quantities_and_items(user_message)
-    
-    found_items = []
-    
-    print(f"DEBUG: RAG processing {len(items_with_qty)} extracted items")
-    
+    found = []
     for item_data in items_with_qty:
         item_text = item_data['text']
         quantity = item_data['quantity']
-        
-        print(f"DEBUG: RAG processing item: '{item_text}' with quantity: {quantity}")
-        
-        # Use RAG to find the best matching menu item
         user_embedding = model.encode(item_text, convert_to_tensor=True)
         scores = util.cos_sim(user_embedding, menu_embeddings)[0]
         best_idx = torch.argmax(scores).item()
         best_score = scores[best_idx].item()
-        
-        print(f"DEBUG: Best match for '{item_text}': '{item_names[best_idx]}' (score: {best_score})")
-        
+        best_name = all_names[best_idx]
         if best_score >= threshold:
-            menu_item = flat_items[best_idx].copy()
-            menu_item['quantity'] = quantity
-            menu_item['total_price'] = menu_item['price'] * quantity
-            print(f"DEBUG: Added item: {menu_item}")
-            found_items.append(menu_item)
-    
-    print(f"DEBUG: RAG final result: {found_items}")
-    return found_items
+            if is_category(best_name):
+                found.append({'category': best_name})
+            else:
+                menu_item = next((item for item in flat_items if item['name'] == best_name), None)
+                if menu_item:
+                    menu_item = menu_item.copy()
+                    menu_item['quantity'] = quantity
+                    menu_item['total_price'] = menu_item['price'] * quantity
+                    found.append(menu_item)
+    return found
 
 def rag_extract_menu_item(user_message: str, threshold=0.6) -> Optional[Dict]:
-    """
-    Original single-item extraction function for backwards compatibility.
-    """
     items = rag_extract_menu_items(user_message, threshold)
     return items[0] if items else None
 
@@ -167,3 +175,7 @@ def format_items_summary(items: List[Dict]) -> str:
         summary += f"\n\nTotal: AED {total_cost:.2f}"
     
     return summary
+
+# Expose category names for use elsewhere
+get_all_categories = lambda: category_names
+is_category_name = is_category
