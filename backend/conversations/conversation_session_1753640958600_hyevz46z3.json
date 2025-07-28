@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2025-07-27T23:59:22.726295",
+    "sender": "user",
+    "message": "I want to order 2 pepperoni pizzas and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-28T00:00:40.627501",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni Pizzas and Chicken Alfredo Pizzas on our menu.\n\nWould you like to place an order for these items? Please respond with 'yes' to confirm or 'no' to cancel. If you would like to proceed, could you please provide your NYU ID, building number, phone number, and any special requests for your order?"
+  },
+  {
+    "timestamp": "2025-07-28T00:01:34.034197",
+    "sender": "user",
+    "message": "yes I'd like to place an order. How much will it be? I don't have any special requests. My NYU ID is 48420231, my building number is A3, and my phone number is 538093224\n"
+  },
+  {
+    "timestamp": "2025-07-28T00:02:37.854818",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni Pizzas and Chicken Alfredo Pizzas on our menu.\n\nFor your order:\n- 2 Pepperoni Pizzas\n- 3 Chicken Alfredo Pizzas\n\nThe total price for this order will be AED 100 (assuming the price per Pizza is AED 50).\n\nWould you like to confirm your order? Please respond with 'yes' to confirm or 'no' to cancel. \n\nIf you would like to proceed, could you please provide any special requests for your order?\n\n[[ORDER STATUS]]\n- NYU ID: 48420231\n- Building Number: A3\n- Phone Number: 538093224\n\nDo you have any special requests for your order? (like extra toppings, dietary restrictions, etc.) If not, we can proceed."
+  }
+]

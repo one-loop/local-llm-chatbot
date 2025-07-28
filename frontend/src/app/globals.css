@@ -52,3 +52,10 @@ a {
   margin: 0;
   padding: 0;
 }
+
+.status-tag {
+  font-size: 0.9em;
+  color: #888888;
+  margin: 4px 0;
+  padding: 2px 0;
+}

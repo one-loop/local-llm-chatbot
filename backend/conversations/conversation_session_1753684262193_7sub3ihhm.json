@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2025-07-28T12:01:05.997400",
+    "sender": "user",
+    "message": "I want to order 2 pepperoni pizzas and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-28T12:01:48.698881",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni and Chicken Alfredo on our menu. The prices are as follows:\n- Pepperoni: AED 43.0 per pizza\n- Chicken Alfredo: AED 35.0 per pizza\n\nWould you like to proceed with this order? Please confirm by saying 'yes' or 'no'.\n\nAlso, could you please provide me with your NYU ID (8 digits), building number, and phone number in the UAE format? I will also need to know if you have any special requests for your order."
+  },
+  {
+    "timestamp": "2025-07-28T12:03:12.781131",
+    "sender": "user",
+    "message": "Ys, I'd like to order. My NYU ID is 4802338, my building number is A1A, and my phone number is 523012803. I don't have any special requests"
+  },
+  {
+    "timestamp": "2025-07-28T12:04:15.811235",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni and Chicken Alfredo on our menu for the following prices:\n- Pepperoni: AED 43.0 per pizza\n- Chicken Alfredo: AED 35.0 per pizza\n\nYou would like to order 2 Pepperoni pizzas and 3 Chicken Alfredo pizzas, correct?\n\nYour total will be calculated as follows:\n- 2 Pepperoni pizzas: 2 × AED 43.0 = AED 86.0\n- 3 Chicken Alfredo pizzas: 3 × AED 35.0 = AED 105.0\n- Total: AED 86.0 + AED 105.0 = AED 191.0\n\nWould you like to confirm this order? Please respond with 'yes' to proceed or 'no' to cancel.\n\n[[ORDER STATUS]]:\n- NYU ID: 4802338\n- Building Number: A1A\n- Phone Number: 523012803\n- Special Requests: None"
+  },
+  {
+    "timestamp": "2025-07-28T12:04:19.735839",
+    "sender": "user",
+    "message": "yes confirm"
+  },
+  {
+    "timestamp": "2025-07-28T12:04:57.068014",
+    "sender": "bot",
+    "message": "Confirmed! Your order is for 2 Pepperoni pizzas and 3 Chicken Alfredo pizzas, totaling AED 191.0.\n\nI will place your order using the provided information:\n- NYU ID: 4802338\n- Building Number: A1A\n- Phone Number: 523012803\n\nYour food will be prepared and delivered to building A1A shortly. If you need any further assistance, feel free to ask!\n\nIs there anything else I can help with?"
+  }
+]

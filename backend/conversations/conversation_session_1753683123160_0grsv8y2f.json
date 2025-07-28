@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-28T11:42:30.676687",
+    "sender": "user",
+    "message": "I want to order 2 pepperoni pizzas and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-28T11:43:45.475750",
+    "sender": "bot",
+    "message": "Great! I found pepperoni pizzas and chicken alfredo pizzas on our menu. Each pepperoni pizza is AED 45, and each chicken alfredo pizza is AED 50.\n\nThe total for your order would be:\n- Pepperoni pizzas: 2 x AED 45 = AED 90\n- Chicken alfredo pizzas: 3 x AED 50 = AED 150\n\nTotal: AED 240\n\nWould you like to place an order for these items? Please respond with 'yes' to confirm or 'no' to cancel. If you do want to order, please provide your NYU ID, building number,"
+  }
+]

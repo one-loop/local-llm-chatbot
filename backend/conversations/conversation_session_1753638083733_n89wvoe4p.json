@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-27T23:11:39.783016",
+    "sender": "user",
+    "message": "I want to order 2 pepperoni pizzas and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-27T23:13:04.916375",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni pizzas for AED 43.0 each and Chicken Alfredo pizzas for AED 35.0 each on our menu.\n\nWould you like to place an order for these items? Please respond with 'yes' to confirm or 'no' to cancel.\n\nIf you agree, please provide the following details:\n1. Your NYU ID (8 digits)\n2. Building number (from available list)\n3. Phone number (UAE format)\n4. Special requests (if any)\n\n[[ORDER STATUS]]\n\nPlease let me know how you would like to proceed!"
+  }
+]

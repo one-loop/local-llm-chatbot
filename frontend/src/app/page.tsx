@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import styles from "./page.module.css";
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';  // Add this import at the top
 
 // Chat message type
 interface Message {
@@ -143,7 +144,7 @@ export default function Home() {
 
   useEffect(() => {
     // Warm up the backend model on page load
-    fetch('http://localhost:5000/warmup').catch(() => {});
+    fetch('http://localhost:1000/warmup').catch(() => {});
   }, []);
 
   const scrollToBottom = () => {
@@ -182,7 +183,7 @@ export default function Home() {
       console.log('[Frontend] Sending message to backend:', messageToSend);
       const controller = new AbortController();
       abortControllerRef.current = controller;
-      const res = await fetch("http://localhost:5000/chat", {
+      const res = await fetch("http://localhost:1000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -451,7 +452,7 @@ export default function Home() {
                 color: '#f3f3f3',
                 borderRadius: '1.5rem',
                 padding: '12px 18px',
-                maxWidth: '100%',
+                maxWidth: msg.sender == "user" ? "60%" : "100%",
                 fontSize: 17,
                 lineHeight: 1.6,
                 boxShadow: msg.sender === "user" ? "0 1px 4px #0002" : undefined,
@@ -504,7 +505,19 @@ export default function Home() {
                         `}</style>
                       </span>
                     ) : (
-                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                      <ReactMarkdown 
+                        rehypePlugins={[rehypeRaw]}
+                        components={{
+                          div: ({node, className, children, ...props}) => {
+                            if (className === 'status-tag') {
+                              return <div className={className} {...props}>{children}</div>;
+                            }
+                            return <div {...props}>{children}</div>;
+                          }
+                        }}
+                      >
+                        {msg.text}
+                      </ReactMarkdown>
                     )}
                   </div>
                 ) : (
@@ -555,7 +568,7 @@ export default function Home() {
             display: 'flex',
             alignItems: 'flex-end',
           }}>
-            <textarea
+          <textarea
               ref={textareaRef}
               value={input}
               onChange={handleInput}

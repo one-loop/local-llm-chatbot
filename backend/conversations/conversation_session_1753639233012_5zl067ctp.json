@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-27T23:30:36.545884",
+    "sender": "user",
+    "message": "I want to order 2 pepperoni pizzas and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-27T23:32:17.102574",
+    "sender": "bot",
+    "message": "Great! I found the following on our menu:\n- Pepperoni Pizzas: AED 43.0 each\n- Chicken Alfredo Pizzas: AED 35.0 each\n\nWould you like to place an order for 2 pepperoni pizzas and 3 chicken alfredo pizzas? Please respond with 'yes' to confirm or 'no' to cancel.\n\nAlso, could you please provide me with your NYU ID (8 digits), building number, and phone number (UAE format)? Additionally, do you have any special requests for your order?\n\n[[ORDER STATUS]]: \n- Order Items: 2 Pepperoni Pizzas, 3 Chicken Alfredo Pizzas\n- Price per Pepperoni Pizza: AED 43.0\n- Price per Chicken Alfredo Pizza: AED 35.0"
+  }
+]

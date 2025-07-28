@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2025-07-28T11:54:49.552296",
+    "sender": "user",
+    "message": "I want to order 2 pepperoni pizzas and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-28T11:55:58.887556",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni and Chicken Alfredo on our menu.\n\nThe price for 2 Pepperoni Pizzas is AED 86.0, and the price for 3 Chicken Alfredo Pizzas is AED 105.0.\n\nYour total would be AED 191.0.\n\nTo confirm your order, I need a bit more information:\n- Your NYU ID (8 digits)\n- The building number where you are located\n- Your phone number in UAE format\n\nDo you have any special requests for your order? (like extra toppings, dietary restrictions, etc.)\n\nPlease provide this information so we can place your order."
+  },
+  {
+    "timestamp": "2025-07-28T11:56:11.009644",
+    "sender": "user",
+    "message": "yes, I'd like to confirm the order. I don't have any special requests. My NYU ID is 48420231, my building number is A3, and my phone number is 538093224"
+  },
+  {
+    "timestamp": "2025-07-28T11:57:06.084808",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni and Chicken Alfredo Pizzas on our menu for a total of AED 191.0.\n\nYour order details are as follows:\n- NYU ID: 48420231\n- Building Number: A3\n- Phone Number: 538093224\n\nWould you like to place this order? Please respond with 'yes' to confirm or 'no' to cancel.\n\nAdditionally, I'll proceed with placing the order now. Confirming your details:\n\n1. NYU ID: 48420231\n2. Building Number: A3\n3. Phone Number: 538093224\n\nIs everything correct?"
+  },
+  {
+    "timestamp": "2025-07-28T11:57:25.709475",
+    "sender": "user",
+    "message": "yes the order details are correct"
+  },
+  {
+    "timestamp": "2025-07-28T11:57:50.244453",
+    "sender": "bot",
+    "message": "Perfect! Your order for 2 Pepperoni Pizzas and 3 Chicken Alfredo Pizzas is confirmed.\n\nYour total is AED 191.0, and your order will be delivered to Building A3.\n\nIf you have any other questions or need further assistance, feel free to ask!\n\nIs there anything else I can help with?"
+  },
+  {
+    "timestamp": "2025-07-28T11:57:56.748141",
+    "sender": "user",
+    "message": "What else can you do?"
+  },
+  {
+    "timestamp": "2025-07-28T11:58:23.730738",
+    "sender": "bot",
+    "message": "I can help you with various dining hall-related inquiries! Here are some things we can do:\n\n- Check menu items and their availability\n- Inform you about open restaurants\n- Place orders for specific items\n- Provide information on dietary restrictions or special requests\n\nLet me know how I can assist you further!\n\nIs there a particular task or question you have in mind?"
+  }
+]

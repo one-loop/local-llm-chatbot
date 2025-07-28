@@ -25,7 +25,7 @@ SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), 'system_prompt.txt'
 # Ollama API endpoint (assumes Ollama is running locally)
 OLLAMA_URL = 'http://localhost:11434/api/generate'
 # OLLAMA_MODEL = 'qwen2.5'
-OLLAMA_MODEL = 'mistral'
+OLLAMA_MODEL = 'qwen2.5'
 
 # MCP server endpoints
 MCP_ITEM_URL = 'http://localhost:9000/menu/item'

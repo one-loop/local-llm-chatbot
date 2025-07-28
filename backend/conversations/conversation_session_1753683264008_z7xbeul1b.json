@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-28T11:44:38.693142",
+    "sender": "user",
+    "message": "I want to order 2 pepperoni pizzas and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-28T11:45:38.869130",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni Pizzas and Chicken Alfredo Pizzas on our menu. Each Pepperoni Pizza is AED 45, and each Chicken Alfredo Pizza is AED 50.\n\nWould you like to place an order for these items? Please respond with 'yes' to confirm or 'no' to cancel."
+  }
+]

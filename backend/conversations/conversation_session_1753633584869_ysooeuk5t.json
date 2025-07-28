@@ -1,0 +1,62 @@
+[
+  {
+    "timestamp": "2025-07-27T22:20:55.365637",
+    "sender": "user",
+    "message": "What's Open"
+  },
+  {
+    "timestamp": "2025-07-27T22:21:34.401405",
+    "sender": "bot",
+    "message": "The dining halls and kiosks that are currently open are as follows:\n\n- West Dining Hall (D2): Open from 07:30 to 23:00\n- Acai / Coffee Kiosk (D2): Open from 07:30 to 23:00\n- A La Brasa (D2): Open from 11:30 to 23:00\n- Just Baked (D2): Open from 11:30 to 23:00\n- Subjects (D2): Open from 10:00 to 23:00\n\nIs there anything specific you would like to order, or do you need more information about the menu items?"
+  },
+  {
+    "timestamp": "2025-07-27T22:37:51.957214",
+    "sender": "user",
+    "message": "Can I order a pepperoni pizza"
+  },
+  {
+    "timestamp": "2025-07-27T22:38:26.786281",
+    "sender": "bot",
+    "message": "Great! Pepperoni is available. It's priced at AED 43.0.\n\nWould you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\nIf you confirm, please provide your NYU ID, building number, and phone number so I can process your order. Also, do you have any special requests for your order?"
+  },
+  {
+    "timestamp": "2025-07-27T22:38:51.071631",
+    "sender": "user",
+    "message": "yes"
+  },
+  {
+    "timestamp": "2025-07-27T22:39:10.258906",
+    "sender": "bot",
+    "message": "I understand you'd like to order a pepperoni pizza. Let's proceed with the order.\n\nCould you please provide your NYU ID (8 digits), building number (from the available list), and phone number (UAE format)? Also, do you have any special requests for your order?"
+  },
+  {
+    "timestamp": "2025-07-27T22:41:33.222618",
+    "sender": "user",
+    "message": "I also want to order 2 pepperoni and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-27T22:42:30.202961",
+    "sender": "bot",
+    "message": "Great! I found that Pepperoni and Chicken Alfredo pizzas are available. The prices are as follows:\n\n- Pepperoni: AED 43.0 per pizza\n- Chicken Alfredo: AED 35.0 per pizza\n\nThe total for your order would be:\n- 2 Pepperoni Pizzas: AED 86.0\n- 3 Chicken Alfredo Pizzas: AED 105.0\n- Total: AED 191.0\n\nWould you like to proceed with this order? Please confirm by responding with 'yes.' I will then need your NYU ID, building number, and phone number to process the order. Also, do you have any special requests for your order?\n\n[[ORDER STATUS]]\nItems:\n- Pepperoni: 2\n- Chicken Alfredo: 3\nTotal: AED 191.0\n\nMissing Information:\n- NYU ID (must be 8 digits)\n- Building (must be one of: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C)\n- Phone number (must be a valid UAE mobile number)"
+  },
+  {
+    "timestamp": "2025-07-27T22:43:39.420631",
+    "sender": "user",
+    "message": "Ok, great my NYU ID is 12904233, my building is A5A, and my phone number is 503282314"
+  },
+  {
+    "timestamp": "2025-07-27T22:44:19.299148",
+    "sender": "bot",
+    "message": "I see that the NYU ID you provided is 12904233, but it should be 8 digits. Could you please confirm your NYU ID again? Additionally, let me verify your building and phone number.\n\n[[ORDER STATUS]]\nItems:\nTotal: AED 0.00\n\nProvided Information:\n- Special Request: yes\n- NYU ID: 12904233 (Invalid)\n- Building: A5A\n- Phone Number: 503282314 (Invalid)\n\nMissing Information:\n- Valid NYU ID (must be 8 digits)\n- Valid Building (must be one of: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C)\n- Valid Phone number (must be a valid UAE mobile number)\n\nCould you please provide the correct NYU ID and building number?"
+  },
+  {
+    "timestamp": "2025-07-27T22:44:37.703631",
+    "sender": "user",
+    "message": "Yes, both my phone number and building are valid"
+  },
+  {
+    "timestamp": "2025-07-27T22:45:19.363082",
+    "sender": "bot",
+    "message": "I understand that your phone number and building are now confirmed as valid. However, I still need the correct NYU ID to proceed with your order.\n\nCould you please provide your NYU ID again? It should be an 8-digit number.\n\n[[ORDER STATUS]]\nItems:\nTotal: AED 0.00\n\nProvided Information:\n- Special Request: yes\n- Building: A5A\n- Phone Number: 503282314 (Valid)\n\nMissing Information:\n- Valid NYU ID (must be 8 digits)\n- Valid Building (must be one of: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C)\n\nPlease provide your NYU ID."
+  }
+]

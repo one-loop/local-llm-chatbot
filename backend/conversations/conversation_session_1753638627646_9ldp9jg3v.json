@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2025-07-27T23:20:33.841534",
+    "sender": "user",
+    "message": "I want to order 2 pepperoni pizzas and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-27T23:22:12.519751",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni pizzas for AED 43.0 each and Chicken Alfredo pizzas for AED 35.0 each on our menu.\n\nWould you like to place an order for these items? Please respond with 'yes' to confirm or 'no' to cancel.\n\nIf you confirm, please provide the following details:\n- Your NYU ID (8 digits)\n- Building Number\n- Phone Number (UAE format)\n- Special Requests\n\n[[ORDER STATUS]]: \n- Items: 2 Pepperoni pizzas and 3 Chicken Alfredo pizzas\n- Price per Pepperoni pizza: AED 43.0\n- Price per Chicken Alfredo pizza: AED 35.0\n\nDo you want to proceed with this order?"
+  },
+  {
+    "timestamp": "2025-07-27T23:22:32.208369",
+    "sender": "user",
+    "message": "yes, I'd like to confirm the order. I don't have any special requests. My NYU ID is 48420231, my building number is A3, and my phone number is 538093224"
+  },
+  {
+    "timestamp": "2025-07-27T23:23:37.337255",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni pizzas for AED 43.0 each and Chicken Alfredo pizzas for AED 35.0 each on our menu.\n\nYour order will include:\n- 2 Pepperoni pizzas (AED 86.0)\n- 3 Chicken Alfredo pizzas (AED 105.0)\n\nThe total price is AED 191.0.\n\nWould you like to proceed with this order? Please confirm by saying 'yes' or 'no'.\n\n[[ORDER STATUS]]: \n- NYU ID: 48420231\n- Building Number: A3\n- Phone Number: 538093224\n- Special Requests: None\n\nDo you want to proceed with this order?"
+  }
+]

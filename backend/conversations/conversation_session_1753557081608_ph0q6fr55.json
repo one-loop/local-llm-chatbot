@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-27T00:42:09.252954",
+    "sender": "user",
+    "message": "Hi, what can you do?"
+  },
+  {
+    "timestamp": "2025-07-27T00:46:34.085050",
+    "sender": "bot",
+    "message": "Hello! I can help you with menu items, check item availability, and place orders for dining at New York University Abu Dhabi. How can I assist you today? If you need to order something, please provide your NYU ID (8 digits), building number, and phone number in UAE format."
+  }
+]
