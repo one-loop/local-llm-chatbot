@@ -25,7 +25,7 @@ SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), 'system_prompt.txt'
 # Ollama API endpoint (assumes Ollama is running locally)
 OLLAMA_URL = 'http://localhost:11434/api/generate'
 # OLLAMA_MODEL = 'qwen2.5'
-OLLAMA_MODEL = 'mistral'
+OLLAMA_MODEL = 'qwen2.5'
 
 # MCP server endpoints
 MCP_ITEM_URL = 'http://localhost:9000/menu/item'
@@ -74,7 +74,7 @@ def save_final_order_to_file(order_data: Dict):
                     f.write(f"- {qty}x {item['name']}: AED {price} each = AED {total_price}\n")
                 f.write(f"TOTAL COST: AED {total_cost:.2f}\n")
             
-            f.write(f"RF ID: N{order_data.get('rf_id', 'N/A')}\n")
+            f.write(f"RFID Number: +{order_data.get('rf_id', 'N/A')}\n")
             f.write(f"Building: {order_data.get('building', 'N/A')}\n")
             f.write(f"Phone: {order_data.get('phone', 'N/A')}\n")
             f.write(f"Special Request: {order_data.get('special_request', 'None')}\n")
@@ -87,17 +87,17 @@ def save_final_order_to_file(order_data: Dict):
 
 # Validation Functions
 def validate_rf_id(text: str) -> Dict[str, Union[str, bool]]:
-    """Validate if the text contains a valid RF ID (6 digits)"""
+    """Validate if the text contains a valid RFID Number (6 digits)"""
     if not text:
-        return {"valid": False, "message": "No RF ID found", "rf_id": None}
+        return {"valid": False, "message": "No RFID Number found", "rf_id": None}
     
-    # Find any 6-digit number in the text
+    # Find any 8-digit number in the text
     rf_id_match = re.search(r'\b(\d{6})\b', text)
     if not rf_id_match:
-        return {"valid": False, "message": "RF ID must be exactly 6 digits", "rf_id": None}
+        return {"valid": False, "message": "RFID Number must be exactly 6 digits", "rf_id": None}
     
     rf_id = rf_id_match.group(1)
-    return {"valid": True, "message": "Valid RF ID", "rf_id": rf_id}
+    return {"valid": True, "message": "Valid RIFD Number", "rf_id": rf_id}
 
 def validate_phone_number(text: str) -> Dict[str, Union[str, bool]]:
     """Validate if the text contains a valid UAE phone number"""
@@ -147,13 +147,13 @@ VALIDATION_TOOLS = [
         "type": "function",
         "function": {
             "name": "validate_rf_id",
-            "description": "Validate if the text contains a valid RF ID (must be exactly 6 digits)",
+            "description": "Validate if the text contains a valid RFID Number (must be exactly 6 digits)",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "text": {
                         "type": "string",
-                        "description": "The text to extract and validate RF ID from",
+                        "description": "The text to extract and validate RFID Number from",
                     }
                 },
                 "required": ["text"],
@@ -269,11 +269,10 @@ def get_or_create_order_state(session_id: str) -> OrderState:
         order_states[session_id] = OrderState()
     return order_states[session_id]
 
-def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
+def extract_order_completion_data(session_id: str, conversation: List[Dict]) -> Optional[Dict]:
     """Extract order completion data from conversation history with change detection"""
     
     user_messages = []
-    bot_messages = []
     bot_messages = []
     
     for msg in conversation:
@@ -289,15 +288,15 @@ def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
     items = rag_extract_menu_items(combined_text)
     items = normalize_order_items(items)
     
-    # Extract RF ID (6 digits) - must be explicitly provided
+    # Extract RFID ID (6 digits) - must be explicitly provided
     rf_id_match = re.search(r'\b(\d{6})\b', combined_text)
     rf_id = rf_id_match.group(1) if rf_id_match else None
-    rf_id_valid = validate_rf_id(rf_id) if rf_id else False
+    rf_id_valid = validate_rf_id(rf_id)['valid'] if rf_id else False
     
     # Extract building (A1A, A2B, etc.) - must be explicitly provided
     building_match = re.search(r'\b(A\d[ABC])\b', combined_text, re.IGNORECASE)
     building = building_match.group(1).upper() if building_match else None
-    building_valid = validate_building(building) if building else False
+    building_valid = validate_building(building)['valid'] if building else False
     
     # Extract phone (UAE mobile number validation)
     phone_match = re.search(r'\b(\d{9,15})\b', combined_text.replace(' ', '').replace('-', ''))
@@ -328,9 +327,17 @@ def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
     has_all_fields = (items and rf_id_valid and building_valid and valid_phone)
     
     if items:
+        order_state = get_or_create_order_state(session_id)
+        # If we are in an order flow, trust the total_cost from the state.
+        # Otherwise, calculate it from the newly extracted items.
+        if order_state.in_order_flow and order_state.total_cost > 0:
+            total_cost = order_state.total_cost
+        else:
+            total_cost = sum(item.get('total_price', item.get('price', 0) * item.get('quantity', 1)) for item in items)
+
         order_data = {
             'items': items,
-            'total_cost': sum(item.get('total_price', item.get('price', 0) * item.get('quantity', 1)) for item in items),
+            'total_cost': total_cost,
             'rf_id': rf_id,
             'building': building,
             'phone': phone,
@@ -527,14 +534,14 @@ async def ollama_stream():
         missing_fields = order_data.get('missing_fields', [])
         invalid_fields = order_data.get('invalid_fields', [])
         
-        order_status_context = "\n[[ORDER STATUS]]\n"
+        order_status_context = "\n[[ORDER STATUS - DON'T REFERENCE IN RESPONSE]]\n"
         if order_data['items']:
             items_text = ", ".join([f"{item.get('quantity', 1)}x {item['name']}" for item in order_data['items']])
             order_status_context += f"Current order: {items_text} (Total: AED {order_data['total_cost']:.2f})\n"
         
         # Add validation context
         order_status_context += "\n[[VALIDATION REQUIREMENTS]]\n"
-        order_status_context += "- RF ID must be exactly 6 digits\n"
+        order_status_context += "- RFID Number must be exactly 6 digits\n"
         order_status_context += f"- Building must be one of: {', '.join(AVAILABLE_BUILDINGS)}\n"
         order_status_context += "- Phone number must be a valid UAE mobile number starting with '5'\n"
         
@@ -550,7 +557,7 @@ async def ollama_stream():
                 order_status_context += "Invalid information provided:\n"
                 for field in invalid_fields:
                     if field == 'rf_id':
-                        order_status_context += f"- RF ID '{order_data['rf_id']}' is invalid (must be 6 digits)\n"
+                        order_status_context += f"- RFID Number '{order_data['rf_id']}' is invalid (must be 8 digits)\n"
                     elif field == 'building':
                         order_status_context += f"- Building '{order_data['building']}' is not a valid option\n"
                     elif field == 'phone':
@@ -572,6 +579,10 @@ async def ollama_stream():
     # Prepare the payload for Ollama
     prompt = system_prompt
     
+    # Place order_status_context at the very top of the prompt for priority
+    if order_status_context:
+        prompt = f"{order_status_context}\n\n{prompt}"
+
     if menu_context:
         prompt += f"\n\n{menu_context}"
     if menu_items_context:
@@ -580,17 +591,16 @@ async def ollama_stream():
         prompt += f"\n\n{category_context}"
     if order_context:
         prompt += f"\n\n{order_context}"
-    if order_status_context:
-        prompt += f"\n\n{order_status_context}"
     if open_restaurants_context:
         prompt += f"\n\n{open_restaurants_context}"
+    
     prompt += f"\n{history_prompt}User: {user_message}\nAssistant:"
 
     # Add order state context if in order flow
     order_state = get_or_create_order_state(session_id)
     
     if order_state.in_order_flow:
-        order_status = "\n[[ORDER STATUS]]\n"
+        order_status = "\n[[ORDER STATUS - DON'T REFERENCE IN RESPONSE]]\n"
         items_inner = ', '.join([
             f"{item.get('quantity', 1)}x {item['name']}"
             for item in (order_state.items or [])
@@ -602,7 +612,7 @@ async def ollama_stream():
         # Show provided information
         order_status += "\nProvided Information:\n"
         if order_state.rf_id:
-            order_status += f"- RF ID: {order_state.rf_id}\n"
+            order_status += f"- RFID Number: {order_state.rf_id}\n"
         if order_state.building:
             order_status += f"- Building: {order_state.building}\n"
         if order_state.phone:
@@ -613,7 +623,7 @@ async def ollama_stream():
         # Show missing information
         order_status += "\nMissing Information:\n"
         if not order_state.rf_id:
-            order_status += "- RF ID (must be 6 digits)\n"
+            order_status += "- RFID Number (must be 6 digits)\n"
         if not order_state.building:
             order_status += f"- Building (must be one of: {', '.join(AVAILABLE_BUILDINGS)})\n"
         if not order_state.phone:
@@ -628,13 +638,17 @@ async def ollama_stream():
             "model": OLLAMA_MODEL,
             "prompt": prompt,
             "stream": True,
-            "tools": VALIDATION_TOOLS
+            "tools": VALIDATION_TOOLS,
+            "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"],
+            "temperature": 0.0
         }
     else:
         payload = {
             "model": OLLAMA_MODEL,
             "prompt": prompt,
-            "stream": True
+            "stream": True,
+            "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"],
+            "temperature": 0.0
         }
 
     # Collect the bot response for logging
@@ -676,7 +690,13 @@ async def ollama_stream():
                                     # Get model's response to the validation
                                     validation_response = await client.post(
                                         OLLAMA_URL,
-                                        json={"model": OLLAMA_MODEL, "prompt": prompt}
+                                        json={
+                                            "model": OLLAMA_MODEL, 
+                                            "prompt": prompt,
+                                            "stream": False,
+                                            "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"],
+                                            "temperature": 0.0
+                                        }
                                     )
                                     validation_data = validation_response.json()
                                     if "response" in validation_data:
@@ -854,7 +874,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         user_message_lower = user_message.lower().strip()
         if user_message_lower in ['no', 'none', 'n/a', 'no special requests', 'nothing']:
             order_state.special_request = 'None'
-        elif not re.search(r'\b(rf|id|building|phone|number)\b', user_message_lower):
+        elif not re.search(r'\b(rfid|building|phone|number)\b', user_message_lower):
             # If message doesn't look like other order info, treat as special request
             order_state.special_request = user_message.strip()
     
@@ -868,7 +888,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         return StreamingResponse(direct_response_stream(), media_type="text/plain")
     
     # Extract current order state
-    order_data = extract_order_completion_data(ConversationLogger.get_conversation(session_id))
+    order_data = extract_order_completion_data(session_id, ConversationLogger.get_conversation(session_id))
     # If waiting for special request
     if hasattr(order_state, 'special_request') and order_state.special_request is None:
         user_message_lower = body["message"].strip().lower()
@@ -1030,7 +1050,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             missing_fields = order_data.get('missing_fields', [])
             invalid_fields = order_data.get('invalid_fields', [])
             
-            order_status_context = "\n[[ORDER STATUS]]\n"
+            order_status_context = "\n[[ORDER STATUS - DON'T REFERENCE IN RESPONSE]]\n"
             if order_data['items']:
                 items_text = ", ".join([
                     f"{item.get('quantity', 1)}x {item['name']}"
@@ -1044,7 +1064,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             
             # Add validation context
             order_status_context += "\n[[VALIDATION REQUIREMENTS]]\n"
-            order_status_context += "- RF ID must be exactly 6 digits\n"
+            order_status_context += "- RFID Number must be exactly 6 digits\n"
             order_status_context += f"- Building must be one of: {', '.join(AVAILABLE_BUILDINGS)}\n"
             order_status_context += "- Phone number must be a valid UAE mobile number starting with '5'\n"
             
@@ -1060,7 +1080,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                     order_status_context += "Invalid information provided:\n"
                     for field in invalid_fields:
                         if field == 'rf_id':
-                            order_status_context += f"- RF ID '{order_data['rf_id']}' is invalid (must be 6 digits)\n"
+                            order_status_context += f"- RFID Number '{order_data['rf_id']}' is invalid (must be 6 digits)\n"
                         elif field == 'building':
                             order_status_context += f"- Building '{order_data['building']}' is not a valid option\n"
                         elif field == 'phone':
@@ -1082,9 +1102,9 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         # Prepare the payload for Ollama
         prompt = system_prompt
         
-        # Place order_status_context at the very top of the prompt
+        # Place order_status_context at the very top of the prompt for priority
         if order_status_context:
-            prompt = f"{order_status_context}\n\n" + prompt
+            prompt = f"{order_status_context}\n\n{prompt}"
         if menu_context:
             prompt += f"\n\n{menu_context}"
         if menu_items_context:
@@ -1103,7 +1123,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         order_state = get_or_create_order_state(session_id)
         
         if order_state.in_order_flow:
-            order_status = "\n[[ORDER STATUS]]\n"
+            order_status = "\n[[ORDER STATUS - DON'T REFERENCE IN RESPONSE]]\n"
             items_inner = ', '.join([
                 f"{item.get('quantity', 1)}x {item['name']}"
                 for item in (order_state.items or [])
@@ -1115,7 +1135,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             # Show provided information
             order_status += "\nProvided Information:\n"
             if order_state.rf_id:
-                order_status += f"- RF ID: {order_state.rf_id}\n"
+                order_status += f"- RFID Number: {order_state.rf_id}\n"
             if order_state.building:
                 order_status += f"- Building: {order_state.building}\n"
             if order_state.phone:
@@ -1126,7 +1146,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             # Show missing information
             order_status += "\nMissing Information:\n"
             if not order_state.rf_id:
-                order_status += "- RF ID (must be 6 digits)\n"
+                order_status += "- RFID Number (must be 6 digits)\n"
             if not order_state.building:
                 order_status += f"- Building (must be one of: {', '.join(AVAILABLE_BUILDINGS)})\n"
             if not order_state.phone:
@@ -1141,13 +1161,17 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                 "model": OLLAMA_MODEL,
                 "prompt": prompt,
                 "stream": True,
-                "tools": VALIDATION_TOOLS
+                "tools": VALIDATION_TOOLS,
+                "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"],
+                "temperature": 0.0
             }
         else:
             payload = {
                 "model": OLLAMA_MODEL,
                 "prompt": prompt,
-                "stream": True
+                "stream": True,
+                "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"],
+                "temperature": 0.0
             }
 
         # Collect the bot response for logging
@@ -1189,7 +1213,13 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                                         # Get model's response to the validation
                                         validation_response = await client.post(
                                             OLLAMA_URL,
-                                            json={"model": OLLAMA_MODEL, "prompt": prompt}
+                                            json={
+                                                "model": OLLAMA_MODEL,
+                                                "prompt": prompt,
+                                                "stream": False,
+                                                "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"],
+                                                "temperature": 0.0
+                                            }
                                         )
                                         validation_data = validation_response.json()
                                         if "response" in validation_data:
@@ -1224,7 +1254,8 @@ def warmup():
             "model": OLLAMA_MODEL,
             "prompt": "Hello!",
             "stream": False,
-            "temperature": 0.1
+            "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"],
+            "temperature": 0.0
         }
         # Send a dummy request to Ollama to trigger model load
         r = requests.post(OLLAMA_URL, json=payload, timeout=10)
@@ -1288,9 +1319,9 @@ def test_order_changes(session_id: str):
         ("user", "hi, do you have burgers?"),
         ("bot", "Yes, we have burgers for AED 25 each"),
         ("user", "I want 5 burgers"),
-        ("bot", "Great! 5 burgers for AED 125. Please provide your RF ID"),
+    ("bot", "Great! 5 burgers for AED 125. Please provide your RFID Number"),
         ("user", "actually, I want 3 burgers instead"),
-        ("user", "my rf id is 123456"),
+        ("user", "my RFID Number is 123456"),
         ("user", "building A1A"),
         ("user", "phone 971501234567"),
         ("user", "no special requests")
@@ -1302,7 +1333,7 @@ def test_order_changes(session_id: str):
     
     # Extract final order data
     conversation = ConversationLogger.get_conversation(session_id)
-    order_data = extract_order_completion_data(conversation)
+    order_data = extract_order_completion_data(session_id, conversation)
     
     # Get the quantity of burgers in final order
     burger_quantity = None
