@@ -102,7 +102,7 @@ class OrderKeywordDetector:
     
     # Keywords for personal information
     INFO_KEYWORDS = [
-        r'\bnyu.*id\b', r'\bid.*\d{8}\b', r'\bbuilding\b', r'\bphone\b',
+        r'\brfid.*id\b', r'\bid.*\d{8}\b', r'\bbuilding\b', r'\bphone\b',
         r'\bA\d[ABC]\b', r'\bspecial.*request\b'
     ]
     
@@ -159,9 +159,9 @@ class OrderKeywordDetector:
         # Look at the last few messages to determine stage
         recent_text = " ".join([msg['message'] for msg in user_messages[-3:]])
         
-        # Check for NYU ID patterns
-        if re.search(r'\d{8}', recent_text):
-            return "nyu_id_provided"
+        # Check for RFID ID patterns
+        if re.search(r'\d{6}', recent_text):
+            return "rf_id_provided"
         
         # Check for building patterns
         if re.search(r'\bA\d[ABC]\b', recent_text, re.IGNORECASE):
@@ -244,7 +244,7 @@ class BackgroundOrderProcessor:
         stage_progression = {
             'order_intent': 0,
             'confirming_order': 1,
-            'nyu_id_provided': 2,
+            'rf_id_provided': 2,
             'building_provided': 3,
             'phone_provided': 4
         }
@@ -288,9 +288,9 @@ def get_order_context_for_ai(session_id: str) -> str:
     if stage == "order_intent":
         context += "\nAsk user if they want to confirm this order."
     elif stage == "confirming_order":
-        context += "\nUser seems to be confirming. Ask for NYU ID (8 digits after N)."
-    elif stage == "nyu_id_provided":
-        context += "\nNYU ID provided. Ask for building (A1A, A1B, A1C, etc.)."
+        context += "\nUser seems to be confirming. Ask for RFID Number (your 6 digit number after the + on bottom right of card)."
+    elif stage == "rf_id_provided":
+        context += "\RFID ID provided. Ask for building (A1A, A1B, A1C, etc.)."
     elif stage == "building_provided":
         context += "\nBuilding provided. Ask for phone number."
     elif stage == "phone_provided":
@@ -322,7 +322,7 @@ def test_order_detection():
         {"timestamp": "2025-01-01T10:00:40", "sender": "user", "message": "I want 2 margherita pizzas"},
         {"timestamp": "2025-01-01T10:00:50", "sender": "bot", "message": "Great choice!"},
         {"timestamp": "2025-01-01T10:01:00", "sender": "user", "message": "yes, confirm my order"},
-        {"timestamp": "2025-01-01T10:01:10", "sender": "user", "message": "my nyu id is 12345678"}
+        {"timestamp": "2025-01-01T10:01:10", "sender": "user", "message": "my RFID number is 123456"}
     ]
     
     # Save test conversation
