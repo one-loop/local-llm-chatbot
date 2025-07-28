@@ -144,7 +144,7 @@ export default function Home() {
 
   useEffect(() => {
     // Warm up the backend model on page load
-    fetch('http://localhost:1000/warmup').catch(() => {});
+    fetch('http://localhost:5000/warmup').catch(() => {});
   }, []);
 
   const scrollToBottom = () => {
@@ -183,7 +183,7 @@ export default function Home() {
       console.log('[Frontend] Sending message to backend:', messageToSend);
       const controller = new AbortController();
       abortControllerRef.current = controller;
-      const res = await fetch("http://localhost:1000/chat", {
+      const res = await fetch("http://localhost:5000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

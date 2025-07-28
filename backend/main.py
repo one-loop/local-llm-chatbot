@@ -25,7 +25,7 @@ SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), 'system_prompt.txt'
 # Ollama API endpoint (assumes Ollama is running locally)
 OLLAMA_URL = 'http://localhost:11434/api/generate'
 # OLLAMA_MODEL = 'qwen2.5'
-OLLAMA_MODEL = 'qwen2.5'
+OLLAMA_MODEL = 'mistral'
 
 # MCP server endpoints
 MCP_ITEM_URL = 'http://localhost:9000/menu/item'
@@ -74,7 +74,7 @@ def save_final_order_to_file(order_data: Dict):
                     f.write(f"- {qty}x {item['name']}: AED {price} each = AED {total_price}\n")
                 f.write(f"TOTAL COST: AED {total_cost:.2f}\n")
             
-            f.write(f"NYU ID: N{order_data.get('nyu_id', 'N/A')}\n")
+            f.write(f"RF ID: N{order_data.get('rf_id', 'N/A')}\n")
             f.write(f"Building: {order_data.get('building', 'N/A')}\n")
             f.write(f"Phone: {order_data.get('phone', 'N/A')}\n")
             f.write(f"Special Request: {order_data.get('special_request', 'None')}\n")
@@ -86,18 +86,18 @@ def save_final_order_to_file(order_data: Dict):
         print(f"Error saving order: {e}")
 
 # Validation Functions
-def validate_nyu_id(text: str) -> Dict[str, Union[str, bool]]:
-    """Validate if the text contains a valid NYU ID (8 digits)"""
+def validate_rf_id(text: str) -> Dict[str, Union[str, bool]]:
+    """Validate if the text contains a valid RF ID (6 digits)"""
     if not text:
-        return {"valid": False, "message": "No NYU ID found", "nyu_id": None}
+        return {"valid": False, "message": "No RF ID found", "rf_id": None}
     
-    # Find any 8-digit number in the text
-    nyu_id_match = re.search(r'\b(\d{8})\b', text)
-    if not nyu_id_match:
-        return {"valid": False, "message": "NYU ID must be exactly 8 digits", "nyu_id": None}
+    # Find any 6-digit number in the text
+    rf_id_match = re.search(r'\b(\d{6})\b', text)
+    if not rf_id_match:
+        return {"valid": False, "message": "RF ID must be exactly 6 digits", "rf_id": None}
     
-    nyu_id = nyu_id_match.group(1)
-    return {"valid": True, "message": "Valid NYU ID", "nyu_id": nyu_id}
+    rf_id = rf_id_match.group(1)
+    return {"valid": True, "message": "Valid RF ID", "rf_id": rf_id}
 
 def validate_phone_number(text: str) -> Dict[str, Union[str, bool]]:
     """Validate if the text contains a valid UAE phone number"""
@@ -146,14 +146,14 @@ VALIDATION_TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "validate_nyu_id",
-            "description": "Validate if the text contains a valid NYU ID (must be exactly 8 digits)",
+            "name": "validate_rf_id",
+            "description": "Validate if the text contains a valid RF ID (must be exactly 6 digits)",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "text": {
                         "type": "string",
-                        "description": "The text to extract and validate NYU ID from",
+                        "description": "The text to extract and validate RF ID from",
                     }
                 },
                 "required": ["text"],
@@ -198,7 +198,7 @@ VALIDATION_TOOLS = [
 
 # Function mapping for execution
 VALIDATION_FUNCTIONS = {
-    'validate_nyu_id': validate_nyu_id,
+    'validate_rf_id': validate_rf_id,
     'validate_phone_number': validate_phone_number,
     'validate_building': validate_building
 }
@@ -234,7 +234,7 @@ def normalize_order_items(items):
 class OrderState:
     def __init__(self):
         self.in_order_flow = False
-        self.nyu_id = None
+        self.rf_id = None
         self.building = None
         self.phone = None
         self.items = None
@@ -253,7 +253,7 @@ class OrderState:
     def to_dict(self):
         return {
             "in_order_flow": self.in_order_flow,
-            "nyu_id": self.nyu_id,
+            "rf_id": self.rf_id,
             "building": self.building,
             "phone": self.phone,
             "items": self.items,
@@ -289,10 +289,10 @@ def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
     items = rag_extract_menu_items(combined_text)
     items = normalize_order_items(items)
     
-    # Extract NYU ID (8 digits) - must be explicitly provided
-    nyu_id_match = re.search(r'\b(\d{8})\b', combined_text)
-    nyu_id = nyu_id_match.group(1) if nyu_id_match else None
-    nyu_id_valid = validate_nyu_id(nyu_id) if nyu_id else False
+    # Extract RF ID (6 digits) - must be explicitly provided
+    rf_id_match = re.search(r'\b(\d{6})\b', combined_text)
+    rf_id = rf_id_match.group(1) if rf_id_match else None
+    rf_id_valid = validate_rf_id(rf_id) if rf_id else False
     
     # Extract building (A1A, A2B, etc.) - must be explicitly provided
     building_match = re.search(r'\b(A\d[ABC])\b', combined_text, re.IGNORECASE)
@@ -325,18 +325,18 @@ def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
                 break
     
     # Check if we have all required fields and they're valid
-    has_all_fields = (items and nyu_id_valid and building_valid and valid_phone)
+    has_all_fields = (items and rf_id_valid and building_valid and valid_phone)
     
     if items:
         order_data = {
             'items': items,
             'total_cost': sum(item.get('total_price', item.get('price', 0) * item.get('quantity', 1)) for item in items),
-            'nyu_id': nyu_id,
+            'rf_id': rf_id,
             'building': building,
             'phone': phone,
             'special_request': special_request,
             'is_complete': has_all_fields,
-            'nyu_id_valid': nyu_id_valid,
+            'rf_id_valid': rf_id_valid,
             'building_valid': building_valid,
             'valid_phone': valid_phone
         }
@@ -345,10 +345,10 @@ def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
         missing_fields = []
         invalid_fields = []
         
-        if not nyu_id:
-            missing_fields.append('nyu_id')
-        elif not nyu_id_valid:
-            invalid_fields.append('nyu_id')
+        if not rf_id:
+            missing_fields.append('rf_id')
+        elif not rf_id_valid:
+            invalid_fields.append('rf_id')
             
         if not building:
             missing_fields.append('building')
@@ -534,7 +534,7 @@ async def ollama_stream():
         
         # Add validation context
         order_status_context += "\n[[VALIDATION REQUIREMENTS]]\n"
-        order_status_context += "- NYU ID must be exactly 8 digits\n"
+        order_status_context += "- RF ID must be exactly 6 digits\n"
         order_status_context += f"- Building must be one of: {', '.join(AVAILABLE_BUILDINGS)}\n"
         order_status_context += "- Phone number must be a valid UAE mobile number starting with '5'\n"
         
@@ -549,8 +549,8 @@ async def ollama_stream():
             if invalid_fields:
                 order_status_context += "Invalid information provided:\n"
                 for field in invalid_fields:
-                    if field == 'nyu_id':
-                        order_status_context += f"- NYU ID '{order_data['nyu_id']}' is invalid (must be 8 digits)\n"
+                    if field == 'rf_id':
+                        order_status_context += f"- RF ID '{order_data['rf_id']}' is invalid (must be 6 digits)\n"
                     elif field == 'building':
                         order_status_context += f"- Building '{order_data['building']}' is not a valid option\n"
                     elif field == 'phone':
@@ -601,8 +601,8 @@ async def ollama_stream():
         
         # Show provided information
         order_status += "\nProvided Information:\n"
-        if order_state.nyu_id:
-            order_status += f"- NYU ID: {order_state.nyu_id}\n"
+        if order_state.rf_id:
+            order_status += f"- RF ID: {order_state.rf_id}\n"
         if order_state.building:
             order_status += f"- Building: {order_state.building}\n"
         if order_state.phone:
@@ -612,8 +612,8 @@ async def ollama_stream():
         
         # Show missing information
         order_status += "\nMissing Information:\n"
-        if not order_state.nyu_id:
-            order_status += "- NYU ID (must be 8 digits)\n"
+        if not order_state.rf_id:
+            order_status += "- RF ID (must be 6 digits)\n"
         if not order_state.building:
             order_status += f"- Building (must be one of: {', '.join(AVAILABLE_BUILDINGS)})\n"
         if not order_state.phone:
@@ -663,8 +663,8 @@ async def ollama_stream():
                                     
                                     # Update order state based on validation results
                                     if result["valid"]:
-                                        if function_name == "validate_nyu_id":
-                                            order_state.nyu_id = result["nyu_id"]
+                                        if function_name == "validate_rf_id":
+                                            order_state.rf_id = result["rf_id"]
                                         elif function_name == "validate_phone_number":
                                             order_state.phone = result["phone"]
                                         elif function_name == "validate_building":
@@ -706,7 +706,7 @@ def check_for_order_completion(session_id: str) -> Optional[str]:
         return None
     
     # Check if all required information is valid
-    if (order_state.nyu_id and 
+    if (order_state.rf_id and 
         order_state.building and order_state.building in AVAILABLE_BUILDINGS and
         order_state.phone and
         order_state.special_request is not None):  # Include special request check
@@ -715,7 +715,7 @@ def check_for_order_completion(session_id: str) -> Optional[str]:
         order_data = {
             'items': order_state.items,
             'total_cost': order_state.total_cost,
-            'nyu_id': order_state.nyu_id,
+            'rf_id': order_state.rf_id,
             'building': order_state.building,
             'phone': order_state.phone,
             'special_request': order_state.special_request
@@ -854,7 +854,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         user_message_lower = user_message.lower().strip()
         if user_message_lower in ['no', 'none', 'n/a', 'no special requests', 'nothing']:
             order_state.special_request = 'None'
-        elif not re.search(r'\b(nyu|id|building|phone|number)\b', user_message_lower):
+        elif not re.search(r'\b(rf|id|building|phone|number)\b', user_message_lower):
             # If message doesn't look like other order info, treat as special request
             order_state.special_request = user_message.strip()
     
@@ -1044,7 +1044,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             
             # Add validation context
             order_status_context += "\n[[VALIDATION REQUIREMENTS]]\n"
-            order_status_context += "- NYU ID must be exactly 8 digits\n"
+            order_status_context += "- RF ID must be exactly 6 digits\n"
             order_status_context += f"- Building must be one of: {', '.join(AVAILABLE_BUILDINGS)}\n"
             order_status_context += "- Phone number must be a valid UAE mobile number starting with '5'\n"
             
@@ -1059,8 +1059,8 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                 if invalid_fields:
                     order_status_context += "Invalid information provided:\n"
                     for field in invalid_fields:
-                        if field == 'nyu_id':
-                            order_status_context += f"- NYU ID '{order_data['nyu_id']}' is invalid (must be 8 digits)\n"
+                        if field == 'rf_id':
+                            order_status_context += f"- RF ID '{order_data['rf_id']}' is invalid (must be 6 digits)\n"
                         elif field == 'building':
                             order_status_context += f"- Building '{order_data['building']}' is not a valid option\n"
                         elif field == 'phone':
@@ -1114,8 +1114,8 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             
             # Show provided information
             order_status += "\nProvided Information:\n"
-            if order_state.nyu_id:
-                order_status += f"- NYU ID: {order_state.nyu_id}\n"
+            if order_state.rf_id:
+                order_status += f"- RF ID: {order_state.rf_id}\n"
             if order_state.building:
                 order_status += f"- Building: {order_state.building}\n"
             if order_state.phone:
@@ -1125,8 +1125,8 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             
             # Show missing information
             order_status += "\nMissing Information:\n"
-            if not order_state.nyu_id:
-                order_status += "- NYU ID (must be 8 digits)\n"
+            if not order_state.rf_id:
+                order_status += "- RF ID (must be 6 digits)\n"
             if not order_state.building:
                 order_status += f"- Building (must be one of: {', '.join(AVAILABLE_BUILDINGS)})\n"
             if not order_state.phone:
@@ -1176,8 +1176,8 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                                         
                                         # Update order state based on validation results
                                         if result["valid"]:
-                                            if function_name == "validate_nyu_id":
-                                                order_state.nyu_id = result["nyu_id"]
+                                            if function_name == "validate_rf_id":
+                                                order_state.rf_id = result["rf_id"]
                                             elif function_name == "validate_phone_number":
                                                 order_state.phone = result["phone"]
                                             elif function_name == "validate_building":
@@ -1288,9 +1288,9 @@ def test_order_changes(session_id: str):
         ("user", "hi, do you have burgers?"),
         ("bot", "Yes, we have burgers for AED 25 each"),
         ("user", "I want 5 burgers"),
-        ("bot", "Great! 5 burgers for AED 125. Please provide your NYU ID"),
+        ("bot", "Great! 5 burgers for AED 125. Please provide your RF ID"),
         ("user", "actually, I want 3 burgers instead"),
-        ("user", "my nyu id is 12345678"),
+        ("user", "my rf id is 123456"),
         ("user", "building A1A"),
         ("user", "phone 971501234567"),
         ("user", "no special requests")
