@@ -20,15 +20,15 @@
 
 3. **Make sure Ollama is running and the 'mistral' model is available:**
    ```bash
-   ollama pull mistral
-   ollama run mistral
+   ollama pull qwen2.5
+   ollama run qwen2.5
    ```
 
-4. **Start the FastAPI server (on port 5000):**
+4. **Start the FastAPI server (on port 1000):**
    ```bash
-   uvicorn main:app --host 0.0.0.0 --port 5000
+   uvicorn main:app --host 0.0.0.0 --port 1000
    ```
-   The backend will be available at: http://localhost:5000
+   The backend will be available at: http://localhost:1000
 
 ## System Prompt
 - The system prompt is tailored for NYU Abu Dhabi Dining Hall support.
@@ -43,7 +43,7 @@
 - **Ollama errors:** Ensure Ollama is running and the 'mistral' model is pulled.
 - **CORS errors:** CORS is enabled, but if you have issues, check your browser console and backend logs.
 - **Python package errors:** Make sure your virtual environment is activated and all dependencies are installed.
-- **Port conflicts:** Ensure no other service is running on port 5000.
+- **Port conflicts:** Ensure no other service is running on port 1000.
 
 ## Notes
 - The backend is designed to work with the Next.js frontend in the `frontend/` directory (which runs on port 3000).
