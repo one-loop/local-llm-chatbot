@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "category": "House Grill"
+    },
+    {
+      "category": "Chicken Breast"
+    },
+    {
+      "category": "Angry Chicken"
+    }
+  ],
+  "stage": "nyu_id_provided",
+  "total_cost": 0,
+  "detected_at": "2025-07-28T12:26:47.346828",
+  "conversation_length": 4
+}

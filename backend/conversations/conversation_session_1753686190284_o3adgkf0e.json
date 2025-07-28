@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2025-07-28T12:33:12.104297",
+    "sender": "user",
+    "message": "I want to order 2 pepperoni pizzas and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-28T12:34:06.482153",
+    "sender": "bot",
+    "message": "Great! I found the items you're interested in on our menu.\n\nA Pepperoni pizza is AED 43.0, and a Chicken Alfredo pizza is AED 35.0.\n\nWould you like to place an order for these items? Please respond with 'yes' to confirm or 'no' to cancel.\n\nIf you decide to proceed, I will need your NYU ID (8 digits), building number (from the available list), phone number (UAE format), and any special requests."
+  },
+  {
+    "timestamp": "2025-07-28T12:34:27.555534",
+    "sender": "user",
+    "message": "yes, I'd like to confirm the order. I don't have any special requests. My NYU ID is 48420231, my building number is A3, and my phone number is 538093224"
+  },
+  {
+    "timestamp": "2025-07-28T12:34:49.438217",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni pizzas for AED 43.0 each and Chicken Alfredo pizzas for AED 35.0 each.\n\nTo confirm your order:\n- You want to order 2 Pepperoni pizzas and 3 Chicken Alfredo pizzas.\n- Your NYU ID is 48420231.\n- Your building number is A3.\n- Your phone number is 538093224.\n- There are no special requests.\n\nWould you like to place this order? Please confirm with 'yes' or cancel it with 'no'.\n\nIf everything looks correct, we can proceed with your order."
+  },
+  {
+    "timestamp": "2025-07-28T12:34:53.865349",
+    "sender": "user",
+    "message": "yes please place it"
+  },
+  {
+    "timestamp": "2025-07-28T12:35:20.622193",
+    "sender": "bot",
+    "message": "Perfect! Your order is confirmed. Here’s a summary of your order:\n\n- 2 Pepperoni pizzas at AED 43.0 each\n- 3 Chicken Alfredo pizzas at AED 35.0 each\n\nThe total cost for your order will be:\n- 2 x AED 43.0 = AED 86.0\n- 3 x AED 35.0 = AED 105.0\n- Total: AED 191.0\n\nThank you! Your NYU ID is 48420231, building number is A3, and phone number is 538093224.\n\nYour order will be prepared and ready for pickup at your designated location. If you have any further questions or need assistance, feel free to ask!\n\nIs there anything else I can help with?"
+  }
+]
