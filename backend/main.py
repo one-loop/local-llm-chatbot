@@ -38,7 +38,7 @@ RESTAURANTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 ORDERS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), 'orders.txt'))
 
 # Available buildings
-AVAILABLE_BUILDINGS = ["A1A", "A1B", "A1C", "A2A", "A2B", "A2C", "A3", "A4", "A5A", "A5B", "A5C", "A6A", "A6B", "A6C"]
+AVAILABLE_BUILDINGS = ["A1A", "A1B", "A1C", "A2A", "A2B", "A2C", "A3", "A4", "A5A", "A5B", "A5C", "A6A", "A6B", "A6C", "A1", "A2", "A5", "A6", "F1", "F2", "C1", "C2", "C3"]
 
 app = FastAPI()
 
@@ -57,8 +57,8 @@ class ChatRequest(BaseModel):
 def save_final_order_to_file(order_data: Dict):
     """Save completed order to final orders file"""
     try:
-        # FIX: Use 'a' mode to append, not 'w' which overwrites
-        with open(ORDERS_PATH, 'w', encoding='utf-8') as f:
+        # Use 'a' mode to append orders to the file
+        with open(ORDERS_PATH, 'a', encoding='utf-8') as f:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             f.write(f"\n=== ORDER - {timestamp} ===\n")
             
@@ -130,14 +130,14 @@ def validate_building(text: str) -> Dict[str, Union[str, bool]]:
     if not text:
         return {"valid": False, "message": "No building number found", "building": None}
     
-    # Find building number pattern (A1A, A2B, etc.)
-    building_match = re.search(r'\b(A\d[ABC])\b', text, re.IGNORECASE)
+    # Find building number pattern (A1A, A2B, F1, C2, etc.)
+    building_match = re.search(r'\b(A\d[ABC]|[AFC]\d)\b', text, re.IGNORECASE)
     if not building_match:
-        return {"valid": False, "message": f"Building must be one of: {', '.join(AVAILABLE_BUILDINGS)}", "building": None}
+        return {"valid": False, "message": f"Building must be one of: {', '.join(sorted(AVAILABLE_BUILDINGS))}", "building": None}
     
     building = building_match.group(1).upper()
     if building not in AVAILABLE_BUILDINGS:
-        return {"valid": False, "message": f"Invalid building. Must be one of: {', '.join(AVAILABLE_BUILDINGS)}", "building": None}
+        return {"valid": False, "message": f"Invalid building. Must be one of: {', '.join(sorted(AVAILABLE_BUILDINGS))}", "building": None}
     
     return {"valid": True, "message": "Valid building", "building": building}
 
@@ -181,7 +181,7 @@ VALIDATION_TOOLS = [
         "type": "function",
         "function": {
             "name": "validate_building",
-            "description": f"Validate if the text contains a valid building number (must be one of: {', '.join(AVAILABLE_BUILDINGS)})",
+            "description": f"Validate if the text contains a valid building number (must be one of: {', '.join(sorted(AVAILABLE_BUILDINGS))})",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -202,8 +202,6 @@ VALIDATION_FUNCTIONS = {
     'validate_phone_number': validate_phone_number,
     'validate_building': validate_building
 }
-
-# Add normalization function
 
 def normalize_order_items(items):
     """
@@ -230,7 +228,6 @@ def normalize_order_items(items):
             print(f"[normalize_order_items] Skipping invalid or category item: {item}")
     return valid_items
 
-# Refactor OrderState to always use normalization
 class OrderState:
     def __init__(self):
         self.in_order_flow = False
@@ -264,16 +261,274 @@ class OrderState:
 # Global order state storage
 order_states: Dict[str, OrderState] = {}
 
+def quick_error_response(error_message: str) -> str:
+    """Generate a quick error response without LLM processing"""
+    return error_message
+
 def get_or_create_order_state(session_id: str) -> OrderState:
     if session_id not in order_states:
         order_states[session_id] = OrderState()
     return order_states[session_id]
 
+# Add this debug function at the top after your imports
+def debug_log(message: str):
+    """Enhanced debug logging"""
+    print(f"[DEBUG {datetime.datetime.now().strftime('%H:%M:%S')}] {message}")
+
+# Fix the building validation regex - your current one is wrong
+def extract_and_validate_input(user_message: str, order_state: OrderState) -> Optional[str]:
+    """
+    Extract and validate user input formats BEFORE sending to LLM.
+    Returns error message if validation fails, None if valid or no validation needed.
+    """
+    user_message_lower = user_message.lower()
+    debug_log(f"Validating input: '{user_message}'")
+    
+    # Extract potential RFID (6 digits)
+    rf_id_match = re.search(r'\b(\d{5,7})\b', user_message)  # Look for 5-7 digit numbers
+    if rf_id_match:
+        potential_rfid = rf_id_match.group(1)
+        if len(potential_rfid) != 6:
+            if len(potential_rfid) < 6:
+                return f"Your RFID must be exactly 6 digits. You provided {len(potential_rfid)} digits ({potential_rfid}). Please provide your complete 6-digit RFID."
+            else:
+                return f"Your RFID must be exactly 6 digits. You provided {len(potential_rfid)} digits ({potential_rfid}). Please check your RFID and provide exactly 6 digits."
+        
+        # If we reach here, RFID is valid - update order state
+        order_state.rf_id = potential_rfid
+        debug_log(f"Updated RFID to {potential_rfid}")
+    
+    # Extract potential building number - FIXED REGEX
+    building_match = re.search(r'\b([A-Z]\d[A-Z]?)\b', user_message, re.IGNORECASE)
+    if building_match:
+        potential_building = building_match.group(1).upper()
+        debug_log(f"Found potential building: {potential_building}")
+        
+        # Check against available buildings
+        if potential_building not in AVAILABLE_BUILDINGS:
+            debug_log(f"Building {potential_building} is INVALID")
+            return f"'{potential_building}' is not a valid building. Please choose from: {', '.join(sorted(AVAILABLE_BUILDINGS))}"
+        
+        # If we reach here, building is valid - update order state
+        order_state.building = potential_building
+        debug_log(f"Updated building to {potential_building}")
+    
+    # Extract potential phone number (look for UAE mobile patterns)
+    phone_match = re.search(r'\b(05\d{8}|\d{10})\b', user_message.replace(' ', '').replace('-', ''))
+    if phone_match:
+        potential_phone = phone_match.group(1)
+        
+        # Clean the phone number
+        cleaned_phone = potential_phone.replace('+971', '').replace(' ', '').replace('-', '')
+        
+        # UAE mobile validation
+        if not cleaned_phone.startswith('05') or len(cleaned_phone) != 10:
+            if cleaned_phone.startswith('5') and len(cleaned_phone) == 9:
+                cleaned_phone = '0' + cleaned_phone
+            else:
+                return f"Please provide a valid UAE mobile number. UAE mobile numbers start with '05' and have 10 digits total (format: 05xxxxxxxx)."
+        
+        # If we reach here, phone is valid - update order state
+        order_state.phone = cleaned_phone
+        debug_log(f"Updated phone to {cleaned_phone}")
+    
+    # No validation errors found
+    return None
+def extract_items_fallback(combined_text: str, bot_response: str) -> List[Dict]:
+    """
+    Fallback item extraction when RAG fails
+    Looks for common patterns in conversation and bot response
+    """
+    items = []
+    
+    # Look for quantity + item patterns in conversation
+    patterns = [
+        r'(\d+)\s*(margherita|pepperoni|cheese|vegetarian|hawaiian|supreme|bbq|chicken)\s*pizza',
+        r'(\d+)\s*pizza.*?(margherita|pepperoni|cheese|vegetarian|hawaiian|supreme|bbq|chicken)',
+        r'(margherita|pepperoni|cheese|vegetarian|hawaiian|supreme|bbq|chicken).*?(\d+)',
+        r'(\d+).*?(margherita|pepperoni|cheese|vegetarian|hawaiian|supreme|bbq|chicken)',
+    ]
+    
+    # Common pizza prices (you may need to adjust these)
+    pizza_prices = {
+        'margherita': 31.0,
+        'pepperoni': 35.0,
+        'cheese': 28.0,
+        'vegetarian': 33.0,
+        'hawaiian': 37.0,
+        'supreme': 42.0,
+        'bbq': 39.0,
+        'chicken': 38.0
+    }
+    
+    text_to_search = (combined_text + " " + bot_response).lower()
+    
+    for pattern in patterns:
+        matches = re.findall(pattern, text_to_search, re.IGNORECASE)
+        for match in matches:
+            if len(match) == 2:
+                # Try both orders: (qty, item) and (item, qty)
+                if match[0].isdigit():
+                    qty, item = int(match[0]), match[1].lower()
+                elif match[1].isdigit():
+                    item, qty = match[0].lower(), int(match[1])
+                else:
+                    continue
+                
+                # Get price for this item
+                price = pizza_prices.get(item, 35.0)  # Default price
+                
+                # Create item dict
+                item_dict = {
+                    'name': f"{item.capitalize()} Pizza",
+                    'price': price,
+                    'quantity': qty,
+                    'total_price': price * qty
+                }
+                
+                # Check if we already have this item
+                existing_item = None
+                for existing in items:
+                    if existing['name'].lower() == item_dict['name'].lower():
+                        existing_item = existing
+                        break
+                
+                if existing_item:
+                    # Update quantity if we found a duplicate
+                    existing_item['quantity'] = qty  # Use the latest quantity
+                    existing_item['total_price'] = existing_item['price'] * qty
+                else:
+                    items.append(item_dict)
+    
+    return items
+
+# Update the detect_order_confirmation_and_save function
+def detect_order_confirmation_and_save(session_id: str, bot_response: str, user_message: str) -> bool:
+    """
+    Detect if the LLM just confirmed an order and save it to orders.txt
+    Returns True if order was saved, False otherwise
+    """
+    debug_log(f"Checking bot response for order confirmation: '{bot_response[:100]}...'")
+    
+    # Look for order confirmation patterns in bot response
+    confirmation_patterns = [
+        r'order.*confirmed',
+        r'order.*placed.*successfully', 
+        r'perfect.*your order',
+        r'order.*will be delivered',
+        r'thank you for.*order',
+        r'order.*will be prepared',
+        r'enjoy your meal'
+    ]
+    
+    is_confirmation = any(re.search(pattern, bot_response.lower()) for pattern in confirmation_patterns)
+    
+    if not is_confirmation:
+        debug_log("No order confirmation detected")
+        return False
+    
+    debug_log("ORDER CONFIRMATION DETECTED!")
+    
+    # Extract order details from conversation
+    conversation = ConversationLogger.get_conversation(session_id)
+    order_state = get_or_create_order_state(session_id)
+    
+    # Try to extract order information from the conversation and current context
+    order_items = []
+    rfid = None
+    building = None
+    phone = None
+    special_request = "None"
+    
+    # Get all user messages for analysis
+    user_messages = [msg['message'] for msg in conversation if msg['sender'] == 'user']
+    combined_text = " ".join(user_messages + [user_message])
+    
+    debug_log(f"Analyzing combined text: '{combined_text[:200]}...'")
+    
+    # Extract items using RAG first
+    try:
+        items_data = rag_extract_menu_items(combined_text)
+        order_items = normalize_order_items(items_data)
+        debug_log(f"RAG extracted {len(order_items)} items: {[item.get('name', 'Unknown') for item in order_items]}")
+    except Exception as e:
+        debug_log(f"Error extracting items with RAG: {e}")
+    
+    # 🚀 NEW: If RAG failed, use fallback extraction
+    if not order_items:
+        debug_log("RAG extraction failed, trying fallback extraction...")
+        order_items = extract_items_fallback(combined_text, bot_response)
+        debug_log(f"Fallback extracted {len(order_items)} items: {[item.get('name', 'Unknown') for item in order_items]}")
+    
+    # Extract order details from session state first, then fall back to conversation
+    if order_state.rf_id:
+        rfid = order_state.rf_id
+        debug_log(f"Got RFID from session state: {rfid}")
+    else:
+        rf_match = re.search(r'\b(\d{6})\b', combined_text)
+        rfid = rf_match.group(1) if rf_match else None
+        debug_log(f"Got RFID from conversation: {rfid}")
+    
+    if order_state.building:
+        building = order_state.building
+        debug_log(f"Got building from session state: {building}")
+    else:
+        building_match = re.search(r'\b([A-Z]\d[A-Z]?)\b', combined_text, re.IGNORECASE)
+        building = building_match.group(1).upper() if building_match else None
+        debug_log(f"Got building from conversation: {building}")
+    
+    if order_state.phone:
+        phone = order_state.phone
+        debug_log(f"Got phone from session state: {phone}")
+    else:
+        phone_match = re.search(r'\b(05\d{8})\b', combined_text.replace(' ', '').replace('-', ''))
+        phone = phone_match.group(1) if phone_match else None
+        debug_log(f"Got phone from conversation: {phone}")
+    
+    if order_state.special_request:
+        special_request = order_state.special_request
+    else:
+        # Check recent messages for special requests
+        for msg in reversed(user_messages[-10:]):
+            if any(keyword in msg.lower() for keyword in ['special', 'request', 'no special', 'none']):
+                if any(word in msg.lower() for word in ['no', 'none', 'nothing']):
+                    special_request = 'None'
+                else:
+                    special_request = msg
+                break
+    
+    # Calculate total cost
+    total_cost = sum(item.get('total_price', item.get('price', 0) * item.get('quantity', 1)) for item in order_items)
+    
+    debug_log(f"Final extraction - Items: {len(order_items)}, RFID: {rfid}, Building: {building}, Phone: {phone}")
+    
+    # Only save if we have essential information
+    if order_items and rfid and building:
+        order_data = {
+            'items': order_items,
+            'total_cost': total_cost,
+            'rf_id': rfid,
+            'building': building, 
+            'phone': phone or 'Not provided',
+            'special_request': special_request
+        }
+        
+        debug_log(f"SAVING ORDER: Items: {len(order_items)}, RFID: {rfid}, Building: {building}")
+        save_final_order_to_file(order_data)
+        
+        # Clean up session
+        order_state.reset()
+        
+        return True
+    else:
+        debug_log(f"CANNOT SAVE - Missing essential info - Items: {len(order_items)}, RFID: {rfid}, Building: {building}")
+        return False
+
+
 def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
     """Extract order completion data from conversation history with change detection"""
     
     user_messages = []
-    bot_messages = []
     bot_messages = []
     
     for msg in conversation:
@@ -292,12 +547,12 @@ def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
     # Extract RF ID (6 digits) - must be explicitly provided
     rf_id_match = re.search(r'\b(\d{6})\b', combined_text)
     rf_id = rf_id_match.group(1) if rf_id_match else None
-    rf_id_valid = validate_rf_id(rf_id) if rf_id else False
+    rf_id_valid = validate_rf_id(rf_id)['valid'] if rf_id else False
     
-    # Extract building (A1A, A2B, etc.) - must be explicitly provided
-    building_match = re.search(r'\b(A\d[ABC])\b', combined_text, re.IGNORECASE)
+    # Extract building (A1A, A2B, F1, C2, etc.) - must be explicitly provided
+    building_match = re.search(r'\b(A\d[ABC]|[AFC]\d)\b', combined_text, re.IGNORECASE)
     building = building_match.group(1).upper() if building_match else None
-    building_valid = validate_building(building) if building else False
+    building_valid = validate_building(building)['valid'] if building else False
     
     # Extract phone (UAE mobile number validation)
     phone_match = re.search(r'\b(\d{9,15})\b', combined_text.replace(' ', '').replace('-', ''))
@@ -402,305 +657,6 @@ def check_for_direct_order_response(session_id: str, user_message: str) -> Optio
             return None  # Let the LLM handle the response
     
     return None
-
-async def ollama_stream():
-    # Check if the user is asking for the full menu
-    if re.search(r"what'?s on the menu|show me the menu|today'?s menu|full menu", user_message, re.IGNORECASE):
-        yield "[Fetching menu data...]\n"
-    
-    # RAG-based multiple item extraction for immediate responses
-    items_data = rag_extract_menu_items(user_message)
-    # Normalize acai bowl orders
-    new_items_data = []
-    for item in items_data:
-        if 'text' in item and ('acai' in item['text'].lower() or 'bowl' in item['text'].lower()):
-            acai_item = parse_acai_bowl_order(item['text'])
-            if acai_item:
-                new_items_data.append(acai_item)
-            else:
-                new_items_data.append(item)
-        else:
-            new_items_data.append(item)
-    items_data = new_items_data
-    menu_items_context = ""
-    order_context = ""
-    category_context = ""
-
-    if items_data:
-        found_items = []
-        not_found_items = []
-        found_categories = []
-        for item_data in items_data:
-            if 'category' in item_data:
-                category_name = item_data['category']
-                yield f"[Looking up '{category_name}' in the menu...]\n"
-                category_items = await fetch_menu_category_from_mcp(category_name)
-                if category_items:
-                    found_categories.append({'category': category_name, 'items': category_items})
-                else:
-                    not_found_items.append(category_name)
-            elif 'name' in item_data:
-                item_name = item_data["name"]
-                yield f"[Looking up '{item_name}' in the menu...]\n"
-                # Verify with MCP server
-                item = await fetch_menu_item_from_mcp(item_name)
-                if item:
-                    # Update with verified data from MCP
-                    verified_item = {
-                        'name': item['name'],
-                        'price': item['price'],
-                        'quantity': item_data.get('quantity', 1)
-                    }
-                    verified_item['total_price'] = verified_item['price'] * verified_item['quantity']
-                    found_items.append(verified_item)
-                else:
-                    not_found_items.append(item_data['name'])
-        
-        if found_items:
-            items_summary = format_items_summary(found_items)
-            menu_items_context = f"Menu items found:\n{items_summary}"
-            # Check for order intent
-            if re.search(r'order|buy|get|want|purchase|can i get|i\'?ll have', user_message, re.IGNORECASE):
-                total_cost = sum(item['total_price'] for item in found_items)
-                order_context = f"\n[ORDER CONTEXT] User wants to order: {items_summary} (Total: AED {total_cost:.2f})."
-        if found_categories:
-            for cat in found_categories:
-                cat_name = cat['category']
-                cat_items = cat['items']
-                # Special-case for Acai Bowls
-                if cat_name.lower() == 'acai bowls':
-                    # Load the menu.json to get full structure
-                    with open(MENU_PATH, 'r') as f:
-                        menu_data = json.load(f)
-                    acai = menu_data.get('Acai Bowls', {})
-                    # Extract sizes and prices
-                    sizes = [(k, v) for k, v in acai.items() if k in ['Small', 'Large']]
-                    # Extract flavors and descriptions
-                    flavors = [(k, v) for k, v in acai.items() if k not in ['Small', 'Large']]
-                    acai_context = "[ACAI BOWLS]\nSizes:\n"
-                    for size, price in sizes:
-                        acai_context += f"- {size}: AED {price}\n"
-                    acai_context += "\nFlavors:\n"
-                    for flavor, desc in flavors:
-                        acai_context += f"- {flavor}: {desc}\n"
-                    acai_context += ("\nPlease select a flavor and a size for your acai bowl order. "
-                                     "For example: 'Small OG Bowl' or 'Large Choco Bowl'.")
-                    category_context += f"\n{acai_context}\n"
-                else:
-                    if cat_items:
-                        cat_summary = "\n".join([f"- {i['name']}: AED {i['price']}" for i in cat_items])
-                        category_context += f"\n[MENU CATEGORY: {cat_name}]\n{cat_summary}\n"
-        if not_found_items:
-            not_found_text = ", ".join(not_found_items)
-            if menu_items_context:
-                menu_items_context += f"\n\nItems not found: {not_found_text}"
-            else:
-                menu_items_context = f"Items not found: {not_found_text}"
-
-    # Get menu context for full menu requests
-    menu_context = ""
-    if re.search(r"what'?s on the menu|show me the menu|today'?s menu|full menu|what'?s available|what'?s available today", user_message, re.IGNORECASE):
-        menu = await fetch_full_menu_from_mcp()
-        if menu:
-            menu_context = "[MENU DATA]:\n"
-            for item in menu:
-                menu_context += f"- {item['name']}: AED {item['price']}\n"
-        else:
-            menu_context = "[Menu data is currently unavailable.]"
-
-    # Check if the user is asking about open restaurants
-    open_restaurants_context = ""
-    if re.search(r"what'?s open|which restaurants are open|open now|open restaurants", user_message, re.IGNORECASE):
-        yield "[Checking which restaurants are open... Please wait.]\n"
-        open_list = get_open_restaurants()
-        if open_list is not None:
-            if open_list:
-                open_restaurants_context = "[OPEN RESTAURANTS]:\n" + "\n".join(f"- {r}" for r in open_list)
-            else:
-                open_restaurants_context = "[No restaurants are currently open.]"
-        else:
-            open_restaurants_context = "[Restaurant data is currently unavailable.]"
-
-    # Add order status context if there's an active order
-    order_status_context = ""
-    if order_data:
-        missing_fields = order_data.get('missing_fields', [])
-        invalid_fields = order_data.get('invalid_fields', [])
-        
-        order_status_context = "\n[[ORDER STATUS]]\n"
-        if order_data['items']:
-            items_text = ", ".join([f"{item.get('quantity', 1)}x {item['name']}" for item in order_data['items']])
-            order_status_context += f"Current order: {items_text} (Total: AED {order_data['total_cost']:.2f})\n"
-        
-        # Add validation context
-        order_status_context += "\n[[VALIDATION REQUIREMENTS]]\n"
-        order_status_context += "- RF ID must be exactly 6 digits\n"
-        order_status_context += f"- Building must be one of: {', '.join(AVAILABLE_BUILDINGS)}\n"
-        order_status_context += "- Phone number must be a valid UAE mobile number starting with '5'\n"
-        
-        if missing_fields or invalid_fields:
-            order_status_context += "\n[[VALIDATION STATUS]]\n"
-            
-            if missing_fields:
-                order_status_context += "Missing information:\n"
-                for field in missing_fields:
-                    order_status_context += f"- {field}\n"
-            
-            if invalid_fields:
-                order_status_context += "Invalid information provided:\n"
-                for field in invalid_fields:
-                    if field == 'rf_id':
-                        order_status_context += f"- RF ID '{order_data['rf_id']}' is invalid (must be 6 digits)\n"
-                    elif field == 'building':
-                        order_status_context += f"- Building '{order_data['building']}' is not a valid option\n"
-                    elif field == 'phone':
-                        order_status_context += f"- Phone number '{order_data['phone']}' is not a valid UAE mobile number\n"
-        else:
-            order_status_context += "\nAll required information has been provided and validated.\n"
-        
-        if order_data.get('special_request') and order_data['special_request'] != 'None':
-            order_status_context += f"\nSpecial request: {order_data['special_request']}\n"
-
-    # Build the conversation history prompt
-    history_prompt = ""
-    for msg in history:
-        if msg.get("sender") == "user":
-            history_prompt += f"User: {msg['text']}\n"
-        elif msg.get("sender") == "bot":
-            history_prompt += f"Assistant: {msg['text']}\n"
-
-    # Prepare the payload for Ollama
-    prompt = system_prompt
-    
-    if menu_context:
-        prompt += f"\n\n{menu_context}"
-    if menu_items_context:
-        prompt += f"\n\n{menu_items_context}"
-    if category_context:
-        prompt += f"\n\n{category_context}"
-    if order_context:
-        prompt += f"\n\n{order_context}"
-    if order_status_context:
-        prompt += f"\n\n{order_status_context}"
-    if open_restaurants_context:
-        prompt += f"\n\n{open_restaurants_context}"
-    prompt += f"\n{history_prompt}User: {user_message}\nAssistant:"
-
-    # Add order state context if in order flow
-    order_state = get_or_create_order_state(session_id)
-    
-    if order_state.in_order_flow:
-        order_status = "\n[[ORDER STATUS]]\n"
-        items_inner = ', '.join([
-            f"{item.get('quantity', 1)}x {item['name']}"
-            for item in (order_state.items or [])
-            if isinstance(item, dict) and 'name' in item
-        ])
-        order_status += f"Items: {items_inner}\n"
-        order_status += f"Total: AED {order_state.total_cost:.2f}\n"
-        
-        # Show provided information
-        order_status += "\nProvided Information:\n"
-        if order_state.rf_id:
-            order_status += f"- RF ID: {order_state.rf_id}\n"
-        if order_state.building:
-            order_status += f"- Building: {order_state.building}\n"
-        if order_state.phone:
-            order_status += f"- Phone: {order_state.phone}\n"
-        if order_state.special_request is not None:
-            order_status += f"- Special Request: {order_state.special_request}\n"
-        
-        # Show missing information
-        order_status += "\nMissing Information:\n"
-        if not order_state.rf_id:
-            order_status += "- RF ID (must be 6 digits)\n"
-        if not order_state.building:
-            order_status += f"- Building (must be one of: {', '.join(AVAILABLE_BUILDINGS)})\n"
-        if not order_state.phone:
-            order_status += "- Phone number (must be a valid UAE mobile number)\n"
-        if order_state.special_request is None:
-            order_status += "- Special Request (ask if they have any special requests, dietary restrictions, etc.)\n"
-        
-        prompt += order_status
-        
-        # Add validation tools to the payload
-        payload = {
-            "model": OLLAMA_MODEL,
-            "prompt": prompt,
-            "stream": True,
-            "tools": VALIDATION_TOOLS,
-            "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"],
-            "temperature": 0.25
-        }
-    else:
-        payload = {
-            "model": OLLAMA_MODEL,
-            "prompt": prompt,
-            "stream": True,
-            "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"],
-            "temperature": 0.25
-        }
-
-    # Collect the bot response for logging
-    bot_response = ""
-    
-    async with httpx.AsyncClient(timeout=None) as client:
-        try:
-            async with client.stream("POST", OLLAMA_URL, json=payload) as response:
-                async for line in response.aiter_lines():
-                    if not line.strip():
-                        continue
-                    try:
-                        data = json.loads(line)
-                        if "response" in data:
-                            chunk = data["response"]
-                            bot_response += chunk
-                            yield chunk
-                        elif "tool_calls" in data:
-                            # Handle tool calls
-                            for tool_call in data["tool_calls"]:
-                                function_name = tool_call["function"]["name"]
-                                function_args = json.loads(tool_call["function"]["arguments"])
-                                
-                                if function_name in VALIDATION_FUNCTIONS:
-                                    result = VALIDATION_FUNCTIONS[function_name](**function_args)
-                                    
-                                    # Update order state based on validation results
-                                    if result["valid"]:
-                                        if function_name == "validate_rf_id":
-                                            order_state.rf_id = result["rf_id"]
-                                        elif function_name == "validate_phone_number":
-                                            order_state.phone = result["phone"]
-                                        elif function_name == "validate_building":
-                                            order_state.building = result["building"]
-                                    
-                                    # Add validation result to prompt context
-                                    prompt += f"\n[[VALIDATION RESULT]]\n{json.dumps(result)}\n"
-                                    
-                                    # Get model's response to the validation
-                                    validation_response = await client.post(
-                                        OLLAMA_URL,
-                                        json={"model": OLLAMA_MODEL, "prompt": prompt, "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"], "temperature": 0.25}
-                                    )
-                                    validation_data = validation_response.json()
-                                    if "response" in validation_data:
-                                        chunk = validation_data["response"]
-                                        bot_response += chunk
-                                        yield chunk
-                    except Exception as e:
-                        print(f"Streaming parse error: {e}")
-        except httpx.RequestError as e:
-            print(f"Ollama connection error: {e}")
-            yield "[Sorry, there was an error connecting to the AI server. Please try again later or contact support.]"
-        except Exception as e:
-            print(f"Ollama streaming error: {e}")
-            error_msg = "[Sorry, an unexpected error occurred while processing your request. Please try again later.]"
-            bot_response = error_msg
-            yield error_msg
-    
-    # Log the bot response after streaming is complete
-    if bot_response:
-        ConversationLogger.log_message(session_id, bot_response, "bot")
 
 def check_for_order_completion(session_id: str) -> Optional[str]:
     """Check if an order can be completed"""
@@ -829,8 +785,7 @@ def parse_acai_bowl_order(text: str) -> Optional[Dict]:
 @app.post('/chat')
 async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
     """
-    Main chat endpoint with background order detection and LLM-driven responses
-    Main chat endpoint with background order detection and LLM-driven responses
+    Main chat endpoint with pre-validation + LLM approach
     """
     # Parse the incoming JSON
     try:
@@ -842,17 +797,30 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid request: {e}")
 
-    # Log the user message to conversation file
+    # Log the user message
     ConversationLogger.log_message(session_id, user_message, "user")
-    
-    # Process background order detection
-    # Process background order detection
-    await BackgroundOrderProcessor.process_session_orders(session_id)
     
     # Get order state
     order_state = get_or_create_order_state(session_id)
+    print(f"DEBUG ORDER STATE BEFORE: RFID={order_state.rf_id}, Building={order_state.building}, Phone={order_state.phone}, InFlow={order_state.in_order_flow}")
     
-    # Check for special request responses
+    # PRE-VALIDATION - Check formats BEFORE LLM processing (runs for ALL order-related messages)
+    if order_state.in_order_flow or re.search(r'\b(rf|rfid|building|phone|05\d{8}|\d{6}|A\d[ABC]|[AFC]\d)\b', user_message, re.IGNORECASE):
+        validation_error = extract_and_validate_input(user_message, order_state)
+        if validation_error:
+            async def validation_error_stream():
+                yield validation_error
+            
+            # Log the error response
+            ConversationLogger.log_message(session_id, validation_error, "bot")
+            return StreamingResponse(validation_error_stream(), media_type="text/plain")
+    
+    print(f"DEBUG ORDER STATE AFTER: RFID={order_state.rf_id}, Building={order_state.building}, Phone={order_state.phone}, InFlow={order_state.in_order_flow}")
+    
+    # Process background order detection (keep existing code)
+    await BackgroundOrderProcessor.process_session_orders(session_id)
+    
+    # Check for special request responses (keep existing code)
     if order_state.in_order_flow and order_state.special_request is None:
         user_message_lower = user_message.lower().strip()
         if user_message_lower in ['no', 'none', 'n/a', 'no special requests', 'nothing', 'don\'t have any special requests', 'i don\'t have any special requests']:
@@ -870,17 +838,23 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         ConversationLogger.log_message(session_id, direct_response, "bot")
         return StreamingResponse(direct_response_stream(), media_type="text/plain")
     
-    # Extract current order state
-    order_data = extract_order_completion_data(ConversationLogger.get_conversation(session_id))
-
+    # Extract current order state from conversation (for order changes)
+    conversation_order_data = extract_order_completion_data(ConversationLogger.get_conversation(session_id))
+    
+    # Sync conversation changes with session state
+    if conversation_order_data and order_state.in_order_flow:
+        # Update session state with any order changes from conversation
+        if conversation_order_data.get('items') != order_state.items:
+            print(f"DEBUG: Order items changed via conversation analysis")
+            order_state.items = conversation_order_data['items']
+            order_state.total_cost = conversation_order_data['total_cost']
+    
     # Check for order completion
     completion_message = check_for_order_completion(session_id)
     if completion_message:
         async def completion_response_stream():
             yield completion_message
-            yield completion_message
         
-        ConversationLogger.log_message(session_id, completion_message, "bot")
         ConversationLogger.log_message(session_id, completion_message, "bot")
         return StreamingResponse(completion_response_stream(), media_type="text/plain")
 
@@ -984,14 +958,12 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                     menu_items_context += f"\n\nItems not found: {not_found_text}"
                 else:
                     menu_items_context = f"Items not found: {not_found_text}"
-                    menu_items_context = f"Items not found: {not_found_text}"
 
         # Get menu context for full menu requests
         menu_context = ""
         if re.search(r"what'?s on the menu|show me the menu|today'?s menu|full menu|what'?s available|what'?s available today", user_message, re.IGNORECASE):
             menu = await fetch_full_menu_from_mcp()
             if menu:
-                menu_context = "[MENU DATA]:\n"
                 menu_context = "[MENU DATA]:\n"
                 for item in menu:
                     menu_context += f"- {item['name']}: AED {item['price']}\n"
@@ -1006,59 +978,10 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             if open_list is not None:
                 if open_list:
                     open_restaurants_context = "[OPEN RESTAURANTS]:\n" + "\n".join(f"- {r}" for r in open_list)
-                    open_restaurants_context = "[OPEN RESTAURANTS]:\n" + "\n".join(f"- {r}" for r in open_list)
                 else:
-                    open_restaurants_context = "[No restaurants are currently open.]"
                     open_restaurants_context = "[No restaurants are currently open.]"
             else:
                 open_restaurants_context = "[Restaurant data is currently unavailable.]"
-
-        # Add order status context if there's an active order
-        order_status_context = ""
-        if order_data:
-            missing_fields = order_data.get('missing_fields', [])
-            invalid_fields = order_data.get('invalid_fields', [])
-            
-            order_status_context = "\n[[ORDER STATUS]]\n"
-            if order_data['items']:
-                items_text = ", ".join([
-                    f"{item.get('quantity', 1)}x {item['name']}"
-                    for item in order_data['items']
-                    if isinstance(item, dict) and 'name' in item
-                ])
-                if items_text:
-                    order_status_context += f"Current order: {items_text} (Total: AED {order_data['total_cost']:.2f})\n"
-                else:
-                    order_status_context += f"Current order: [No individual items listed] (Total: AED {order_data['total_cost']:.2f})\n"
-            
-            # Add validation context
-            order_status_context += "\n[[VALIDATION REQUIREMENTS]]\n"
-            order_status_context += "- RF ID must be exactly 6 digits\n"
-            order_status_context += f"- Building must be one of: {', '.join(AVAILABLE_BUILDINGS)}\n"
-            order_status_context += "- Phone number must be a valid UAE mobile number starting with '5'\n"
-            
-            if missing_fields or invalid_fields:
-                order_status_context += "\n[[VALIDATION STATUS]]\n"
-                
-                if missing_fields:
-                    order_status_context += "Missing information:\n"
-                    for field in missing_fields:
-                        order_status_context += f"- {field}\n"
-                
-                if invalid_fields:
-                    order_status_context += "Invalid information provided:\n"
-                    for field in invalid_fields:
-                        if field == 'rf_id':
-                            order_status_context += f"- RF ID '{order_data['rf_id']}' is invalid (must be 6 digits)\n"
-                        elif field == 'building':
-                            order_status_context += f"- Building '{order_data['building']}' is not a valid option\n"
-                        elif field == 'phone':
-                            order_status_context += f"- Phone number '{order_data['phone']}' is not a valid UAE mobile number\n"
-            else:
-                order_status_context += "\nAll required information has been provided and validated.\n"
-            
-            if order_data.get('special_request') and order_data['special_request'] != 'None':
-                order_status_context += f"\nSpecial request: {order_data['special_request']}\n"
 
         # Build the conversation history prompt
         history_prompt = ""
@@ -1071,9 +994,6 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         # Prepare the payload for Ollama
         prompt = system_prompt
         
-        # Place order_status_context at the very top of the prompt
-        if order_status_context:
-            prompt = f"{order_status_context}\n\n" + prompt
         if menu_context:
             prompt += f"\n\n{menu_context}"
         if menu_items_context:
@@ -1082,17 +1002,15 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             prompt += f"\n\n{category_context}"
         if order_context:
             prompt += f"\n\n{order_context}"
-        if order_status_context:
-            prompt += f"\n\n{order_status_context}"
         if open_restaurants_context:
             prompt += f"\n\n{open_restaurants_context}"
         prompt += f"\n{history_prompt}User: {user_message}\nAssistant:"
 
-        # Add order state context if in order flow
+        # Add order state context if in order flow - SINGLE SOURCE OF TRUTH
         order_state = get_or_create_order_state(session_id)
         
         if order_state.in_order_flow:
-            order_status = "\n[[ORDER STATUS]]\n"
+            order_status = "\n[[CURRENT ORDER STATUS]]\n"
             items_inner = ', '.join([
                 f"{item.get('quantity', 1)}x {item['name']}"
                 for item in (order_state.items or [])
@@ -1102,18 +1020,18 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             order_status += f"Total: AED {order_state.total_cost:.2f}\n"
             
             # Show provided information
-            order_status += "\nProvided Information:\n"
+            order_status += "\nAlready Provided:\n"
             if order_state.rf_id:
-                order_status += f"- RF ID: {order_state.rf_id}\n"
+                order_status += f"✓ RF ID: {order_state.rf_id}\n"
             if order_state.building:
-                order_status += f"- Building: {order_state.building}\n"
+                order_status += f"✓ Building: {order_state.building}\n"
             if order_state.phone:
-                order_status += f"- Phone: {order_state.phone}\n"
+                order_status += f"✓ Phone: {order_state.phone}\n"
             if order_state.special_request is not None:
-                order_status += f"- Special Request: {order_state.special_request}\n"
+                order_status += f"✓ Special Request: {order_state.special_request}\n"
             
-            # Show missing information
-            order_status += "\nMissing Information:\n"
+            # Show still missing information
+            order_status += "\nStill Missing:\n"
             if not order_state.rf_id:
                 order_status += "- RF ID (must be 6 digits)\n"
             if not order_state.building:
@@ -1123,7 +1041,8 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             if order_state.special_request is None:
                 order_status += "- Special Request (ask if they have any special requests, dietary restrictions, etc.)\n"
             
-            prompt += order_status
+            # Insert the order status at the beginning of the prompt for priority
+            prompt = order_status + "\n" + prompt
             
             # Add validation tools to the payload
             payload = {
@@ -1131,16 +1050,17 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                 "prompt": prompt,
                 "stream": True,
                 "tools": VALIDATION_TOOLS,
-                "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"],
-                "temperature": 0.25
+                "stop": ["User:", "Assistant:", "\nUser:", "\nAssistant:", "User: ", "Assistant: "],
+                "temperature": 0.1  # Lower temperature for more consistent responses
             }
+
         else:
             payload = {
                 "model": OLLAMA_MODEL,
                 "prompt": prompt,
                 "stream": True,
-                "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"],
-                "temperature": 0.25
+                "stop": ["User:", "Assistant:", "\nUser:", "\nAssistant:", "User: ", "Assistant: "],
+                "temperature": 0.1
             }
 
         # Collect the bot response for logging
@@ -1182,7 +1102,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                                         # Get model's response to the validation
                                         validation_response = await client.post(
                                             OLLAMA_URL,
-                                            json={"model": OLLAMA_MODEL, "prompt": prompt, "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"], "temperature": 0.25}
+                                            json={"model": OLLAMA_MODEL, "prompt": prompt, "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:", "\n\nUser:", "\n\nAssistant:"], "temperature": 0.25}
                                         )
                                         validation_data = validation_response.json()
                                         if "response" in validation_data:
@@ -1203,6 +1123,9 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         # Log the bot response after streaming is complete
         if bot_response:
             ConversationLogger.log_message(session_id, bot_response, "bot")
+            
+            # 🎯 NEW: Detect and save confirmed orders
+            detect_order_confirmation_and_save(session_id, bot_response, user_message)
 
     return StreamingResponse(ollama_stream(), media_type="text/plain")
 
@@ -1217,7 +1140,7 @@ def warmup():
             "model": OLLAMA_MODEL,
             "prompt": "Hello!",
             "stream": False,
-            "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:"],
+            "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:", "\n\nUser:", "\n\nAssistant:"],
             "temperature": 0.25
         }
         # Send a dummy request to Ollama to trigger model load
