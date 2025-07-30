@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-30T14:30:16.070599",
+    "sender": "user",
+    "message": "I want to order 2 pepperoni pizzas and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-30T14:30:53.198498",
+    "sender": "bot",
+    "message": "Great! I found 2x Pepperoni for AED 43.0 each and 3x Chicken Alfredo for AED 35.0 each on our menu, making the total AED 191.00.\n\nWould you like to place an order for these items? Please respond with 'yes' to confirm or 'no' to cancel.\n\nIf you're ready to order, please provide your RFID Number (6 digits - located at back bottom right of your NYU card after the + sign), Building Number (from the following options: \"A1A\", \"A1B\", \"A1C\", \"A2A\", \"A2B\", \"A2C\", \"A3\", \"A4\", \"A5A\", \"A5B\", \"A5C\", \"A6A\", \"A6B\", \"A6C\", \"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\", \"F1\", \"F2\", \"C1\", \"C2\", \"C3\"), and Phone Number (UAE format)."
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "category": "Pepperoni"
+    },
+    {
+      "category": "Chicken Alfredo"
+    }
+  ],
+  "stage": "confirming_order",
+  "total_cost": 0,
+  "detected_at": "2025-07-30T12:11:12.811959",
+  "conversation_length": 3
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2025-07-30T12:08:10.138301",
+    "sender": "user",
+    "message": "I want to order 2 pepperoni pizzas and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-30T12:09:08.419644",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni pizzas for AED 43.0 each and Chicken Alfredo pizzas for AED 35.0 each on our menu. Your total would be AED 164.0.\n\nWould you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\n\nTo proceed, I need your RFID Number (6 digits - located at the back bottom right of your NYU card after the + sign), Building Number (from the options provided), and Phone Number (UAE format). Also, do you have any special requests for your order?"
+  },
+  {
+    "timestamp": "2025-07-30T12:11:12.026588",
+    "sender": "user",
+    "message": "yes I'd like to ordr"
+  },
+  {
+    "timestamp": "2025-07-30T12:12:12.452124",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni pizzas for AED 43.0 each and Chicken Alfredo pizzas for AED 35.0 each on our menu. Your total would be AED 164.0.\n\nTo proceed, I need your RFID Number (6 digits - located at the back bottom right of your NYU card after the + sign), Building Number (from the options provided), and Phone Number (UAE format). Also, do you have any special requests for your order?\n\nPlease provide this information so we can confirm your order."
+  }
+]

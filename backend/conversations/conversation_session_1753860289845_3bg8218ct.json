@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-30T12:55:05.089342",
+    "sender": "user",
+    "message": "I want to order a small berry bowl"
+  },
+  {
+    "timestamp": "2025-07-30T12:55:21.685203",
+    "sender": "bot",
+    "message": "I'm sorry, but we don't have the Berry Bowl on our menu at the moment. Would you like to explore other options? If you let me know what you're interested in, I can provide more details and help you place an order."
+  }
+]

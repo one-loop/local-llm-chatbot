@@ -144,7 +144,7 @@ export default function Home() {
 
   useEffect(() => {
     // Warm up the backend model on page load
-    fetch('http://localhost:5000/warmup').catch(() => {});
+    fetch('http://localhost:1000/warmup').catch(() => {});
   }, []);
 
   const scrollToBottom = () => {
@@ -183,7 +183,7 @@ export default function Home() {
       console.log('[Frontend] Sending message to backend:', messageToSend);
       const controller = new AbortController();
       abortControllerRef.current = controller;
-      const res = await fetch("http://localhost:5000/chat", {
+      const res = await fetch("http://localhost:1000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -294,7 +294,7 @@ export default function Home() {
     { text: "What's on the menu", color: "#fdcb6e" },
     { text: "What's Open", color: "#7f6ec7" },
     { text: "Order a pepperoni pizza", color: "#3baecc" },
-    { text: "What's my meal plan balance", color: "#c66483" },
+    { text: "What can you do for me", color: "#c66483" },
     { text: "How do I make online orders", color: "#43b47b" },
   ];
 

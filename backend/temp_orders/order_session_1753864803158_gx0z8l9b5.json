@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "category": "Chicken Nuggets"
+    },
+    {
+      "category": "Pizza"
+    }
+  ],
+  "stage": "confirming_order",
+  "total_cost": 0,
+  "detected_at": "2025-07-30T14:12:18.950436",
+  "conversation_length": 3
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2025-07-30T15:05:19.275959",
+    "sender": "user",
+    "message": "I want to order 3 chicken alfredo pizzas and 2 pepperoni pizzas"
+  },
+  {
+    "timestamp": "2025-07-30T15:05:45.299962",
+    "sender": "bot",
+    "message": "Great! I found Chicken Alfredo for AED 35.0 each and Pepperoni for AED 43.0 each on our menu. The total for your order would be AED 191.00.\n\nWould you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\n\nIf you're ready, could you please provide me with the following details:\n1. RFID Number\n2. Building Number\n3. Phone Number (UAE format)\n4. Special Requests"
+  },
+  {
+    "timestamp": "2025-07-30T15:06:05.896076",
+    "sender": "user",
+    "message": "yes, I'd like to confirm the order. I don't have any special requests. My RFID is 484202, my building number is A3, and my phone number is 538093224"
+  },
+  {
+    "timestamp": "2025-07-30T15:06:37.817382",
+    "sender": "bot",
+    "message": "Thank you for confirming your order.\n\nYour details are as follows:\n- RFID Number: 484202\n- Building Number: A3\n- Phone Number: +971538093224\n\nHere’s a summary of your order:\n\n- 3 Chicken Alfredo Pizzas at AED 35.0 each\n- 2 Pepperoni Pizzas at AED 43.0 each\n\nTotal: AED 191.00\n\nYour order is on its way! Thank you for ordering from the NYU Abu Dhabi Dining Hall.\n\nHave a great day!"
+  }
+]

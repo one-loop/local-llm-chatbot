@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-30T13:41:11.090776",
+    "sender": "user",
+    "message": "I want to order some chicken nuggets, french fries, and a farm house pizza"
+  },
+  {
+    "timestamp": "2025-07-30T13:42:47.604852",
+    "sender": "bot",
+    "message": "Great! I found Chicken Nuggets for AED 19.0 and Farm House Pizza for AED 41.0 on our menu. French fries are not listed in the provided categories, but they might be available under another category or as a side item. Would you like to place an order for these items? Please respond with 'yes' to confirm or 'no' to cancel.\n\nIf you confirm, please provide me with your RFID Number (6 digits - located at back bottom right of your NYU card after the + sign), Building Number (from the following options: \"A1A\", \"A1B\", \"A1C\", \"A2A\", \"A2B\", \"A2C\", \"A3\", \"A4\", \"A5A\", \"A5B\", \"A5C\", \"A6A\", \"A6B\", \"A6C\", \"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\", \"F1\", \"F2\", \"C1\", \"C2\", \"C3\"), Phone Number (UAE format), and any Special Requests."
+  }
+]

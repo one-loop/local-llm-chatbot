@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2025-07-30T15:21:37.093999",
+    "sender": "user",
+    "message": "Order a pepperoni pizza"
+  },
+  {
+    "timestamp": "2025-07-30T15:22:31.466606",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni on our menu for AED 43.00.\n\nWould you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\n\nIf you're ready, please provide me with your RFID Number (6 digits - located at the back bottom right of your NYU card after the + sign), Building Number (from the following options: \"A1A\", \"A1B\", \"A1C\", \"A2A\", \"A2B\", \"A2C\", \"A3\", \"A4\", \"A5A\", \"A5B\", \"A5C\", \"A6A\", \"A6B\", \"A6C\", \"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\", \"F1\", \"F2\", \"C1\", \"C2\", \"C3\"), Phone Number (UAE format), and any Special Requests."
+  },
+  {
+    "timestamp": "2025-07-30T15:22:46.306818",
+    "sender": "user",
+    "message": "yes, I'd like to confirm the order. I don't have any special requests. My RFID is 484202, my building number is A3, and my phone number is 538093224"
+  },
+  {
+    "timestamp": "2025-07-30T15:23:10.372983",
+    "sender": "bot",
+    "message": "Thank you for confirming your order.\n\nYour Pepperoni pizza will be delivered to Building A3. Your total price for the item is AED 43.00.\n\nPlease expect your order shortly.\n\nThank you, and have a great day!"
+  }
+]

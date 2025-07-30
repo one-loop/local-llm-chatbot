@@ -1,0 +1,62 @@
+[
+  {
+    "timestamp": "2025-07-30T15:06:50.078115",
+    "sender": "user",
+    "message": "Can I order a pizza"
+  },
+  {
+    "timestamp": "2025-07-30T15:07:15.236748",
+    "sender": "bot",
+    "message": "Sure! We have several pizza options available. Would you like to see the menu?"
+  },
+  {
+    "timestamp": "2025-07-30T15:07:24.820979",
+    "sender": "user",
+    "message": "yes I'd like to see which pizza options are available"
+  },
+  {
+    "timestamp": "2025-07-30T15:08:01.410649",
+    "sender": "bot",
+    "message": "Great! Here are our pizza options:\n\n- Margherita: AED 31.0\n- Al Funghi: AED 35.0\n- Paneer Kathi: AED 39.0\n- Farm House: AED 41.0\n- Banana & Nutella: AED 35.0\n- Chicken Alfredo: AED 35.0\n- Chicken Tikka: AED 35.0\n- Dynamite Chicken: AED 39.0\n- Pepperoni: AED 43.0\n- Beef Supreme: AED 47.0\n- Seafood Marinara: AED 43.0\n- Smoked Salmon & Avocado: AED 49.0\n\nWould you like to place an order for any of these pizzas?"
+  },
+  {
+    "timestamp": "2025-07-30T15:08:24.667143",
+    "sender": "user",
+    "message": "Which vegetarian options do you have"
+  },
+  {
+    "timestamp": "2025-07-30T15:08:53.155811",
+    "sender": "bot",
+    "message": "We have the following vegetarian pizza options:\n\n- Margherita: AED 31.0\n- Al Funghi: AED 35.0\n- Paneer Kathi: AED 39.0\n- Banana & Nutella: AED 35.0\n\nWould you like to place an order for any of these items?"
+  },
+  {
+    "timestamp": "2025-07-30T15:09:14.423795",
+    "sender": "user",
+    "message": "Yes, can I order an al funghi pizza and a pepperoni pizza. Also I'd like some french fries and chicken nuggets"
+  },
+  {
+    "timestamp": "2025-07-30T15:09:48.733930",
+    "sender": "bot",
+    "message": "Great! We have the Al Funghi pizza for AED 35.0 and Pepperoni pizza for AED 43.0. French Fries are available for AED 9.0, but Chicken Nuggets are not on our current menu.\n\nWould you still like to place an order for the Al Funghi pizza, Pepperoni pizza, and French Fries?\n\nIf so, please provide me with your RFID number (6 digits), building number, phone number (UAE format), and any special requests."
+  },
+  {
+    "timestamp": "2025-07-30T15:10:42.043712",
+    "sender": "user",
+    "message": "yes, I'd like to order please. My RFID number is 432542, my building number is C2 and my phone number is 504823431"
+  },
+  {
+    "timestamp": "2025-07-30T15:11:20.285183",
+    "sender": "bot",
+    "message": "Perfect! Thank you for providing that information.\n\nHere’s a summary of your order:\n- Al Funghi Pizza: AED 35.0\n- Pepperoni Pizza: AED 43.0\n- French Fries: AED 9.0\n\nTotal: AED 87.00 (same as previously stated)\n\nDo you have any special requests for your order? (like extra toppings, dietary restrictions, etc.)\nOtherwise, I will proceed with your order.\n\nThank you!"
+  },
+  {
+    "timestamp": "2025-07-30T15:11:32.828112",
+    "sender": "user",
+    "message": "No I don't have any special requests"
+  },
+  {
+    "timestamp": "2025-07-30T15:12:19.310218",
+    "sender": "bot",
+    "message": "Great! Your order is confirmed. Here’s a summary:\n\n- Al Funghi Pizza: AED 35.0\n- Pepperoni Pizza: AED 43.0\n- French Fries: AED 9.0\n\nTotal: AED 87.00\n\nThank you for your order, and we will have your food ready shortly.\n\nIf you need any further assistance or have additional questions, feel free to ask!"
+  }
+]

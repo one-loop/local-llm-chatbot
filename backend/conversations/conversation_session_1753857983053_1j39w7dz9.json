@@ -1,0 +1,57 @@
+[
+  {
+    "timestamp": "2025-07-30T12:16:24.544917",
+    "sender": "user",
+    "message": "Order a pepperoni pizza"
+  },
+  {
+    "timestamp": "2025-07-30T12:17:23.605455",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni on our menu for AED 43.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel. If you would like to order, please provide your RFID Number (6 digits - located at back bottom right of your NYU card after the + sign), Building Number, Phone Number (UAE format), and any Special Requests."
+  },
+  {
+    "timestamp": "2025-07-30T12:19:30.450098",
+    "sender": "user",
+    "message": "yes I wnt to order this. My RFID is 483291"
+  },
+  {
+    "timestamp": "2025-07-30T12:19:45.252388",
+    "sender": "bot",
+    "message": "Great! Your RFID number is 483291. Could you please provide your Building Number, Phone Number (UAE format), and any special requests for your order?"
+  },
+  {
+    "timestamp": "2025-07-30T12:20:05.449297",
+    "sender": "user",
+    "message": "My building number is A4A"
+  },
+  {
+    "timestamp": "2025-07-30T12:20:05.450880",
+    "sender": "bot",
+    "message": "'A4A' is not a valid building. Please choose from: A1, A1A, A1B, A1C, A2, A2A, A2B, A2C, A3, A4, A5, A5A, A5B, A5C, A6, A6A, A6B, A6C, C1, C2, C3, F1, F2"
+  },
+  {
+    "timestamp": "2025-07-30T12:20:12.431256",
+    "sender": "user",
+    "message": "Sorry my building number is A4"
+  },
+  {
+    "timestamp": "2025-07-30T12:20:27.681513",
+    "sender": "bot",
+    "message": "Great! Your RFID number is 483291, and your Building Number is A4. Could you please provide your Phone Number (UAE format) and any special requests for your order?"
+  },
+  {
+    "timestamp": "2025-07-30T12:20:36.575462",
+    "sender": "user",
+    "message": "My phone number is 503438720"
+  },
+  {
+    "timestamp": "2025-07-30T12:20:55.540826",
+    "sender": "user",
+    "message": "I don't have any special requests"
+  },
+  {
+    "timestamp": "2025-07-30T12:21:16.038934",
+    "sender": "bot",
+    "message": "Perfect! Your order for a Pepperoni pizza is confirmed. \n\nYour order details are as follows:\n- RFID Number: 483291\n- Building Number: A4\n- Phone Number: 503438720\n\nThank you for your order, and we look forward to serving you!"
+  }
+]

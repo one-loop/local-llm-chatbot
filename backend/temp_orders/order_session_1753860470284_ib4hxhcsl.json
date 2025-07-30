@@ -1,0 +1,17 @@
+{
+  "items": [
+    {
+      "category": "House Grill"
+    },
+    {
+      "category": "Cajun Buttered Corn"
+    },
+    {
+      "category": "Angry Chicken"
+    }
+  ],
+  "stage": "rf_id_provided",
+  "total_cost": 0,
+  "detected_at": "2025-07-30T12:59:45.760041",
+  "conversation_length": 5
+}

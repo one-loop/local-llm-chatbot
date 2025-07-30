@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2025-07-30T15:25:26.658479",
+    "sender": "user",
+    "message": "What can you do for me"
+  },
+  {
+    "timestamp": "2025-07-30T15:25:46.879262",
+    "sender": "bot",
+    "message": "I can help you with information about our menu items, check item availability, and assist you in placing an order if you're interested. Would you like to know more about our menu or place an order?"
+  },
+  {
+    "timestamp": "2025-07-30T15:25:57.762173",
+    "sender": "user",
+    "message": "Can I order a pepperoni pizza"
+  },
+  {
+    "timestamp": "2025-07-30T15:26:30.314995",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni on our menu for AED 43.0. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\nIf you proceed, please provide me with your RFID Number (6 digits - located at the back bottom right of your NYU card after the + sign), Building Number (from the following options: \"A1A\", \"A1B\", \"A1C\", \"A2A\", \"A2B\", \"A2C\", \"A3\", \"A4\", \"A5A\", \"A5B\", \"A5C\", \"A6A\", \"A6B\", \"A6C\", \"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\", \"F1\", \"F2\", \"C1\", \"C2\", \"C3\"), Phone Number (UAE format), and any Special Requests you might have."
+  },
+  {
+    "timestamp": "2025-07-30T15:26:40.162380",
+    "sender": "user",
+    "message": "yes, I'd like to confirm the order. I don't have any special requests. My RFID is 484202, my building number is A3, and my phone number is 538093224"
+  },
+  {
+    "timestamp": "2025-07-30T15:27:06.098318",
+    "sender": "bot",
+    "message": "Thank you for confirming your order.\n\nYour order includes a Pepperoni pizza for AED 43.0.\n\n- RFID Number: 484202\n- Building Number: A3\n- Phone Number: 538093224\n- Special Requests: None\n\nI have noted down your details and will ensure your order is prepared accordingly. Thank you for choosing the dining hall at NYU Abu Dhabi!"
+  }
+]

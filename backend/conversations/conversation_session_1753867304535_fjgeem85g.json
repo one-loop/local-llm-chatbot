@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2025-07-30T14:51:45.831328",
+    "sender": "user",
+    "message": "I want to order 2 pepperoni pizzas and 3 chicken alfredo pizzas"
+  },
+  {
+    "timestamp": "2025-07-30T14:52:33.008436",
+    "sender": "bot",
+    "message": "Great! I found 2x Pepperoni for AED 43.0 each = AED 86.0, and 3x Chicken Alfredo for AED 35.0 each = AED 105.0 on our menu. The total is AED 191.00.\n\nWould you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\n\nTo proceed, I need the following details:\n1. RFID Number (6 digits - located at back bottom right of your NYU card after the + sign)\n2. Building Number\n3. Phone Number (UAE format)\n4. Special Requests - \"Do you have any special requests for your order? (like extra toppings, dietary restrictions, etc.)\" Store as \"None\" if no requests.\n\nPlease provide this information so I can complete your order."
+  },
+  {
+    "timestamp": "2025-07-30T14:52:56.267495",
+    "sender": "user",
+    "message": "yes, I'd like to confirm the order. I don't have any special requests. My RFID is 484202, my building number is A3, and my phone number is 538093224"
+  },
+  {
+    "timestamp": "2025-07-30T14:53:25.113466",
+    "sender": "bot",
+    "message": "Thank you for confirming your order.\n\nYour order details are as follows:\n- 2x Pepperoni pizzas at AED 43.0 each = AED 86.0\n- 3x Chicken Alfredo pizzas at AED 35.0 each = AED 105.0\nTotal: AED 191.0\n\nOrder placed successfully for RFID number 484202, Building A3.\n\nThank you! Your order will be ready shortly. Enjoy your meal!"
+  }
+]

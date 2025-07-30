@@ -8,14 +8,15 @@ from typing import List, Dict, Optional
 # Load and flatten menu
 
 def get_all_categories(menu):
-    """Recursively collect all category names (top-level and subcategories)."""
+    """Recursively collect all category names (only keys with dict values)."""
     categories = set()
-    def recurse(obj, parent=None):
+    def recurse(obj):
         if isinstance(obj, dict):
             for k, v in obj.items():
-                categories.add(k)
+                # Only consider a key a category if its value is a dictionary
                 if isinstance(v, dict):
-                    recurse(v, k)
+                    categories.add(k)
+                    recurse(v)
     recurse(menu)
     return list(categories)
 
@@ -144,6 +145,7 @@ def rag_extract_menu_items(user_message: str, threshold=0.5) -> List[Dict]:
                     menu_item['quantity'] = quantity
                     menu_item['total_price'] = menu_item['price'] * quantity
                     found.append(menu_item)
+    print(f"DEBUG: found menu items:{found}")
     return found
 
 def rag_extract_menu_item(user_message: str, threshold=0.6) -> Optional[Dict]:

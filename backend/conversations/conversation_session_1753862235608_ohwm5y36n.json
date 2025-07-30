@@ -1,0 +1,52 @@
+[
+  {
+    "timestamp": "2025-07-30T13:27:17.090613",
+    "sender": "user",
+    "message": "I want to order a pepperoni pizza and a chicken cordon bleu sub, along with some chicken wings"
+  },
+  {
+    "timestamp": "2025-07-30T13:28:42.923972",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni for AED 43.0 and Chicken Cordon Bleu for AED 28.0 on our menu. Chicken Wings are available at AED 23.0 each.\n\nWould you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\n\nIf you would like to proceed, please provide your RFID Number (6 digits - located at back bottom right of your NYU card after the + sign), Building Number (from the following options: \"A1A\", \"A1B\", \"A1C\", \"A2A\", \"A2B\", \"A2C\", \"A3\", \"A4\", \"A5A\", \"A5B\", \"A5C\", \"A6A\", \"A6B\", \"A6C\", \"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\", \"F1\", \"F2\", \"C1\", \"C2\", \"C3\"), Phone Number (UAE format), and any special requests for your order."
+  },
+  {
+    "timestamp": "2025-07-30T13:28:59.226519",
+    "sender": "user",
+    "message": "yes, I'd like to order"
+  },
+  {
+    "timestamp": "2025-07-30T13:30:10.432370",
+    "sender": "bot",
+    "message": "Great! I found Pepperoni for AED 43.0 and Chicken Cordon Bleu for AED 28.0 on our menu. Chicken Wings are available at AED 23.0 each.\n\nCould you please provide your RFID Number (6 digits - located at back bottom right of your NYU card after the + sign), Building Number, Phone Number (UAE format), and any special requests for your order?"
+  },
+  {
+    "timestamp": "2025-07-30T13:30:40.748206",
+    "sender": "user",
+    "message": "My RFID number is 484201, my building number is A4A, and my phone number is 503480212, and I don't have any special requests"
+  },
+  {
+    "timestamp": "2025-07-30T13:30:40.751070",
+    "sender": "bot",
+    "message": "'A4A' is not a valid building. Please choose from: A1, A1A, A1B, A1C, A2, A2A, A2B, A2C, A3, A4, A5, A5A, A5B, A5C, A6, A6A, A6B, A6C, C1, C2, C3, F1, F2"
+  },
+  {
+    "timestamp": "2025-07-30T13:30:48.686402",
+    "sender": "user",
+    "message": "My building number is A4"
+  },
+  {
+    "timestamp": "2025-07-30T13:32:16.427936",
+    "sender": "bot",
+    "message": "Got it! Thank you for the correction.\n\nI will place your order as follows:\n- Pepperoni Pizza: AED 43.0\n- Chicken Cordon Bleu Sub: AED 28.0\n- Chicken Wings: AED 23.0\n\nThe total price for your order is AED 94.0.\n\nTo confirm, here are the details of your order:\n- RFID Number: 484201\n- Building Number: A4\n- Phone Number: +971503480212\n- Special Requests: None\n\nWould you like to proceed with this order?"
+  },
+  {
+    "timestamp": "2025-07-30T13:33:14.708457",
+    "sender": "user",
+    "message": "yes, that's all thank you"
+  },
+  {
+    "timestamp": "2025-07-30T13:34:48.661275",
+    "sender": "bot",
+    "message": "Great! I have placed your order for:\n- Pepperoni Pizza: AED 43.0\n- Chicken Cordon Bleu Sub: AED 28.0\n- Chicken Wings: AED 23.0\n\nThe total price is AED 94.0.\n\nYour order details are as follows:\n- RFID Number: 484201\n- Building Number: A4\n- Phone Number: +971503480212\n- Special Requests: None\n\nThank you for your order! Your food will be ready soon. Have a great day!"
+  }
+]

@@ -62,7 +62,7 @@ def save_final_order_to_file(order_data: Dict):
     """Save completed order to final orders file"""
     try:
         # Use 'a' mode to append orders to the file
-        with open(ORDERS_PATH, '', encoding='utf-8') as f:
+        with open(ORDERS_PATH, 'w', encoding='utf-8') as f:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             f.write(f"\n=== ORDER - {timestamp} ===\n")
             
@@ -78,7 +78,7 @@ def save_final_order_to_file(order_data: Dict):
                     f.write(f"- {qty}x {item['name']}: AED {price} each = AED {total_price}\n")
                 f.write(f"TOTAL COST: AED {total_cost:.2f}\n")
             
-            f.write(f"RF ID: N{order_data.get('rf_id', 'N/A')}\n")
+            f.write(f"RF ID: +{order_data.get('rf_id', 'N/A')}\n")
             f.write(f"Building: {order_data.get('building', 'N/A')}\n")
             f.write(f"Phone: {order_data.get('phone', 'N/A')}\n")
             f.write(f"Special Request: {order_data.get('special_request', 'None')}\n")
@@ -880,11 +880,22 @@ async def extract_complete_order_data(conversation: List[Dict], session_id: str 
     else:
         # Try multiple phone patterns
         phone_patterns = [
-            r'phone.*?number.*?(\d{10})',
-            r'phone.*?(\d{10})',
-            r'number.*?(\d{10})',
+            # Common phrases followed by digits
+            r'phone.*?number.*?(\+?\d[\d\s\-]{8,})',
+            r'phone.*?(\+?\d[\d\s\-]{8,})',
+            r'number.*?(\+?\d[\d\s\-]{8,})',
+            
+            # Explicit digit groups (e.g., 05xxxxxxxx, UAE mobile)
             r'\b(05\d{8})\b',
-            r'\b(\d{10})\b'
+            
+            # Strictly digits, 9–15 length
+            r'\b(\d{9,15})\b',
+
+            # Numbers with +country code (e.g., +971XXXXXXXXX)
+            r'\+(\d{9,15})',
+
+            # Numbers with optional +, spaces or dashes between digits
+            r'\b(\+?\d{1,4}[-\s]?\d{3,5}[-\s]?\d{3,5}[-\s]?\d{0,5})\b'
         ]
         
         # Check combined text first
@@ -1302,7 +1313,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             for item_data in items_data:
                 if 'category' in item_data:
                     category_name = item_data['category']
-                    yield f"[Looking up '{category_name}' in the menu...]\n"
+                    yield f"[Looking up category '{category_name}' in the menu...]\n"
                     category_items = await fetch_menu_category_from_mcp(category_name)
                     if category_items:
                         found_categories.append({'category': category_name, 'items': category_items})
@@ -1332,6 +1343,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                 if re.search(r'order|buy|get|want|purchase|can i get|i\'?ll have', user_message, re.IGNORECASE):
                     total_cost = sum(item['total_price'] for item in found_items)
                     order_context = f"\n[ORDER CONTEXT] User wants to order: {items_summary} (Total: AED {total_cost:.2f})."
+                    print(f"DEBUG: FOUND Order context: {order_context}")
             if found_categories:
                 for cat in found_categories:
                     cat_name = cat['category']

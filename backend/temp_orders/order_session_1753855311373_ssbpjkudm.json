@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "category": "Beef Supreme"
+    },
+    {
+      "category": "Beef Steak"
+    }
+  ],
+  "stage": "rf_id_provided",
+  "total_cost": 0,
+  "detected_at": "2025-07-30T11:38:41.636746",
+  "conversation_length": 9
+}

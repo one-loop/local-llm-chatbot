@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2025-07-30T12:57:55.524196",
+    "sender": "user",
+    "message": "What's on the house grill"
+  },
+  {
+    "timestamp": "2025-07-30T12:58:26.102188",
+    "sender": "bot",
+    "message": "Here are some options from our House Grill menu:\n\n- Halloumi & Vegetable with Fig Jam: AED 31.0\n- Sesame Ginger & Soya Tofu: AED 29.0\n- Miso Glazed Aubergine: AED 25.0\n- Cajun Buttered Corn: AED 23.0\n- Chicken Breast: AED 25.0\n- Sous Vide Chicken: AED 27.0\n- Angry Chicken: AED 29.0\n- Roasted Half Chicken: AED 33.0\n- Beef Steak: AED 39.0\n- Salmon Steak: AED 45.0\n\nWould you like to place an order for any of these items?"
+  },
+  {
+    "timestamp": "2025-07-30T12:58:29.695255",
+    "sender": "user",
+    "message": "Can I order the cajun buttered corn and the angry chicken"
+  },
+  {
+    "timestamp": "2025-07-30T12:59:04.040010",
+    "sender": "bot",
+    "message": "Great! I found Cajun Buttered Corn for AED 23.0 and Angry Chicken for AED 29.0. The total for your order would be AED 52.0.\n\nTo place your order, could you please provide me with the following details:\n1. RFID Number (6 digits - located at back bottom right of your NYU card after the + sign)\n2. Building Number (from the options: \"A1A\", \"A1B\", \"A1C\", \"A2A\", \"A2B\", \"A2C\", \"A3\", \"A4\", \"A5A\", \"A5B\", \"A5C\", \"A6A\", \"A6B\", \"A6C\", \"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\", \"F1\", \"F2\", \"C1\", \"C2\", \"C3\")\n3. Phone Number (UAE format)\n4. Special Requests - Do you have any special requests for your order? (like extra toppings, dietary restrictions, etc.) You can respond with \"None\" if there are no special requests.\n\nOnce I have all this information, I’ll confirm your order and thank you for dining with us!"
+  },
+  {
+    "timestamp": "2025-07-30T12:59:45.172338",
+    "sender": "user",
+    "message": "Yes, I want to order. My RFID number is 343113, my Building number is A1A, my phone number is 504803214, and I don't have any special requests"
+  },
+  {
+    "timestamp": "2025-07-30T13:00:12.903197",
+    "sender": "bot",
+    "message": "Thank you for your order! Here’s a summary of your details:\n\n- RFID Number: 343113\n- Building Number: A1A\n- Phone Number: 504803214\n- Special Requests: None\n\nYour order includes:\n- Cajun Buttered Corn (AED 23.0)\n- Angry Chicken (AED 29.0)\n\nTotal Price: AED 52.0\n\nThank you for ordering from the NYU Abu Dhabi Dining Hall! Your food will be prepared and delivered shortly. Enjoy your meal!\n\nIf you need any more assistance, feel free to ask."
+  }
+]

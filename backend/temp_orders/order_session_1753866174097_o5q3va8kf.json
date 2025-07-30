@@ -1,0 +1,38 @@
+{
+  "items": [
+    {
+      "name": "Chicken Nuggets",
+      "price": 19.0,
+      "quantity": 6,
+      "total_price": 114.0
+    },
+    {
+      "name": "French Fries",
+      "price": 9.0,
+      "quantity": 5,
+      "total_price": 45.0
+    },
+    {
+      "name": "Pepperoni",
+      "price": 43.0,
+      "quantity": 1,
+      "total_price": 43.0
+    },
+    {
+      "name": "Beef Supreme",
+      "price": 47.0,
+      "quantity": 1,
+      "total_price": 47.0
+    },
+    {
+      "name": "Chicken Teriyaki",
+      "price": 27.0,
+      "quantity": 1,
+      "total_price": 27.0
+    }
+  ],
+  "stage": "rf_id_provided",
+  "total_cost": 276.0,
+  "detected_at": "2025-07-30T14:38:48.654668",
+  "conversation_length": 5
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-30T14:03:55.343548",
+    "sender": "user",
+    "message": "I want to order some chicken nuggets, french fries, and a farm house pizza"
+  },
+  {
+    "timestamp": "2025-07-30T14:05:15.925662",
+    "sender": "bot",
+    "message": "Great! I found Chicken Nuggets for AED 19.0 and Farm House Pizza for AED 41.0 on our menu. French fries are not listed, but I can include those for you. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\n\nTo proceed, please provide the following details:\n1. RFID Number\n2. Building Number\n3. Phone Number\n4. Special Requests\n\nIf you have any other requests, feel free to let me know!"
+  }
+]

@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2025-07-30T12:33:32.099523",
+    "sender": "user",
+    "message": "Order a pepperoni pizza"
+  },
+  {
+    "timestamp": "2025-07-30T12:34:03.661855",
+    "sender": "bot",
+    "message": "Great! I found a Pepperoni pizza for AED 43.0 on our menu. Would you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\n\nIf you do, please provide your RFID Number (6 digits - located at back bottom right of your NYU card after the + sign), Building Number (from the following options: \"A1A\", \"A1B\", \"A1C\", \"A2A\", \"A2B\", \"A2C\", \"A3\", \"A4\", \"A5A\", \"A5B\", \"A5C\", \"A6A\", \"A6B\", \"A6C\", \"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\", \"F1\", \"F2\", \"C1\", \"C2\", \"C3\"), Phone Number (UAE format), and any Special Requests."
+  },
+  {
+    "timestamp": "2025-07-30T12:34:49.460976",
+    "sender": "user",
+    "message": "yes, I'd like to confirm. My RFID number is 549021, my building number is F1, my phone number is 504212523, and I don't have any special requests"
+  },
+  {
+    "timestamp": "2025-07-30T12:35:05.972119",
+    "sender": "bot",
+    "message": "Thank you for confirming your order. Your Pepperoni pizza will be ready soon.\n\nOrder Details:\n- RFID Number: 549021\n- Building Number: F1\n- Phone Number: 504212523\n- Special Requests: None\n\nYour order total is AED 43.0. Thank you for ordering with us! Enjoy your meal."
+  }
+]

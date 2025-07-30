@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2025-07-30T12:28:51.293788",
+    "sender": "user",
+    "message": "I want to order an acai bowl"
+  },
+  {
+    "timestamp": "2025-07-30T12:29:21.375817",
+    "sender": "bot",
+    "message": "Great! We have the following options:\n\n- Small OG Bowl: AED 39.0\n- Large OG Bowl: AED 49.0\n\n- Small Tropical Bowl: AED 39.0\n- Large Tropical Bowl: AED 49.0\n\n- Small Choco Bowl: AED 39.0\n- Large Choco Bowl: AED 49.0\n\n- Small Berry Bowl: AED 39.0\n- Large Berry Bowl: AED 49.0\n\nPlease select a flavor and size for your acai bowl order, or let me know if you'd like to add anything else."
+  },
+  {
+    "timestamp": "2025-07-30T12:29:28.663471",
+    "sender": "user",
+    "message": "Ok, I'd like to order the small berry bowl"
+  },
+  {
+    "timestamp": "2025-07-30T12:29:49.988590",
+    "sender": "bot",
+    "message": "Great! I found a Small Berry Bowl on our menu for AED 39.0.\n\nWould you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\n\nIf you decide to proceed, please provide me with the following details:\n\n1. RFID Number (6 digits - located at back bottom right of your NYU card after the + sign)\n2. Building Number (from the options provided earlier)\n3. Phone Number (UAE format)\n4. Special Requests - \"Do you have any special requests for your order? (like extra toppings, dietary restrictions, etc.)\" Store as \"None\" if no special requests are mentioned.\n\nThank you!"
+  },
+  {
+    "timestamp": "2025-07-30T12:30:21.522469",
+    "sender": "user",
+    "message": "yes, I'd like to order. My RFID number is 539231, my phone number is 503821342, my building number is A1A, and I don't have any special requests"
+  },
+  {
+    "timestamp": "2025-07-30T12:30:39.114547",
+    "sender": "bot",
+    "message": "Great! You've ordered a Small Berry Bowl for AED 39.0.\n\nYour order details are as follows:\n- RFID Number: 539231\n- Building Number: A1A\n- Phone Number: 503821342\n- Special Requests: None\n\nThank you for your order! Your acai bowl will be prepared shortly. If you need any further assistance, feel free to ask.\n\nHave a great day!"
+  },
+  {
+    "timestamp": "2025-07-30T12:32:53.942435",
+    "sender": "user",
+    "message": "THanks"
+  },
+  {
+    "timestamp": "2025-07-30T12:33:01.538861",
+    "sender": "bot",
+    "message": "You're welcome! If you need anything else, don't hesitate to ask.\n\nHave a great day!"
+  }
+]

@@ -1,11 +1,10 @@
 
-=== ORDER - 2025-07-29 19:21:32 ===
+=== ORDER - 2025-07-30 15:27:07 ===
 ITEMS:
-- 7x Pepperoni Pizza: AED 35.0 each = AED 245.0
-- 2x Margherita Pizza: AED 31.0 each = AED 62.0
-TOTAL COST: AED 307.00
-RF ID: N678968
-Building: A5C
-Phone: 0564087884
-Special Request: None
+- 1x Pepperoni: AED 43.0 each = AED 43.0
+TOTAL COST: AED 43.00
+RF ID: +484202
+Building: A3
+Phone: None
+Special Request: yes, I'd like to confirm the order. I don't have any special requests. My RFID is 484202, my building number is A3, and my phone number is 538093224
 ==================================================

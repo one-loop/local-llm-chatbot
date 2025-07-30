@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "category": "Pepperoni"
+    }
+  ],
+  "stage": "rf_id_provided",
+  "total_cost": 0,
+  "detected_at": "2025-07-30T11:56:30.070572",
+  "conversation_length": 6
+}

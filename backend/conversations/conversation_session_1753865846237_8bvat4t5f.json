@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-30T14:28:35.357639",
+    "sender": "user",
+    "message": "I want to order some chicken nuggets, some french fries, and a farm house pizza"
+  },
+  {
+    "timestamp": "2025-07-30T14:29:07.375029",
+    "sender": "bot",
+    "message": "Great! I found Chicken Nuggets for AED 19.0, French Fries for AED 9.0, and Farm House Pizza for AED 41.0 on our menu. The total price is AED 69.00.\n\nWould you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel.\n\nIf you agree, could you please provide me with the following details:\n1. RFID Number (6 digits - located at back bottom right of your NYU card after the + sign)\n2. Building Number\n3. Phone Number (UAE format)\n4. Special Requests - \"Do you have any special requests for your order? (like extra toppings, dietary restrictions, etc.)\" (Store as \"None\" if none)"
+  }
+]

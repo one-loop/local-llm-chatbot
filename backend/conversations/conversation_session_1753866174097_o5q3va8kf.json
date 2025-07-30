@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2025-07-30T14:33:42.295012",
+    "sender": "user",
+    "message": "I want to order 6 chicken nuggets, 5 french fries, a pepperoni pizza, a beef supreme pizza and a chicken teriyaki sub"
+  },
+  {
+    "timestamp": "2025-07-30T14:34:11.356963",
+    "sender": "bot",
+    "message": "Great! I found the following items on our menu for your order:\n\n- 6x Chicken Nuggets (AED 19.0 each = AED 114.0)\n- 5x French Fries (AED 9.0 each = AED 45.0)\n- Pepperoni Pizza (AED 43.0)\n- Beef Supreme Pizza (AED 47.0)\n- Chicken Teriyaki Sub (AED 27.0)\n\nThe total price for your order is **AED 276.00**.\n\nWould you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel."
+  },
+  {
+    "timestamp": "2025-07-30T14:36:31.782247",
+    "sender": "user",
+    "message": "yes I'd like to order"
+  },
+  {
+    "timestamp": "2025-07-30T14:37:42.398925",
+    "sender": "bot",
+    "message": "Great! I found the following items on our menu for your order:\n\n- 6x Chicken Nuggets (AED 19.0 each = AED 114.0)\n- 5x French Fries (AED 9.0 each = AED 45.0)\n- Pepperoni Pizza (AED 43.0)\n- Beef Supreme Pizza (AED 47.0)\n- Chicken Teriyaki Sub (AED 27.0)\n\nThe total price for your order is **AED 276.00**.\n\nTo proceed with your order, please provide me with the following details:\n1. RFID Number (6 digits - located at back bottom right of your NYU card after the + sign)\n2. Building Number (from the following options: \"A1A\", \"A1B\", \"A1C\", \"A2A\", \"A2B\", \"A2C\", \"A3\", \"A4\", \"A5A\", \"A5B\", \"A5C\", \"A6A\", \"A6B\", \"A6C\", \"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\", \"F1\", \"F2\", \"C1\", \"C2\", \"C3\")\n3. Phone Number (UAE format)\n4. Special Requests - \"Do you have any special requests for your order? (like extra toppings, dietary restrictions, etc.)\"\n   - If you say no/none/etc., we'll store it as \"None\"\n\nPlease provide this information so we can complete your order."
+  },
+  {
+    "timestamp": "2025-07-30T14:38:47.836957",
+    "sender": "user",
+    "message": "Ok, my RFID number is 423534, my building number is A4, my phone number is 503242312, and I don't have any special requests"
+  },
+  {
+    "timestamp": "2025-07-30T14:39:53.643909",
+    "sender": "bot",
+    "message": "Thank you for providing the details. Here’s a summary of your order:\n\n- **Items Ordered:**\n  - 6x Chicken Nuggets (AED 19.0 each = AED 114.0)\n  - 5x French Fries (AED 9.0 each = AED 45.0)\n  - Pepperoni Pizza (AED 43.0)\n  - Beef Supreme Pizza (AED 47.0)\n  - Chicken Teriyaki Sub (AED 27.0)\n\n- **Total Price:** AED 276.00\n\nYour order is confirmed, and we will deliver it to Building A4.\n\nThank you for your order! If you need any further assistance or have more questions, feel free to ask."
+  }
+]

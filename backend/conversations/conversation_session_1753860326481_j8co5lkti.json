@@ -1,0 +1,17 @@
+[
+  {
+    "timestamp": "2025-07-30T12:55:31.675417",
+    "sender": "user",
+    "message": "I want to order an acai bowl"
+  },
+  {
+    "timestamp": "2025-07-30T12:55:53.341852",
+    "sender": "bot",
+    "message": "Great! We have the following acai bowl options:\n\n- Small OG Bowl: AED 39.0\n- Large OG Bowl: AED 49.0\n\nPlease select a flavor and size for your acai bowl order. For example: 'Small OG Bowl' or 'Large Choco Bowl'.\n\nWould you like to place an order for this item? Please respond with 'yes' to confirm or 'no' to cancel."
+  },
+  {
+    "timestamp": "2025-07-30T12:56:00.769690",
+    "sender": "user",
+    "message": "Can I order a large choco bowl"
+  }
+]

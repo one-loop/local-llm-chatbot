@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2025-07-30T12:56:28.061532",
+    "sender": "user",
+    "message": "Can I order from the house grill"
+  },
+  {
+    "timestamp": "2025-07-30T12:56:43.664615",
+    "sender": "bot",
+    "message": "Sure! We have a variety of options from our House Grill menu. Would you like to see the items available?"
+  }
+]

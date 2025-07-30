@@ -1,0 +1,22 @@
+[
+  {
+    "timestamp": "2025-07-30T14:10:05.377267",
+    "sender": "user",
+    "message": "I want to order some chicken nuggets, french fries, and a farm house pizza"
+  },
+  {
+    "timestamp": "2025-07-30T14:11:02.362359",
+    "sender": "bot",
+    "message": "Great! I found Chicken Nuggets on our menu for AED 19.0. Farm House Pizza is also available for AED 41.0. French fries are not listed in our current menu, but we can still place an order for you if that's what you would like.\n\nWould you like to proceed with ordering these items? Please confirm by saying 'yes' or 'no'."
+  },
+  {
+    "timestamp": "2025-07-30T14:12:18.126792",
+    "sender": "user",
+    "message": "yes I'd like to order"
+  },
+  {
+    "timestamp": "2025-07-30T14:13:58.918802",
+    "sender": "bot",
+    "message": "Great! I found Chicken Nuggets on our menu for AED 19.0 and Farm House Pizza for AED 41.0. Your total will be AED 60.0.\n\nTo proceed with your order, could you please provide me with the following information:\n1. RFID Number (6 digits - located at back bottom right of your NYU card after the + sign)\n2. Building Number (from the following options: \"A1A\", \"A1B\", \"A1C\", \"A2A\", \"A2B\", \"A2C\", \"A3\", \"A4\", \"A5A\", \"A5B\", \"A5C\", \"A6A\", \"A6B\", \"A6C\", \"A1\", \"A2\", \"A3\", \"A4\", \"A5\", \"A6\", \"F1\", \"F2\", \"C1\", \"C2\", \"C3\")\n3. Phone Number (UAE format)\n4. Special Requests - \"Do you have any special requests for your order? (like extra toppings, dietary restrictions, etc.)\""
+  }
+]

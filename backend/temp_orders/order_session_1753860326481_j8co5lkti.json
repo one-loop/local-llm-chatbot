@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "category": "Acai Bowls"
+    },
+    {
+      "category": "Choco Bowl"
+    }
+  ],
+  "stage": "order_intent",
+  "total_cost": 0,
+  "detected_at": "2025-07-30T12:56:01.451806",
+  "conversation_length": 3
+}
