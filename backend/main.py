@@ -24,7 +24,6 @@ SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), 'system_prompt.txt'
 
 # Ollama API endpoint (assumes Ollama is running locally)
 OLLAMA_URL = 'http://localhost:11434/api/generate'
-# OLLAMA_MODEL = 'qwen2.5'
 OLLAMA_MODEL = 'qwen2.5'
 
 # MCP server endpoints
@@ -50,6 +49,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add this debug function at the top after your imports
+def debug_log(message: str):
+    """Enhanced debug logging"""
+    print(f"[DEBUG {datetime.datetime.now().strftime('%H:%M:%S')}] {message}")
+
 class ChatRequest(BaseModel):
     message: str
     session_id: Optional[str] = None
@@ -58,7 +62,7 @@ def save_final_order_to_file(order_data: Dict):
     """Save completed order to final orders file"""
     try:
         # Use 'a' mode to append orders to the file
-        with open(ORDERS_PATH, 'a', encoding='utf-8') as f:
+        with open(ORDERS_PATH, '', encoding='utf-8') as f:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             f.write(f"\n=== ORDER - {timestamp} ===\n")
             
@@ -85,7 +89,7 @@ def save_final_order_to_file(order_data: Dict):
     except Exception as e:
         print(f"Error saving order: {e}")
 
-# Validation Functions
+# Individual Validation Functions (kept for tool system)
 def validate_rf_id(text: str) -> Dict[str, Union[str, bool]]:
     """Validate if the text contains a valid RF ID (6 digits)"""
     if not text:
@@ -140,6 +144,67 @@ def validate_building(text: str) -> Dict[str, Union[str, bool]]:
         return {"valid": False, "message": f"Invalid building. Must be one of: {', '.join(sorted(AVAILABLE_BUILDINGS))}", "building": None}
     
     return {"valid": True, "message": "Valid building", "building": building}
+
+# CONSOLIDATED VALIDATION FUNCTION
+def validate_and_update_order_state(user_message: str, order_state) -> Optional[str]:
+    """
+    Consolidated validation function that extracts and validates user input formats BEFORE sending to LLM.
+    Updates order_state with valid data.
+    Returns error message if validation fails, None if valid or no validation needed.
+    """
+    user_message_lower = user_message.lower()
+    debug_log(f"Validating input: '{user_message}'")
+    
+    # Extract potential RFID (6 digits)
+    rf_id_match = re.search(r'\b(\d{4,7})\b', user_message)
+    if rf_id_match:
+        potential_rfid = rf_id_match.group(1)
+        if len(potential_rfid) != 6:
+            if len(potential_rfid) < 6:
+                return f"Your RFID must be exactly 6 digits. You provided {len(potential_rfid)} digits ({potential_rfid}). Please provide your complete 6-digit RFID."
+            else:
+                return f"Your RFID must be exactly 6 digits. You provided {len(potential_rfid)} digits ({potential_rfid}). Please check your RFID and provide exactly 6 digits."
+        
+        # If we reach here, RFID is valid - update order state
+        order_state.rf_id = potential_rfid
+        debug_log(f"Updated RFID to {potential_rfid}")
+    
+    # Extract potential building number - FIXED REGEX
+    building_match = re.search(r'\b([A-Z]\d[A-Z]?)\b', user_message, re.IGNORECASE)
+    if building_match:
+        potential_building = building_match.group(1).upper()
+        debug_log(f"Found potential building: {potential_building}")
+        
+        # Check against available buildings
+        if potential_building not in AVAILABLE_BUILDINGS:
+            debug_log(f"Building {potential_building} is INVALID")
+            return f"'{potential_building}' is not a valid building. Please choose from: {', '.join(sorted(AVAILABLE_BUILDINGS))}"
+        
+        # If we reach here, building is valid - update order state
+        order_state.building = potential_building
+        debug_log(f"Updated building to {potential_building}")
+    
+    # Extract potential phone number (look for UAE mobile patterns)
+    phone_match = re.search(r'\b(05\d{8}|\d{10})\b', user_message.replace(' ', '').replace('-', ''))
+    if phone_match:
+        potential_phone = phone_match.group(1)
+        
+        # Clean the phone number
+        cleaned_phone = potential_phone.replace('+971', '').replace(' ', '').replace('-', '')
+        
+        # UAE mobile validation
+        if not cleaned_phone.startswith('05') or len(cleaned_phone) != 10:
+            if cleaned_phone.startswith('5') and len(cleaned_phone) == 9:
+                cleaned_phone = '0' + cleaned_phone
+            else:
+                return f"Please provide a valid UAE mobile number. UAE mobile numbers start with '05' and have 10 digits total (format: 05xxxxxxxx)."
+        
+        # If we reach here, phone is valid - update order state
+        order_state.phone = cleaned_phone
+        debug_log(f"Updated phone to {cleaned_phone}")
+    
+    # No validation errors found
+    return None
 
 # Tool definitions for Mistral
 VALIDATION_TOOLS = [
@@ -202,7 +267,162 @@ VALIDATION_FUNCTIONS = {
     'validate_phone_number': validate_phone_number,
     'validate_building': validate_building
 }
+async def analyze_conversation_with_llm(conversation: List[Dict], session_id: str) -> Optional[Dict]:
+    """
+    Use LLM to analyze conversation and extract order details
+    Returns order data if found, None otherwise
+    """
+    debug_log("Using LLM to analyze conversation for order details")
+    
+    # Build conversation text
+    conversation_text = ""
+    for msg in conversation[-10:]:  # Last 10 messages for context
+        sender = msg['sender']
+        message = msg['message']
+        conversation_text += f"{sender.title()}: {message}\n"
+    
+    # Create analysis prompt
+    analysis_prompt = f"""Analyze this conversation between a user and a food ordering assistant. Extract order details if an order is being placed.
 
+CONVERSATION:
+{conversation_text}
+
+TASK: Determine if there is a complete food order in this conversation and extract the details.
+
+Look for:
+1. ITEMS: What food items are being ordered (name, quantity, price)
+2. CUSTOMER INFO: RFID (6 digits), Building (A1A, A2B, F1, etc.), Phone (UAE mobile)
+3. ORDER STATUS: Is this a confirmed/completed order ready to be processed?
+
+IMPORTANT RULES:
+- Only extract if this looks like a CONFIRMED/COMPLETED order
+- RFID must be exactly 6 digits
+- Building must match format: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C, A1, A2, A5, A6, F1, F2, C1, C2, C3
+- Phone must be UAE mobile number (10 digits starting with 05)
+- Look for order summaries, totals, confirmations
+
+RESPOND ONLY IN THIS JSON FORMAT:
+{{
+    "has_order": true/false,
+    "order_confirmed": true/false,
+    "items": [
+        {{
+            "name": "item name",
+            "price": price_number,
+            "quantity": quantity_number,
+            "total_price": total_price_number
+        }}
+    ],
+    "customer_info": {{
+        "rfid": "6_digit_number",
+        "building": "building_code",
+        "phone": "phone_number",
+        "special_request": "request_text_or_none"
+    }},
+    "total_cost": total_amount,
+    "confidence": "high/medium/low"
+}}
+
+If no confirmed order found, respond: {{"has_order": false}}"""
+
+    try:
+        # Send to LLM for analysis
+        async with httpx.AsyncClient(timeout=30) as client:
+            payload = {
+                "model": OLLAMA_MODEL,
+                "prompt": analysis_prompt,
+                "stream": False,
+                "temperature": 0.1,  # Low temperature for consistent parsing
+                "stop": ["\n\n", "User:", "Assistant:"]
+            }
+            
+            response = await client.post(OLLAMA_URL, json=payload)
+            if response.status_code == 200:
+                result = response.json()
+                llm_response = result.get("response", "").strip()
+                
+                debug_log(f"LLM analysis response: {llm_response}")
+                
+                # Try to parse JSON response
+                try:
+                    # Clean up response - sometimes LLM adds extra text
+                    json_start = llm_response.find('{')
+                    json_end = llm_response.rfind('}') + 1
+                    if json_start >= 0 and json_end > json_start:
+                        json_text = llm_response[json_start:json_end]
+                        order_analysis = json.loads(json_text)
+                        
+                        debug_log(f"Parsed LLM analysis: {order_analysis}")
+                        
+                        # Validate the analysis
+                        if order_analysis.get("has_order") and order_analysis.get("order_confirmed"):
+                            # Additional validation
+                            items = order_analysis.get("items", [])
+                            customer_info = order_analysis.get("customer_info", {})
+                            
+                            if items and customer_info.get("rfid") and customer_info.get("building"):
+                                # Format for our system
+                                formatted_order = {
+                                    "items": items,
+                                    "total_cost": order_analysis.get("total_cost", 0),
+                                    "rf_id": customer_info.get("rfid"),
+                                    "building": customer_info.get("building"),
+                                    "phone": customer_info.get("phone", "Not provided"),
+                                    "special_request": customer_info.get("special_request", "None"),
+                                    "is_complete": True,
+                                    "rf_id_valid": True,
+                                    "building_valid": True,
+                                    "valid_phone": bool(customer_info.get("phone")),
+                                    "confidence": order_analysis.get("confidence", "medium")
+                                }
+                                
+                                debug_log(f"LLM extracted valid order: {formatted_order}")
+                                return formatted_order
+                        
+                        debug_log("LLM analysis indicates no confirmed order")
+                        return None
+                        
+                except json.JSONDecodeError as e:
+                    debug_log(f"Failed to parse LLM JSON response: {e}")
+                    debug_log(f"Raw response: {llm_response}")
+                    return None
+            else:
+                debug_log(f"LLM request failed: {response.status_code}")
+                return None
+                
+    except Exception as e:
+        debug_log(f"Error in LLM conversation analysis: {e}")
+        return None
+
+async def detect_order_confirmation_and_save_with_llm(session_id: str, bot_response: str, user_message: str) -> bool:
+    """
+    Use LLM to detect and save confirmed orders
+    Returns True if order was saved, False otherwise
+    """
+    debug_log(f"Using LLM to detect order confirmation")
+    
+    # Get conversation
+    conversation = ConversationLogger.get_conversation(session_id)
+    
+    # Use LLM to analyze conversation
+    order_data = await analyze_conversation_with_llm(conversation, session_id)
+    
+    if not order_data:
+        debug_log("LLM found no confirmed order")
+        return False
+    
+    debug_log("LLM DETECTED CONFIRMED ORDER!")
+    
+    # Save the order
+    debug_log(f"SAVING LLM ORDER: Items: {len(order_data['items'])}, RFID: {order_data['rf_id']}, Building: {order_data['building']}, Total: {order_data['total_cost']}")
+    save_final_order_to_file(order_data)
+    
+    # Clean up session
+    order_state = get_or_create_order_state(session_id)
+    order_state.reset()
+    
+    debug_log("Order saved successfully via LLM analysis")
+    return True
 def normalize_order_items(items):
     """
     Given a list of items, return only valid item dicts with 'name', 'price', 'quantity', 'total_price'.
@@ -270,263 +490,290 @@ def get_or_create_order_state(session_id: str) -> OrderState:
         order_states[session_id] = OrderState()
     return order_states[session_id]
 
-# Add this debug function at the top after your imports
-def debug_log(message: str):
-    """Enhanced debug logging"""
-    print(f"[DEBUG {datetime.datetime.now().strftime('%H:%M:%S')}] {message}")
-
-# Fix the building validation regex - your current one is wrong
-def extract_and_validate_input(user_message: str, order_state: OrderState) -> Optional[str]:
+# FALLBACK ITEM EXTRACTION (kept as fallback)
+async def extract_items_fallback(combined_text: str, bot_response: str) -> List[Dict]:
     """
-    Extract and validate user input formats BEFORE sending to LLM.
-    Returns error message if validation fails, None if valid or no validation needed.
-    """
-    user_message_lower = user_message.lower()
-    debug_log(f"Validating input: '{user_message}'")
-    
-    # Extract potential RFID (6 digits)
-    rf_id_match = re.search(r'\b(\d{5,7})\b', user_message)  # Look for 5-7 digit numbers
-    if rf_id_match:
-        potential_rfid = rf_id_match.group(1)
-        if len(potential_rfid) != 6:
-            if len(potential_rfid) < 6:
-                return f"Your RFID must be exactly 6 digits. You provided {len(potential_rfid)} digits ({potential_rfid}). Please provide your complete 6-digit RFID."
-            else:
-                return f"Your RFID must be exactly 6 digits. You provided {len(potential_rfid)} digits ({potential_rfid}). Please check your RFID and provide exactly 6 digits."
-        
-        # If we reach here, RFID is valid - update order state
-        order_state.rf_id = potential_rfid
-        debug_log(f"Updated RFID to {potential_rfid}")
-    
-    # Extract potential building number - FIXED REGEX
-    building_match = re.search(r'\b([A-Z]\d[A-Z]?)\b', user_message, re.IGNORECASE)
-    if building_match:
-        potential_building = building_match.group(1).upper()
-        debug_log(f"Found potential building: {potential_building}")
-        
-        # Check against available buildings
-        if potential_building not in AVAILABLE_BUILDINGS:
-            debug_log(f"Building {potential_building} is INVALID")
-            return f"'{potential_building}' is not a valid building. Please choose from: {', '.join(sorted(AVAILABLE_BUILDINGS))}"
-        
-        # If we reach here, building is valid - update order state
-        order_state.building = potential_building
-        debug_log(f"Updated building to {potential_building}")
-    
-    # Extract potential phone number (look for UAE mobile patterns)
-    phone_match = re.search(r'\b(05\d{8}|\d{10})\b', user_message.replace(' ', '').replace('-', ''))
-    if phone_match:
-        potential_phone = phone_match.group(1)
-        
-        # Clean the phone number
-        cleaned_phone = potential_phone.replace('+971', '').replace(' ', '').replace('-', '')
-        
-        # UAE mobile validation
-        if not cleaned_phone.startswith('05') or len(cleaned_phone) != 10:
-            if cleaned_phone.startswith('5') and len(cleaned_phone) == 9:
-                cleaned_phone = '0' + cleaned_phone
-            else:
-                return f"Please provide a valid UAE mobile number. UAE mobile numbers start with '05' and have 10 digits total (format: 05xxxxxxxx)."
-        
-        # If we reach here, phone is valid - update order state
-        order_state.phone = cleaned_phone
-        debug_log(f"Updated phone to {cleaned_phone}")
-    
-    # No validation errors found
-    return None
-def extract_items_fallback(combined_text: str, bot_response: str) -> List[Dict]:
-    """
-    Fallback item extraction when RAG fails
-    Looks for common patterns in conversation and bot response
+    Enhanced fallback item extraction using MCP server for menu items
     """
     items = []
     
-    # Look for quantity + item patterns in conversation
-    patterns = [
-        r'(\d+)\s*(margherita|pepperoni|cheese|vegetarian|hawaiian|supreme|bbq|chicken)\s*pizza',
-        r'(\d+)\s*pizza.*?(margherita|pepperoni|cheese|vegetarian|hawaiian|supreme|bbq|chicken)',
-        r'(margherita|pepperoni|cheese|vegetarian|hawaiian|supreme|bbq|chicken).*?(\d+)',
-        r'(\d+).*?(margherita|pepperoni|cheese|vegetarian|hawaiian|supreme|bbq|chicken)',
-    ]
+    print(f"[FALLBACK] Bot response: '{bot_response}'")
+    print(f"[FALLBACK] Combined text: '{combined_text[:200]}...'")
     
-    # Common pizza prices (you may need to adjust these)
-    pizza_prices = {
-        'margherita': 31.0,
-        'pepperoni': 35.0,
-        'cheese': 28.0,
-        'vegetarian': 33.0,
-        'hawaiian': 37.0,
-        'supreme': 42.0,
-        'bbq': 39.0,
-        'chicken': 38.0
-    }
+    # Pattern 1: Bot summary format "- Item: X\n- Price: AED Y" (separate lines)
+    item_pattern = r'-\s*Item:\s*([^\n]+)'
+    price_pattern = r'-\s*Price:\s*AED\s*([\d.]+)'
     
-    text_to_search = (combined_text + " " + bot_response).lower()
+    item_match = re.search(item_pattern, bot_response, re.IGNORECASE)
+    price_match = re.search(price_pattern, bot_response, re.IGNORECASE)
     
-    for pattern in patterns:
-        matches = re.findall(pattern, text_to_search, re.IGNORECASE)
-        for match in matches:
-            if len(match) == 2:
-                # Try both orders: (qty, item) and (item, qty)
-                if match[0].isdigit():
-                    qty, item = int(match[0]), match[1].lower()
-                elif match[1].isdigit():
-                    item, qty = match[0].lower(), int(match[1])
-                else:
-                    continue
-                
-                # Get price for this item
-                price = pizza_prices.get(item, 35.0)  # Default price
-                
-                # Create item dict
-                item_dict = {
-                    'name': f"{item.capitalize()} Pizza",
-                    'price': price,
-                    'quantity': qty,
-                    'total_price': price * qty
-                }
-                
-                # Check if we already have this item
-                existing_item = None
-                for existing in items:
-                    if existing['name'].lower() == item_dict['name'].lower():
-                        existing_item = existing
+    if item_match and price_match:
+        item_name = item_match.group(1).strip()
+        price = float(price_match.group(1))
+        
+        # Try to extract quantity from conversation - look for specific quantity mentions
+        qty = 1  # Default to 1
+        
+        # Look for quantity in conversation before the item mention
+        qty_patterns = [
+            r'(\d+)\s*' + re.escape(item_name.lower()),
+            r'(\d+)\s*' + item_name.split()[0].lower() if item_name.split() else r'(\d+)',
+            r'order\s*(\d+)',
+            r'want\s*(\d+)',
+            r'get\s*(\d+)'
+        ]
+        
+        for pattern in qty_patterns:
+            qty_match = re.search(pattern, combined_text.lower())
+            if qty_match:
+                try:
+                    potential_qty = int(qty_match.group(1))
+                    # Only use reasonable quantities (1-50)
+                    if 1 <= potential_qty <= 50:
+                        qty = potential_qty
+                        print(f"[FALLBACK] Found quantity {qty} with pattern: {pattern}")
                         break
-                
-                if existing_item:
-                    # Update quantity if we found a duplicate
-                    existing_item['quantity'] = qty  # Use the latest quantity
-                    existing_item['total_price'] = existing_item['price'] * qty
-                else:
-                    items.append(item_dict)
+                except (ValueError, IndexError):
+                    continue
+        
+        # Clean up item name
+        if 'pizza' not in item_name.lower() and ('pepperoni' in item_name.lower() or 'margherita' in item_name.lower() or 'cheese' in item_name.lower()):
+            item_name += ' Pizza'
+        
+        items.append({
+            'name': item_name,
+            'price': price,
+            'quantity': qty,
+            'total_price': price * qty
+        })
+        print(f"[FALLBACK] Extracted from bot summary: {qty}x {item_name} @ AED {price} = AED {price * qty}")
+        return items
     
-    return items
-
-# Update the detect_order_confirmation_and_save function
-def detect_order_confirmation_and_save(session_id: str, bot_response: str, user_message: str) -> bool:
-    """
-    Detect if the LLM just confirmed an order and save it to orders.txt
-    Returns True if order was saved, False otherwise
-    """
-    debug_log(f"Checking bot response for order confirmation: '{bot_response[:100]}...'")
+    # Pattern 2: Bot response with "X Item for total of AED Y"
+    bot_order_pattern = r'(\d+)\s*([^f]*?)\s*for.*?total.*?AED\s*([\d.]+)'
+    bot_match = re.search(bot_order_pattern, bot_response, re.IGNORECASE)
     
-    # Look for order confirmation patterns in bot response
-    confirmation_patterns = [
-        r'order.*confirmed',
-        r'order.*placed.*successfully', 
-        r'perfect.*your order',
-        r'order.*will be delivered',
-        r'thank you for.*order',
-        r'order.*will be prepared',
-        r'enjoy your meal'
+    if bot_match:
+        qty = int(bot_match.group(1))
+        item_text = bot_match.group(2).strip()
+        total_price = float(bot_match.group(3))
+        price_per_item = total_price / qty
+        
+        # Clean up item name
+        item_name = item_text.replace('pizzas', 'Pizza').replace('pizza', 'Pizza').title()
+        
+        items.append({
+            'name': item_name,
+            'price': price_per_item,
+            'quantity': qty,
+            'total_price': total_price
+        })
+        print(f"[FALLBACK] Extracted from bot order: {qty}x {item_name} @ AED {price_per_item} = AED {total_price}")
+        return items
+    
+    # Pattern 3: "X x Y.0 + Z x W.0" calculation format
+    calculation_pattern = r'(\d+)\s*x\s*([\d.]+)\s*\+\s*(\d+)\s*x\s*([\d.]+)'
+    calc_match = re.search(calculation_pattern, bot_response)
+    
+    if calc_match:
+        print(f"[FALLBACK] Found calculation: {calc_match.groups()}")
+        qty1, price1, qty2, price2 = calc_match.groups()
+        
+        # Try to find what items these refer to using MCP
+        bot_text_before_calc = bot_response[:calc_match.start()]
+        
+        if 'pepperoni' in bot_text_before_calc.lower():
+            # Query MCP for pepperoni details
+            pepperoni_item = await fetch_menu_item_from_mcp("Pepperoni Pizza")
+            if pepperoni_item:
+                items.append({
+                    'name': pepperoni_item['name'],
+                    'price': pepperoni_item['price'],
+                    'quantity': int(qty1),
+                    'total_price': pepperoni_item['price'] * int(qty1)
+                })
+            else:
+                items.append({
+                    'name': 'Pepperoni Pizza',
+                    'price': float(price1),
+                    'quantity': int(qty1),
+                    'total_price': float(price1) * int(qty1)
+                })
+            print(f"[FALLBACK] Added Pepperoni Pizza: {int(qty1)}x AED {price1}")
+        
+        if 'french fries' in bot_text_before_calc.lower():
+            # Query MCP for fries details
+            fries_item = await fetch_menu_item_from_mcp("French Fries")
+            if fries_item:
+                items.append({
+                    'name': fries_item['name'],
+                    'price': fries_item['price'],
+                    'quantity': int(qty2),
+                    'total_price': fries_item['price'] * int(qty2)
+                })
+            else:
+                items.append({
+                    'name': 'French Fries',
+                    'price': float(price2),
+                    'quantity': int(qty2),
+                    'total_price': float(price2) * int(qty2)
+                })
+            print(f"[FALLBACK] Added French Fries: {int(qty2)}x AED {price2}")
+        
+        return items
+    
+    # Pattern 4: Extract from conversation and query MCP
+    print("[FALLBACK] No bot patterns found, trying conversation extraction with MCP...")
+    
+    # Extract potential item names from conversation
+    conversation_patterns = [
+        # Enhanced patterns to handle more variations
+        r'i\s*want\s*to\s*get\s*a?\s*([a-zA-Z\s]+?)(?:\s+yes|\s+\d+|\s+my\s+rfid|\s+rfid|\s+building|\s+phone|\s*$)',
+        r'i\s*want\s*to\s*order\s*a?\s*([a-zA-Z\s]+?)(?:\s+yes|\s+\d+|\s+my\s+rfid|\s+rfid|\s+building|\s+phone|\s*$)',
+        r'order\s*a?\s*([a-zA-Z\s]+?)(?:\s+yes|\s+\d+|\s+my\s+rfid|\s+rfid|\s+building|\s+phone|\s*$)',
+        r'get\s*a?\s*([a-zA-Z\s]+?)(?:\s+yes|\s+\d+|\s+my\s+rfid|\s+rfid|\s+building|\s+phone|\s*$)',
+        r'(\d+)\s+([a-zA-Z\s]+?)(?:\s+my\s+rfid|\s+rfid|\s+building|\s+phone|\s*$)',
+        
+        # More flexible patterns for different sentence structures
+        r'want\s+a?\s*([a-zA-Z\s]+?)(?:\s+yes|\s+\d+|\s+my|\s+rfid|\s+building|\s+phone)',
+        r'get\s+a?\s*([a-zA-Z\s]+?)(?:\s+yes|\s+\d+|\s+my|\s+rfid|\s+building|\s+phone)',
+        r'order\s+a?\s*([a-zA-Z\s]+?)(?:\s+yes|\s+\d+|\s+my|\s+rfid|\s+building|\s+phone)',
+        
+        # Pattern specifically for "Chicken Dynamite" style names
+        r'([A-Z][a-zA-Z]*\s+[A-Z][a-zA-Z]*)',  # Captures "Chicken Dynamite"
     ]
     
-    is_confirmation = any(re.search(pattern, bot_response.lower()) for pattern in confirmation_patterns)
+    # Extract quantities separately
+    quantity_patterns = [
+        r'i\s+want\s+(\d+)\s+of\s+them',
+        r'(\d+)\s+of\s+them',
+        r'want\s+(\d+)',
+        r'get\s+(\d+)',
+        r'order\s+(\d+)',
+    ]
     
-    if not is_confirmation:
-        debug_log("No order confirmation detected")
-        return False
+    # Find potential item names
+    potential_items = []
+    potential_quantity = 1
     
-    debug_log("ORDER CONFIRMATION DETECTED!")
+    text_to_search = combined_text.lower()
     
-    # Extract order details from conversation
-    conversation = ConversationLogger.get_conversation(session_id)
-    order_state = get_or_create_order_state(session_id)
+    # Extract quantity first
+    for pattern in quantity_patterns:
+        qty_match = re.search(pattern, text_to_search)
+        if qty_match:
+            try:
+                qty = int(qty_match.group(1))
+                if 1 <= qty <= 50:  # Reasonable range
+                    potential_quantity = qty
+                    print(f"[FALLBACK] Found quantity: {potential_quantity}")
+                    break
+            except (ValueError, IndexError):
+                continue
     
-    # Try to extract order information from the conversation and current context
-    order_items = []
-    rfid = None
-    building = None
-    phone = None
-    special_request = "None"
-    
-    # Get all user messages for analysis
-    user_messages = [msg['message'] for msg in conversation if msg['sender'] == 'user']
-    combined_text = " ".join(user_messages + [user_message])
-    
-    debug_log(f"Analyzing combined text: '{combined_text[:200]}...'")
-    
-    # Extract items using RAG first
-    try:
-        items_data = rag_extract_menu_items(combined_text)
-        order_items = normalize_order_items(items_data)
-        debug_log(f"RAG extracted {len(order_items)} items: {[item.get('name', 'Unknown') for item in order_items]}")
-    except Exception as e:
-        debug_log(f"Error extracting items with RAG: {e}")
-    
-    # 🚀 NEW: If RAG failed, use fallback extraction
-    if not order_items:
-        debug_log("RAG extraction failed, trying fallback extraction...")
-        order_items = extract_items_fallback(combined_text, bot_response)
-        debug_log(f"Fallback extracted {len(order_items)} items: {[item.get('name', 'Unknown') for item in order_items]}")
-    
-    # Extract order details from session state first, then fall back to conversation
-    if order_state.rf_id:
-        rfid = order_state.rf_id
-        debug_log(f"Got RFID from session state: {rfid}")
-    else:
-        rf_match = re.search(r'\b(\d{6})\b', combined_text)
-        rfid = rf_match.group(1) if rf_match else None
-        debug_log(f"Got RFID from conversation: {rfid}")
-    
-    if order_state.building:
-        building = order_state.building
-        debug_log(f"Got building from session state: {building}")
-    else:
-        building_match = re.search(r'\b([A-Z]\d[A-Z]?)\b', combined_text, re.IGNORECASE)
-        building = building_match.group(1).upper() if building_match else None
-        debug_log(f"Got building from conversation: {building}")
-    
-    if order_state.phone:
-        phone = order_state.phone
-        debug_log(f"Got phone from session state: {phone}")
-    else:
-        phone_match = re.search(r'\b(05\d{8})\b', combined_text.replace(' ', '').replace('-', ''))
-        phone = phone_match.group(1) if phone_match else None
-        debug_log(f"Got phone from conversation: {phone}")
-    
-    if order_state.special_request:
-        special_request = order_state.special_request
-    else:
-        # Check recent messages for special requests
-        for msg in reversed(user_messages[-10:]):
-            if any(keyword in msg.lower() for keyword in ['special', 'request', 'no special', 'none']):
-                if any(word in msg.lower() for word in ['no', 'none', 'nothing']):
-                    special_request = 'None'
+    # Extract item names
+    for pattern in conversation_patterns:
+        print(f"[FALLBACK] Trying pattern: {pattern}")
+        matches = re.findall(pattern, text_to_search, re.IGNORECASE)
+        print(f"[FALLBACK] Pattern matches: {matches}")
+        
+        for match in matches:
+            if isinstance(match, tuple):
+                # Handle patterns like r'(\d+)\s+([a-zA-Z\s]+?)'
+                if len(match) == 2:
+                    if match[0].isdigit():
+                        qty_candidate = int(match[0])
+                        if 1 <= qty_candidate <= 50:
+                            potential_quantity = qty_candidate
+                        item_candidate = match[1].strip()
+                    else:
+                        item_candidate = match[0].strip()
                 else:
-                    special_request = msg
-                break
+                    item_candidate = match[0].strip() if match else ""
+            else:
+                item_candidate = match.strip()
+            
+            # Clean up item name
+            item_candidate = item_candidate.strip()
+            
+            # Skip obvious non-items
+            if (item_candidate in ['of', 'them', 'my', 'rfid', 'building', 'phone', 'number', 'a', 'the', 'yes'] 
+                or len(item_candidate) < 3 or item_candidate.isdigit()):
+                print(f"[FALLBACK] Skipping obvious non-item: '{item_candidate}'")
+                continue
+            
+            print(f"[FALLBACK] Found potential item: '{item_candidate}'")
+            potential_items.append(item_candidate)
+            
+        # If we found any items from this pattern, stop trying other patterns
+        if potential_items:
+            break
     
-    # Calculate total cost
-    total_cost = sum(item.get('total_price', item.get('price', 0) * item.get('quantity', 1)) for item in order_items)
+    # Query MCP for each potential item
+    for item_candidate in potential_items:
+        print(f"[FALLBACK] Querying MCP for: '{item_candidate}'")
+        
+        # Try exact match first
+        mcp_item = await fetch_menu_item_from_mcp(item_candidate)
+        
+        # If no exact match, try variations
+        if not mcp_item:
+            variations = [
+                f"{item_candidate} Pizza",
+                f"{item_candidate.title()}",
+                f"{item_candidate.title()} Pizza",
+                item_candidate.replace(" ", ""),
+                item_candidate.capitalize(),
+            ]
+            
+            for variation in variations:
+                print(f"[FALLBACK] Trying variation: '{variation}'")
+                mcp_item = await fetch_menu_item_from_mcp(variation)
+                if mcp_item:
+                    break
+        
+        if mcp_item:
+            print(f"[FALLBACK] Found in MCP: {mcp_item['name']} - AED {mcp_item['price']}")
+            items.append({
+                'name': mcp_item['name'],
+                'price': mcp_item['price'],
+                'quantity': potential_quantity,
+                'total_price': mcp_item['price'] * potential_quantity
+            })
+            print(f"[FALLBACK] Added from MCP: {potential_quantity}x {mcp_item['name']} @ AED {mcp_item['price']}")
+            break  # Found one item, stop looking
+        else:
+            print(f"[FALLBACK] '{item_candidate}' not found in MCP")
     
-    debug_log(f"Final extraction - Items: {len(order_items)}, RFID: {rfid}, Building: {building}, Phone: {phone}")
+    # Deduplicate items based on name (in case multiple patterns matched the same item)
+    seen_items = {}
+    deduplicated_items = []
     
-    # Only save if we have essential information
-    if order_items and rfid and building:
-        order_data = {
-            'items': order_items,
-            'total_cost': total_cost,
-            'rf_id': rfid,
-            'building': building, 
-            'phone': phone or 'Not provided',
-            'special_request': special_request
-        }
-        
-        debug_log(f"SAVING ORDER: Items: {len(order_items)}, RFID: {rfid}, Building: {building}")
-        save_final_order_to_file(order_data)
-        
-        # Clean up session
-        order_state.reset()
-        
-        return True
-    else:
-        debug_log(f"CANNOT SAVE - Missing essential info - Items: {len(order_items)}, RFID: {rfid}, Building: {building}")
-        return False
+    for item in items:
+        item_name = item.get('name', '').lower()
+        if item_name not in seen_items:
+            seen_items[item_name] = True
+            deduplicated_items.append(item)
+        else:
+            print(f"[FALLBACK] Skipping duplicate item: {item['name']}")
+    
+    print(f"[FALLBACK] Final items after deduplication: {deduplicated_items}")
+    return deduplicated_items
 
-
-def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
-    """Extract order completion data from conversation history with change detection"""
+# UNIFIED ORDER EXTRACTION FUNCTION
+async def extract_complete_order_data(conversation: List[Dict], session_id: str = None, for_confirmation: bool = False) -> Optional[Dict]:
+    """
+    Unified order extraction function that handles both completion checking and confirmation extraction.
+    
+    Args:
+        conversation: List of conversation messages
+        session_id: Session ID for order state access
+        for_confirmation: If True, prioritizes current order state and uses enhanced extraction for saving
+    
+    Returns:
+        Dict with order data including items, rf_id, building, phone, special_request, validation status
+    """
+    debug_log(f"Extracting complete order data - for_confirmation={for_confirmation}, session_id={session_id}")
     
     user_messages = []
     bot_messages = []
@@ -539,45 +786,150 @@ def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
     
     # Combine all user messages for analysis
     combined_text = " ".join(user_messages)
+    latest_bot_response = bot_messages[-1] if bot_messages else ""
     
-    # Extract order information
-    items = rag_extract_menu_items(combined_text)
-    items = normalize_order_items(items)
+    debug_log(f"Analyzing combined text: '{combined_text[:200]}...'")
     
-    # Extract RF ID (6 digits) - must be explicitly provided
-    rf_id_match = re.search(r'\b(\d{6})\b', combined_text)
-    rf_id = rf_id_match.group(1) if rf_id_match else None
-    rf_id_valid = validate_rf_id(rf_id)['valid'] if rf_id else False
+    # Get order state if available
+    order_state = None
+    if session_id:
+        order_state = get_or_create_order_state(session_id)
     
-    # Extract building (A1A, A2B, F1, C2, etc.) - must be explicitly provided
-    building_match = re.search(r'\b(A\d[ABC]|[AFC]\d)\b', combined_text, re.IGNORECASE)
-    building = building_match.group(1).upper() if building_match else None
-    building_valid = validate_building(building)['valid'] if building else False
+    # Extract order items - prioritize order state for confirmations
+    items = []
+    if for_confirmation and order_state and order_state.items:
+        items = order_state.items
+        debug_log(f"Using items from order state: {[item.get('name', 'Unknown') for item in items]}")
+    else:
+        # Try RAG extraction first
+        items = rag_extract_menu_items(combined_text)
+        items = normalize_order_items(items)
+        debug_log(f"RAG extracted {len(items)} items: {[item.get('name', 'Unknown') for item in items]}")
+        
+        # Use fallback if RAG failed
+        if not items and for_confirmation:
+            items = await extract_items_fallback(combined_text, latest_bot_response)
+            debug_log(f"Fallback extracted {len(items)} items: {[item.get('name', 'Unknown') for item in items]}")
     
-    # Extract phone (UAE mobile number validation)
-    phone_match = re.search(r'\b(\d{9,15})\b', combined_text.replace(' ', '').replace('-', ''))
-    phone = phone_match.group(1) if phone_match else None
+    # Extract RF ID with multiple patterns - prioritize order state for confirmations
+    rf_id = None
+    rf_id_valid = False
     
-    # Validate phone number (UAE mobile: +9715xxxxxxxx)
+    if for_confirmation and order_state and order_state.rf_id:
+        rf_id = order_state.rf_id
+        rf_id_valid = True
+        debug_log(f"Got RFID from order state: {rf_id}")
+    else:
+        # Try multiple RFID patterns
+        rfid_patterns = [
+            r'rfid.*?(\d{6})',
+            r'rf.*?id.*?(\d{6})',
+            r'\b(\d{6})\b',
+            r'id.*?(\d{6})'
+        ]
+        
+        for pattern in rfid_patterns:
+            rfid_match = re.search(pattern, combined_text, re.IGNORECASE)
+            if rfid_match:
+                potential_rfid = rfid_match.group(1)
+                if len(potential_rfid) == 6:
+                    rf_id = potential_rfid
+                    rf_id_valid = True
+                    debug_log(f"Found RFID with pattern '{pattern}': {rf_id}")
+                    break
+        
+        # Also check bot response for RFID
+        if not rf_id and for_confirmation:
+            bot_rfid_match = re.search(r'(\d{6})', latest_bot_response)
+            if bot_rfid_match:
+                rf_id = bot_rfid_match.group(1)
+                rf_id_valid = True
+                debug_log(f"Found RFID in bot response: {rf_id}")
+    
+    # Extract building - prioritize order state for confirmations
+    building = None
+    building_valid = False
+    
+    if for_confirmation and order_state and order_state.building:
+        building = order_state.building
+        building_valid = building in AVAILABLE_BUILDINGS
+        debug_log(f"Got building from order state: {building}")
+    else:
+        building_match = re.search(r'\b([A-Z]\d[A-Z]?)\b', combined_text, re.IGNORECASE)
+        if building_match:
+            building = building_match.group(1).upper()
+            building_valid = building in AVAILABLE_BUILDINGS
+            debug_log(f"Got building from conversation: {building}")
+        
+        # Also check bot response
+        if not building and for_confirmation:
+            bot_building_match = re.search(r'building\s*([A-Z]\d[A-Z]?)', latest_bot_response, re.IGNORECASE)
+            if bot_building_match:
+                building = bot_building_match.group(1).upper()
+                building_valid = building in AVAILABLE_BUILDINGS
+                debug_log(f"Found building in bot response: {building}")
+    
+    # Extract phone with better patterns - prioritize order state for confirmations
+    phone = None
     valid_phone = False
-    if phone:
-        try:
-            parsed = phonenumbers.parse(phone, "AE")
-            if phonenumbers.is_valid_number(parsed) and phonenumbers.region_code_for_number(parsed) == "AE":
-                # Get the national number (should be 9-15 digits, start with 5)
-                national_number = str(parsed.national_number)
-                if len(national_number) >= 9 and len(national_number) <= 15 and national_number.startswith('5'):
-                    valid_phone = True
-        except Exception:
-            valid_phone = False
     
-    # Extract special requests
+    if for_confirmation and order_state and order_state.phone:
+        phone = order_state.phone
+        valid_phone = True
+        debug_log(f"Got phone from order state: {phone}")
+    else:
+        # Try multiple phone patterns
+        phone_patterns = [
+            r'phone.*?number.*?(\d{10})',
+            r'phone.*?(\d{10})',
+            r'number.*?(\d{10})',
+            r'\b(05\d{8})\b',
+            r'\b(\d{10})\b'
+        ]
+        
+        # Check combined text first
+        for pattern in phone_patterns:
+            phone_match = re.search(pattern, combined_text.replace(' ', '').replace('-', ''), re.IGNORECASE)
+            if phone_match:
+                potential_phone = phone_match.group(1)
+                if len(potential_phone) == 10 and potential_phone.startswith('05'):
+                    phone = potential_phone
+                    valid_phone = True
+                    debug_log(f"Found phone in conversation: {phone}")
+                    break
+                elif len(potential_phone) == 10 and potential_phone.startswith('5'):
+                    phone = '0' + potential_phone
+                    valid_phone = True
+                    debug_log(f"Found phone in conversation (added 0): {phone}")
+                    break
+        
+        # Also check bot response
+        if not phone and for_confirmation:
+            bot_phone_match = re.search(r'phone.*?number.*?(\d{10})', latest_bot_response, re.IGNORECASE)
+            if bot_phone_match:
+                potential_phone = bot_phone_match.group(1)
+                if len(potential_phone) == 10 and potential_phone.startswith('05'):
+                    phone = potential_phone
+                    valid_phone = True
+                    debug_log(f"Found phone in bot response: {phone}")
+                elif len(potential_phone) == 10 and potential_phone.startswith('5'):
+                    phone = '0' + potential_phone
+                    valid_phone = True
+                    debug_log(f"Found phone in bot response (added 0): {phone}")
+    
+    # Extract special requests - prioritize order state for confirmations
     special_request = "None"
-    for msg in reversed(user_messages[-10:]):
-        if any(keyword in msg.lower() for keyword in ['special', 'request', 'note', 'dietary', 'allergy']):
-            if not any(word in msg.lower() for word in ['no', 'none', 'nothing']):
-                special_request = msg
-                break
+    if for_confirmation and order_state and order_state.special_request is not None:
+        special_request = order_state.special_request
+        debug_log(f"Got special request from order state: {special_request}")
+    else:
+        for msg in reversed(user_messages[-10:]):
+            if any(keyword in msg.lower() for keyword in ['special', 'request', 'note', 'dietary', 'allergy']):
+                if not any(word in msg.lower() for word in ['no', 'none', 'nothing']):
+                    special_request = msg
+                    break
+    
+    debug_log(f"Final extraction - Items: {len(items)}, RFID: {rf_id}, Building: {building}, Phone: {phone}")
     
     # Check if we have all required fields and they're valid
     has_all_fields = (items and rf_id_valid and building_valid and valid_phone)
@@ -620,6 +972,56 @@ def extract_order_completion_data(conversation: List[Dict]) -> Optional[Dict]:
         return order_data
     
     return None
+
+async def detect_order_confirmation_and_save(session_id: str, bot_response: str, user_message: str) -> bool:
+    """
+    Detect if the LLM just confirmed an order and save it to orders.txt
+    Returns True if order was saved, False otherwise
+    """
+    debug_log(f"Checking bot response for order confirmation: '{bot_response[:100]}...'")
+    
+    # Look for order confirmation patterns in bot response
+    confirmation_patterns = [
+        r'thank you for.*order',
+        r'order.*will be delivered',
+        r'have a great day',
+        r'enjoy your meal',
+        r'order.*confirmed',
+        r'order.*placed.*successfully',
+        r'here\'?s a summary of your order',  # Added for your case
+        r'your total is.*aed',  # Added for order summaries
+        r'summary.*order.*aed',  # Another pattern for summaries
+    ]
+    
+    is_confirmation = any(re.search(pattern, bot_response.lower()) for pattern in confirmation_patterns)
+    
+    if not is_confirmation:
+        debug_log("No order confirmation detected")
+        return False
+    
+    debug_log("ORDER CONFIRMATION DETECTED!")
+    
+    # Extract order details using unified function
+    conversation = ConversationLogger.get_conversation(session_id)
+    order_data = await extract_complete_order_data(conversation, session_id, for_confirmation=True)
+    
+    if not order_data:
+        debug_log("No order data extracted")
+        return False
+    
+    # Save if we have essential information
+    if order_data['items'] and order_data['rf_id_valid'] and order_data['building_valid']:
+        debug_log(f"SAVING ORDER: Items: {len(order_data['items'])}, RFID: {order_data['rf_id']}, Building: {order_data['building']}, Total: {order_data['total_cost']}")
+        save_final_order_to_file(order_data)
+        
+        # Clean up session
+        order_state = get_or_create_order_state(session_id)
+        order_state.reset()
+        
+        return True
+    else:
+        debug_log(f"CANNOT SAVE - Missing essential info - Items: {len(order_data.get('items', []))}, RFID: {order_data['rf_id_valid']}, Building: {order_data['building_valid']}")
+        return False
 
 def check_for_direct_order_response(session_id: str, user_message: str) -> Optional[str]:
     """Check if we should give a direct order response instead of using AI"""
@@ -805,16 +1207,21 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
     print(f"DEBUG ORDER STATE BEFORE: RFID={order_state.rf_id}, Building={order_state.building}, Phone={order_state.phone}, InFlow={order_state.in_order_flow}")
     
     # PRE-VALIDATION - Check formats BEFORE LLM processing (runs for ALL order-related messages)
-    if order_state.in_order_flow or re.search(r'\b(rf|rfid|building|phone|05\d{8}|\d{6}|A\d[ABC]|[AFC]\d)\b', user_message, re.IGNORECASE):
-        validation_error = extract_and_validate_input(user_message, order_state)
+    if order_state.in_order_flow or re.search(r'\b(rf|rfid|building|phone|05\d{8}|\d{4,7}|[A-Z]\d[A-Z]?)\b', user_message, re.IGNORECASE):
+        debug_log(f"PRE-VALIDATION TRIGGERED for message: '{user_message}'")
+        validation_error = validate_and_update_order_state(user_message, order_state)
         if validation_error:
+            debug_log(f"VALIDATION ERROR: {validation_error}")
             async def validation_error_stream():
                 yield validation_error
             
             # Log the error response
             ConversationLogger.log_message(session_id, validation_error, "bot")
             return StreamingResponse(validation_error_stream(), media_type="text/plain")
-    
+        else:
+            debug_log("No validation errors found") 
+    else:
+        debug_log("PRE-VALIDATION NOT TRIGGERED")
     print(f"DEBUG ORDER STATE AFTER: RFID={order_state.rf_id}, Building={order_state.building}, Phone={order_state.phone}, InFlow={order_state.in_order_flow}")
     
     # Process background order detection (keep existing code)
@@ -838,8 +1245,8 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         ConversationLogger.log_message(session_id, direct_response, "bot")
         return StreamingResponse(direct_response_stream(), media_type="text/plain")
     
-    # Extract current order state from conversation (for order changes)
-    conversation_order_data = extract_order_completion_data(ConversationLogger.get_conversation(session_id))
+    # Extract current order state from conversation (for order changes) - USE UNIFIED FUNCTION
+    conversation_order_data = await extract_complete_order_data(ConversationLogger.get_conversation(session_id), session_id)
     
     # Sync conversation changes with session state
     if conversation_order_data and order_state.in_order_flow:
@@ -1050,7 +1457,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                 "prompt": prompt,
                 "stream": True,
                 "tools": VALIDATION_TOOLS,
-                "stop": ["User:", "Assistant:", "\nUser:", "\nAssistant:", "User: ", "Assistant: "],
+                "stop": ["User:", "Assistant:", "\nUser:", "\nAssistant:"],
                 "temperature": 0.1  # Lower temperature for more consistent responses
             }
 
@@ -1059,7 +1466,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
                 "model": OLLAMA_MODEL,
                 "prompt": prompt,
                 "stream": True,
-                "stop": ["User:", "Assistant:", "\nUser:", "\nAssistant:", "User: ", "Assistant: "],
+                "stop": ["User:", "Assistant:", "\nUser:", "\nAssistant:"],
                 "temperature": 0.1
             }
 
@@ -1122,10 +1529,21 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         
         # Log the bot response after streaming is complete
         if bot_response:
+            debug_log(f"Bot response complete: '{bot_response[:100]}...'")
             ConversationLogger.log_message(session_id, bot_response, "bot")
             
-            # 🎯 NEW: Detect and save confirmed orders
-            detect_order_confirmation_and_save(session_id, bot_response, user_message)
+            # Try regex-based detection first (for backwards compatibility)
+            debug_log("Calling detect_order_confirmation_and_save...")
+            saved = await detect_order_confirmation_and_save(session_id, bot_response, user_message)
+            debug_log(f"Regex order save result: {saved}")
+            
+            # If regex didn't work, try LLM analysis
+            if not saved:
+                debug_log("Regex detection failed, trying LLM analysis...")
+                saved_llm = await detect_order_confirmation_and_save_with_llm(session_id, bot_response, user_message)
+                debug_log(f"LLM order save result: {saved_llm}")
+            else:
+                debug_log("Order already saved via regex detection")
 
     return StreamingResponse(ollama_stream(), media_type="text/plain")
 
@@ -1140,7 +1558,7 @@ def warmup():
             "model": OLLAMA_MODEL,
             "prompt": "Hello!",
             "stream": False,
-            "stop": ["\nUser:", "\nAssistant:", "User:", "Assistant:", "\n\nUser:", "\n\nAssistant:"],
+            "stop": ["User:", "Assistant:", "\nUser:", "\nAssistant:"],
             "temperature": 0.25
         }
         # Send a dummy request to Ollama to trigger model load
@@ -1194,7 +1612,7 @@ def debug_cleanup_session(session_id: str):
     }
 
 @app.post('/debug/test_order_changes/{session_id}')
-def test_order_changes(session_id: str):
+async def test_order_changes(session_id: str):
     """Debug endpoint to test order change detection"""
     
     # Clear existing conversation
@@ -1217,9 +1635,9 @@ def test_order_changes(session_id: str):
     for sender, message in test_conversation:
         ConversationLogger.log_message(session_id, message, sender)
     
-    # Extract final order data
+    # Extract final order data using unified function
     conversation = ConversationLogger.get_conversation(session_id)
-    order_data = extract_order_completion_data(conversation)
+    order_data = await extract_complete_order_data(conversation, session_id)
     
     # Get the quantity of burgers in final order
     burger_quantity = None
@@ -1237,6 +1655,31 @@ def test_order_changes(session_id: str):
         "should_be_3": burger_quantity == 3,
         "test_passed": burger_quantity == 3,
         "session_id": session_id
+    }
+
+@app.post('/debug/analyze_conversation/{session_id}')
+async def debug_analyze_conversation(session_id: str):
+    """Debug endpoint to test LLM conversation analysis"""
+    conversation = ConversationLogger.get_conversation(session_id)
+    
+    if not conversation:
+        return {
+            "error": "No conversation found for session",
+            "session_id": session_id
+        }
+    
+    # Analyze with LLM
+    order_data = await analyze_conversation_with_llm(conversation, session_id)
+    
+    return {
+        "session_id": session_id,
+        "conversation_length": len(conversation),
+        "llm_analysis": order_data,
+        "has_confirmed_order": order_data is not None,
+        "conversation_preview": [
+            f"{msg['sender']}: {msg['message'][:100]}..."
+            for msg in conversation[-5:]  # Last 5 messages
+        ]
     }
 
 @app.get('/debug/active_sessions')
