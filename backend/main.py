@@ -108,26 +108,36 @@ def validate_phone_number(text: str) -> Dict[str, Union[str, bool]]:
     if not text:
         return {"valid": False, "message": "No phone number found", "phone": None}
     
-    # Clean the text of spaces and hyphens
-    cleaned_text = text.replace(' ', '').replace('-', '')
+    # Clean the text of spaces, hyphens, and parentheses
+    cleaned_text = text.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
     
-    # Find any number between 9-15 digits
-    phone_match = re.search(r'\b(\d{9,15})\b', cleaned_text)
-    if not phone_match:
-        return {"valid": False, "message": "Phone number must be between 9 and 15 digits", "phone": None}
+    # Define UAE phone patterns
+    phone_patterns = [
+        r'\b(05\d{8})\b',           # 10 digits starting with 05
+        r'\b(5\d{8})\b',            # 9 digits starting with 5
+        r'\b\+971(5\d{8})\b',       # +971 followed by 9 digits starting with 5
+        r'\b971(5\d{8})\b',         # 971 followed by 9 digits starting with 5
+    ]
     
-    phone = phone_match.group(1)
-    try:
-        # Validate as UAE number
-        parsed = phonenumbers.parse(phone, "AE")
-        if phonenumbers.is_valid_number(parsed):
-            national_number = str(parsed.national_number)
-            if len(national_number) >= 9 and len(national_number) <= 15 and national_number.startswith('5'):
+    for pattern in phone_patterns:
+        phone_match = re.search(pattern, cleaned_text)
+        if phone_match:
+            if pattern == r'\b(05\d{8})\b':
+                # Already in correct format
+                phone = phone_match.group(1)
                 return {"valid": True, "message": "Valid phone number", "phone": phone}
-    except Exception:
-        pass
+            
+            elif pattern == r'\b(5\d{8})\b':
+                # Add leading 0
+                phone = '0' + phone_match.group(1)
+                return {"valid": True, "message": "Valid phone number", "phone": phone}
+            
+            elif pattern in [r'\b\+971(5\d{8})\b', r'\b971(5\d{8})\b']:
+                # Extract the 9-digit part and add leading 0
+                phone = '0' + phone_match.group(1)
+                return {"valid": True, "message": "Valid phone number", "phone": phone}
     
-    return {"valid": False, "message": "Invalid UAE mobile number format", "phone": None}
+    return {"valid": False, "message": "Invalid UAE mobile number format. Accepted formats: 05xxxxxxxx, 5xxxxxxxx, +9715xxxxxxxx, 9715xxxxxxxx", "phone": None}
 
 def validate_building(text: str) -> Dict[str, Union[str, bool]]:
     """Validate if the text contains a valid building number"""
@@ -184,24 +194,46 @@ def validate_and_update_order_state(user_message: str, order_state) -> Optional[
         order_state.building = potential_building
         debug_log(f"Updated building to {potential_building}")
     
-    # Extract potential phone number (look for UAE mobile patterns)
-    phone_match = re.search(r'\b(05\d{8}|\d{10})\b', user_message.replace(' ', '').replace('-', ''))
-    if phone_match:
-        potential_phone = phone_match.group(1)
+    # Extract potential phone number (UAE mobile patterns)
+    phone_patterns = [
+        r'\b(05\d{8})\b',           # 10 digits starting with 05
+        r'\b(5\d{8})\b',            # 9 digits starting with 5  
+        r'\b\+971(5\d{8})\b',       # +971 followed by 9 digits starting with 5
+        r'\b971(5\d{8})\b',         # 971 followed by 9 digits starting with 5
+    ]
+    
+    cleaned_message = user_message.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
+    
+    # Check if there's any number that looks like it might be a phone number
+    any_number_match = re.search(r'\b(\d{4,15})\b', cleaned_message)
+    if any_number_match:
+        potential_number = any_number_match.group(1)
         
-        # Clean the phone number
-        cleaned_phone = potential_phone.replace('+971', '').replace(' ', '').replace('-', '')
+        # Check if it matches any of our valid patterns
+        valid_phone_found = False
+        for pattern in phone_patterns:
+            phone_match = re.search(pattern, cleaned_message)
+            if phone_match:
+                if pattern == r'\b(05\d{8})\b':
+                    # Already in correct format
+                    normalized_phone = phone_match.group(1)
+                elif pattern == r'\b(5\d{8})\b':
+                    # Add leading 0
+                    normalized_phone = '0' + phone_match.group(1)
+                elif pattern in [r'\b\+971(5\d{8})\b', r'\b971(5\d{8})\b']:
+                    # Extract the 9-digit part and add leading 0
+                    normalized_phone = '0' + phone_match.group(1)
+                
+                # Phone is valid - update order state
+                order_state.phone = normalized_phone
+                debug_log(f"Updated phone to {normalized_phone}")
+                valid_phone_found = True
+                break
         
-        # UAE mobile validation
-        if not cleaned_phone.startswith('05') or len(cleaned_phone) != 10:
-            if cleaned_phone.startswith('5') and len(cleaned_phone) == 9:
-                cleaned_phone = '0' + cleaned_phone
-            else:
-                return f"Please provide a valid UAE mobile number. UAE mobile numbers start with '05' and have 10 digits total (format: 05xxxxxxxx)."
-        
-        # If we reach here, phone is valid - update order state
-        order_state.phone = cleaned_phone
-        debug_log(f"Updated phone to {cleaned_phone}")
+        # If we found a number but it doesn't match valid patterns, return error
+        if not valid_phone_found:
+            debug_log(f"Invalid phone number detected: {potential_number}")
+            return f"Invalid phone number '{potential_number}'. Please provide a UAE mobile number in one of these formats: 05xxxxxxxx, 5xxxxxxxx, +9715xxxxxxxx, or 9715xxxxxxxx"
     
     # No validation errors found
     return None
@@ -229,7 +261,7 @@ VALIDATION_TOOLS = [
         "type": "function",
         "function": {
             "name": "validate_phone_number",
-            "description": "Validate if the text contains a valid UAE phone number (must be between 9-15 digits and start with 5)",
+            "description": "Validate if the text contains a valid UAE phone number (formats: 05xxxxxxxx, 5xxxxxxxx, +9715xxxxxxxx, 9715xxxxxxxx)",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -267,6 +299,31 @@ VALIDATION_FUNCTIONS = {
     'validate_phone_number': validate_phone_number,
     'validate_building': validate_building
 }
+
+def items_are_different(items1: List[Dict], items2: List[Dict]) -> bool:
+    """
+    Compare two lists of items to see if they are different.
+    Returns True if items are different, False if they are the same.
+    """
+    if not items1 and not items2:
+        return False
+    if not items1 or not items2:
+        return True
+    if len(items1) != len(items2):
+        return True
+    
+    # Sort items by name for comparison
+    sorted1 = sorted(items1, key=lambda x: x.get('name', ''))
+    sorted2 = sorted(items2, key=lambda x: x.get('name', ''))
+    
+    for item1, item2 in zip(sorted1, sorted2):
+        if (item1.get('name') != item2.get('name') or 
+            item1.get('quantity', 1) != item2.get('quantity', 1) or
+            item1.get('price', 0) != item2.get('price', 0)):
+            return True
+    
+    return False
+
 async def analyze_conversation_with_llm(conversation: List[Dict], session_id: str) -> Optional[Dict]:
     """
     Use LLM to analyze conversation and extract order details
@@ -300,6 +357,7 @@ IMPORTANT RULES:
 - Building must match format: A1A, A1B, A1C, A2A, A2B, A2C, A3, A4, A5A, A5B, A5C, A6A, A6B, A6C, A1, A2, A5, A6, F1, F2, C1, C2, C3
 - Phone must be UAE mobile number (10 digits starting with 05)
 - Look for order summaries, totals, confirmations
+- Pay attention to order changes (e.g., "make it 2 instead of 3") - use the LATEST quantity mentioned
 
 RESPOND ONLY IN THIS JSON FORMAT:
 {{
@@ -401,6 +459,12 @@ async def detect_order_confirmation_and_save_with_llm(session_id: str, bot_respo
     """
     debug_log(f"Using LLM to detect order confirmation")
     
+    # Check if order was already saved for this session
+    order_state = get_or_create_order_state(session_id)
+    if order_state.order_saved:
+        debug_log("Order already saved for this session, skipping LLM analysis")
+        return False
+    
     # Get conversation
     conversation = ConversationLogger.get_conversation(session_id)
     
@@ -411,18 +475,23 @@ async def detect_order_confirmation_and_save_with_llm(session_id: str, bot_respo
         debug_log("LLM found no confirmed order")
         return False
     
-    debug_log("LLM DETECTED CONFIRMED ORDER!")
-    
-    # Save the order
-    debug_log(f"SAVING LLM ORDER: Items: {len(order_data['items'])}, RFID: {order_data['rf_id']}, Building: {order_data['building']}, Total: {order_data['total_cost']}")
-    save_final_order_to_file(order_data)
-    
-    # Clean up session
-    order_state = get_or_create_order_state(session_id)
-    order_state.reset()
-    
-    debug_log("Order saved successfully via LLM analysis")
-    return True
+    # Only save if the order is COMPLETE (has all required information)
+    if (order_data.get('items') and order_data.get('rf_id') and 
+        order_data.get('building') and order_data.get('phone')):
+        debug_log("LLM DETECTED COMPLETE CONFIRMED ORDER!")
+        debug_log(f"SAVING LLM ORDER: Items: {len(order_data['items'])}, RFID: {order_data['rf_id']}, Building: {order_data['building']}, Total: {order_data['total_cost']}")
+        save_final_order_to_file(order_data)
+        
+        # Mark as saved and clean up session
+        order_state.mark_as_saved()
+        order_state.reset()
+        
+        debug_log("Order saved successfully via LLM analysis")
+        return True
+    else:
+        debug_log(f"LLM found order but not complete - Items: {len(order_data.get('items', []))}, RFID: {bool(order_data.get('rf_id'))}, Building: {bool(order_data.get('building'))}, Phone: {bool(order_data.get('phone'))}")
+        return False
+
 def normalize_order_items(items):
     """
     Given a list of items, return only valid item dicts with 'name', 'price', 'quantity', 'total_price'.
@@ -457,12 +526,26 @@ class OrderState:
         self.items = None
         self.total_cost = 0.0
         self.special_request = None
+        self.order_saved = False  # Flag to prevent duplicate saves
 
     def start_order(self, items, total_cost):
         self.in_order_flow = True
         self.items = normalize_order_items(items)
         self.total_cost = total_cost
         self.special_request = None  # Reset special request when starting new order
+        self.order_saved = False  # Reset save flag when starting new order
+
+    def update_items(self, items, total_cost):
+        """Update the items and total cost while keeping the order flow active"""
+        self.items = normalize_order_items(items)
+        self.total_cost = total_cost
+        self.order_saved = False  # Reset save flag when items change
+        debug_log(f"Order state updated - Items: {len(self.items)}, Total: {self.total_cost}")
+
+    def mark_as_saved(self):
+        """Mark this order as already saved to prevent duplicates"""
+        self.order_saved = True
+        debug_log("Order marked as saved")
 
     def reset(self):
         self.__init__()
@@ -475,7 +558,8 @@ class OrderState:
             "phone": self.phone,
             "items": self.items,
             "total_cost": self.total_cost,
-            "special_request": self.special_request
+            "special_request": self.special_request,
+            "order_saved": self.order_saved
         }
 
 # Global order state storage
@@ -768,7 +852,7 @@ async def extract_complete_order_data(conversation: List[Dict], session_id: str 
     Args:
         conversation: List of conversation messages
         session_id: Session ID for order state access
-        for_confirmation: If True, prioritizes current order state and uses enhanced extraction for saving
+        for_confirmation: If True, checks for latest conversation data but still uses order state for customer info
     
     Returns:
         Dict with order data including items, rf_id, building, phone, special_request, validation status
@@ -795,21 +879,23 @@ async def extract_complete_order_data(conversation: List[Dict], session_id: str 
     if session_id:
         order_state = get_or_create_order_state(session_id)
     
-    # Extract order items - prioritize order state for confirmations
+    # Extract order items - ALWAYS check conversation for latest changes
     items = []
-    if for_confirmation and order_state and order_state.items:
+    
+    # First try RAG extraction from conversation
+    items = rag_extract_menu_items(combined_text)
+    items = normalize_order_items(items)
+    debug_log(f"RAG extracted {len(items)} items: {[item.get('name', 'Unknown') for item in items]}")
+    
+    # If RAG didn't find items, try fallback
+    if not items:
+        items = await extract_items_fallback(combined_text, latest_bot_response)
+        debug_log(f"Fallback extracted {len(items)} items: {[item.get('name', 'Unknown') for item in items]}")
+    
+    # If still no items and we have order state, use order state items as last resort
+    if not items and order_state and order_state.items:
         items = order_state.items
-        debug_log(f"Using items from order state: {[item.get('name', 'Unknown') for item in items]}")
-    else:
-        # Try RAG extraction first
-        items = rag_extract_menu_items(combined_text)
-        items = normalize_order_items(items)
-        debug_log(f"RAG extracted {len(items)} items: {[item.get('name', 'Unknown') for item in items]}")
-        
-        # Use fallback if RAG failed
-        if not items and for_confirmation:
-            items = await extract_items_fallback(combined_text, latest_bot_response)
-            debug_log(f"Fallback extracted {len(items)} items: {[item.get('name', 'Unknown') for item in items]}")
+        debug_log(f"Using items from order state as last resort: {[item.get('name', 'Unknown') for item in items]}")
     
     # Extract RF ID with multiple patterns - prioritize order state for confirmations
     rf_id = None
@@ -878,55 +964,51 @@ async def extract_complete_order_data(conversation: List[Dict], session_id: str 
         valid_phone = True
         debug_log(f"Got phone from order state: {phone}")
     else:
-        # Try multiple phone patterns
+        # Try UAE phone patterns
         phone_patterns = [
-            # Common phrases followed by digits
-            r'phone.*?number.*?(\+?\d[\d\s\-]{8,})',
-            r'phone.*?(\+?\d[\d\s\-]{8,})',
-            r'number.*?(\+?\d[\d\s\-]{8,})',
-            
-            # Explicit digit groups (e.g., 05xxxxxxxx, UAE mobile)
-            r'\b(05\d{8})\b',
-            
-            # Strictly digits, 9–15 length
-            r'\b(\d{9,15})\b',
-
-            # Numbers with +country code (e.g., +971XXXXXXXXX)
-            r'\+(\d{9,15})',
-
-            # Numbers with optional +, spaces or dashes between digits
-            r'\b(\+?\d{1,4}[-\s]?\d{3,5}[-\s]?\d{3,5}[-\s]?\d{0,5})\b'
+            r'\b(05\d{8})\b',           # 10 digits starting with 05
+            r'\b(5\d{8})\b',            # 9 digits starting with 5
+            r'\b\+971(5\d{8})\b',       # +971 followed by 9 digits starting with 5
+            r'\b971(5\d{8})\b',         # 971 followed by 9 digits starting with 5
         ]
+        
+        # Clean combined text for phone extraction
+        cleaned_combined = combined_text.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
         
         # Check combined text first
         for pattern in phone_patterns:
-            phone_match = re.search(pattern, combined_text.replace(' ', '').replace('-', ''), re.IGNORECASE)
+            phone_match = re.search(pattern, cleaned_combined, re.IGNORECASE)
             if phone_match:
-                potential_phone = phone_match.group(1)
-                if len(potential_phone) == 10 and potential_phone.startswith('05'):
-                    phone = potential_phone
-                    valid_phone = True
-                    debug_log(f"Found phone in conversation: {phone}")
-                    break
-                elif len(potential_phone) == 10 and potential_phone.startswith('5'):
-                    phone = '0' + potential_phone
-                    valid_phone = True
-                    debug_log(f"Found phone in conversation (added 0): {phone}")
-                    break
+                if pattern == r'\b(05\d{8})\b':
+                    # Already in correct format
+                    phone = phone_match.group(1)
+                elif pattern == r'\b(5\d{8})\b':
+                    # Add leading 0
+                    phone = '0' + phone_match.group(1)
+                elif pattern in [r'\b\+971(5\d{8})\b', r'\b971(5\d{8})\b']:
+                    # Extract the 9-digit part and add leading 0
+                    phone = '0' + phone_match.group(1)
+                
+                valid_phone = True
+                debug_log(f"Found phone in conversation: {phone}")
+                break
         
-        # Also check bot response
+        # Also check bot response with same patterns
         if not phone and for_confirmation:
-            bot_phone_match = re.search(r'phone.*?number.*?(\d{10})', latest_bot_response, re.IGNORECASE)
-            if bot_phone_match:
-                potential_phone = bot_phone_match.group(1)
-                if len(potential_phone) == 10 and potential_phone.startswith('05'):
-                    phone = potential_phone
+            cleaned_bot_response = latest_bot_response.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')
+            for pattern in phone_patterns:
+                bot_phone_match = re.search(pattern, cleaned_bot_response, re.IGNORECASE)
+                if bot_phone_match:
+                    if pattern == r'\b(05\d{8})\b':
+                        phone = bot_phone_match.group(1)
+                    elif pattern == r'\b(5\d{8})\b':
+                        phone = '0' + bot_phone_match.group(1)
+                    elif pattern in [r'\b\+971(5\d{8})\b', r'\b971(5\d{8})\b']:
+                        phone = '0' + bot_phone_match.group(1)
+                    
                     valid_phone = True
                     debug_log(f"Found phone in bot response: {phone}")
-                elif len(potential_phone) == 10 and potential_phone.startswith('5'):
-                    phone = '0' + potential_phone
-                    valid_phone = True
-                    debug_log(f"Found phone in bot response (added 0): {phone}")
+                    break
     
     # Extract special requests - prioritize order state for confirmations
     special_request = "None"
@@ -991,7 +1073,13 @@ async def detect_order_confirmation_and_save(session_id: str, bot_response: str,
     """
     debug_log(f"Checking bot response for order confirmation: '{bot_response[:100]}...'")
     
-    # Look for order confirmation patterns in bot response
+    # Check if order was already saved for this session
+    order_state = get_or_create_order_state(session_id)
+    if order_state.order_saved:
+        debug_log("Order already saved for this session, skipping")
+        return False
+    
+    # Look for FINAL order confirmation patterns in bot response (more restrictive)
     confirmation_patterns = [
         r'thank you for.*order',
         r'order.*will be delivered',
@@ -999,20 +1087,19 @@ async def detect_order_confirmation_and_save(session_id: str, bot_response: str,
         r'enjoy your meal',
         r'order.*confirmed',
         r'order.*placed.*successfully',
-        r'here\'?s a summary of your order',  # Added for your case
-        r'your total is.*aed',  # Added for order summaries
-        r'summary.*order.*aed',  # Another pattern for summaries
+        r'order.*complete',
+        r'receipt.*dining hall',  # More specific final confirmation
     ]
     
     is_confirmation = any(re.search(pattern, bot_response.lower()) for pattern in confirmation_patterns)
     
     if not is_confirmation:
-        debug_log("No order confirmation detected")
+        debug_log("No FINAL order confirmation detected")
         return False
     
-    debug_log("ORDER CONFIRMATION DETECTED!")
+    debug_log("FINAL ORDER CONFIRMATION DETECTED!")
     
-    # Extract order details using unified function
+    # Extract order details using unified function - get the LATEST order data
     conversation = ConversationLogger.get_conversation(session_id)
     order_data = await extract_complete_order_data(conversation, session_id, for_confirmation=True)
     
@@ -1020,18 +1107,19 @@ async def detect_order_confirmation_and_save(session_id: str, bot_response: str,
         debug_log("No order data extracted")
         return False
     
-    # Save if we have essential information
-    if order_data['items'] and order_data['rf_id_valid'] and order_data['building_valid']:
-        debug_log(f"SAVING ORDER: Items: {len(order_data['items'])}, RFID: {order_data['rf_id']}, Building: {order_data['building']}, Total: {order_data['total_cost']}")
+    # Only save if we have ALL essential information (complete order)
+    if (order_data['items'] and order_data['rf_id_valid'] and 
+        order_data['building_valid'] and order_data['valid_phone']):
+        debug_log(f"SAVING FINAL ORDER: Items: {len(order_data['items'])}, RFID: {order_data['rf_id']}, Building: {order_data['building']}, Total: {order_data['total_cost']}")
         save_final_order_to_file(order_data)
         
-        # Clean up session
-        order_state = get_or_create_order_state(session_id)
+        # Mark as saved and clean up session
+        order_state.mark_as_saved()
         order_state.reset()
         
         return True
     else:
-        debug_log(f"CANNOT SAVE - Missing essential info - Items: {len(order_data.get('items', []))}, RFID: {order_data['rf_id_valid']}, Building: {order_data['building_valid']}")
+        debug_log(f"CANNOT SAVE - Missing essential info - Items: {len(order_data.get('items', []))}, RFID: {order_data['rf_id_valid']}, Building: {order_data['building_valid']}, Phone: {order_data.get('valid_phone', False)}")
         return False
 
 def check_for_direct_order_response(session_id: str, user_message: str) -> Optional[str]:
@@ -1075,7 +1163,7 @@ def check_for_order_completion(session_id: str) -> Optional[str]:
     """Check if an order can be completed"""
     order_state = get_or_create_order_state(session_id)
     
-    if not order_state.in_order_flow:
+    if not order_state.in_order_flow or order_state.order_saved:
         return None
     
     # Check if all required information is valid
@@ -1096,7 +1184,8 @@ def check_for_order_completion(session_id: str) -> Optional[str]:
         # Save the completed order
         save_final_order_to_file(order_data)
         
-        # Clean up
+        # Mark as saved and clean up
+        order_state.mark_as_saved()
         ConversationLogger.cleanup_session(session_id)
         order_state.reset()
         
@@ -1218,7 +1307,7 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
     print(f"DEBUG ORDER STATE BEFORE: RFID={order_state.rf_id}, Building={order_state.building}, Phone={order_state.phone}, InFlow={order_state.in_order_flow}")
     
     # PRE-VALIDATION - Check formats BEFORE LLM processing (runs for ALL order-related messages)
-    if order_state.in_order_flow or re.search(r'\b(rf|rfid|building|phone|05\d{8}|\d{4,7}|[A-Z]\d[A-Z]?)\b', user_message, re.IGNORECASE):
+    if order_state.in_order_flow or re.search(r'\b(rf|rfid|building|phone|05\d{8}|\d{4,15}|[A-Z]\d[A-Z]?)\b', user_message, re.IGNORECASE):
         debug_log(f"PRE-VALIDATION TRIGGERED for message: '{user_message}'")
         validation_error = validate_and_update_order_state(user_message, order_state)
         if validation_error:
@@ -1256,16 +1345,17 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
         ConversationLogger.log_message(session_id, direct_response, "bot")
         return StreamingResponse(direct_response_stream(), media_type="text/plain")
     
-    # Extract current order state from conversation (for order changes) - USE UNIFIED FUNCTION
+    # Extract current order state from conversation (for order changes) - IMPROVED LOGIC
     conversation_order_data = await extract_complete_order_data(ConversationLogger.get_conversation(session_id), session_id)
     
     # Sync conversation changes with session state
     if conversation_order_data and order_state.in_order_flow:
         # Update session state with any order changes from conversation
-        if conversation_order_data.get('items') != order_state.items:
-            print(f"DEBUG: Order items changed via conversation analysis")
-            order_state.items = conversation_order_data['items']
-            order_state.total_cost = conversation_order_data['total_cost']
+        if items_are_different(conversation_order_data.get('items', []), order_state.items):
+            debug_log(f"Order items changed via conversation analysis")
+            debug_log(f"Old items: {order_state.items}")
+            debug_log(f"New items: {conversation_order_data['items']}")
+            order_state.update_items(conversation_order_data['items'], conversation_order_data['total_cost'])
     
     # Check for order completion
     completion_message = check_for_order_completion(session_id)
@@ -1544,18 +1634,23 @@ async def chat_endpoint(request: Request, background_tasks: BackgroundTasks):
             debug_log(f"Bot response complete: '{bot_response[:100]}...'")
             ConversationLogger.log_message(session_id, bot_response, "bot")
             
-            # Try regex-based detection first (for backwards compatibility)
-            debug_log("Calling detect_order_confirmation_and_save...")
-            saved = await detect_order_confirmation_and_save(session_id, bot_response, user_message)
-            debug_log(f"Regex order save result: {saved}")
-            
-            # If regex didn't work, try LLM analysis
-            if not saved:
-                debug_log("Regex detection failed, trying LLM analysis...")
-                saved_llm = await detect_order_confirmation_and_save_with_llm(session_id, bot_response, user_message)
-                debug_log(f"LLM order save result: {saved_llm}")
+            # Check if order was already saved to prevent duplicates
+            order_state = get_or_create_order_state(session_id)
+            if not order_state.order_saved:
+                # Try regex-based detection first (for backwards compatibility)
+                debug_log("Calling detect_order_confirmation_and_save...")
+                saved = await detect_order_confirmation_and_save(session_id, bot_response, user_message)
+                debug_log(f"Regex order save result: {saved}")
+                
+                # If regex didn't work, try LLM analysis
+                if not saved:
+                    debug_log("Regex detection failed, trying LLM analysis...")
+                    saved_llm = await detect_order_confirmation_and_save_with_llm(session_id, bot_response, user_message)
+                    debug_log(f"LLM order save result: {saved_llm}")
+                else:
+                    debug_log("Order already saved via regex detection")
             else:
-                debug_log("Order already saved via regex detection")
+                debug_log("Order already saved for this session, skipping all detection")
 
     return StreamingResponse(ollama_stream(), media_type="text/plain")
 

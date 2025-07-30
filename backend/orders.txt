@@ -1,10 +1,10 @@
 
-=== ORDER - 2025-07-30 15:27:07 ===
+=== ORDER - 2025-07-30 16:00:36 ===
 ITEMS:
-- 1x Pepperoni: AED 43.0 each = AED 43.0
-TOTAL COST: AED 43.00
-RF ID: +484202
-Building: A3
-Phone: None
-Special Request: yes, I'd like to confirm the order. I don't have any special requests. My RFID is 484202, my building number is A3, and my phone number is 538093224
+- 3x Pepperoni Pizza: AED 43.0 each = AED 129.0
+TOTAL COST: AED 129.00
+RF ID: +343444
+Building: A1C
+Phone: 068736478
+Special Request: None
 ==================================================

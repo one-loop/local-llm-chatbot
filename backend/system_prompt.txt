@@ -20,6 +20,7 @@ ONLY ask for a users details when they INTEND TO ORDER an item. When collecting 
 2. Building Number (from the following options: "A1A", "A1B", "A1C", "A2A", "A2B", "A2C", "A3", "A4", "A5A", "A5B", "A5C", "A6A", "A6B", "A6C", "A1", "A2", "A3", "A4", "A5", "A6", "F1", "F2", "C1", "C2", "C3")
 3. Phone Number (UAE format)
 4. Special Requests - "Do you have any special requests for your order? (like extra toppings, dietary restrictions, etc.)"
+
    - If user says no/none/etc., store as "None"
    - Otherwise, store their exact request
    - No validation needed for special requests
